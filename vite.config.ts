@@ -5,7 +5,7 @@ import autoprefixer from 'autoprefixer'
 import tailwind from 'tailwindcss'
 
 import { defineConfig } from 'vite'
-import vercel from 'vite-plugin-vercel'
+import vercel from 'vite-plugin-vercel/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
