@@ -41,7 +41,7 @@ const pointsBarMaxWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 32
     <PauseBackdrop v-else />
     <div class="grid max-h-screen grid-rows-[auto_350px] place-content-center gap-4 overflow-y-auto py-8 md:grid-cols-[minmax(auto,420px)_minmax(0,auto)] md:grid-rows-1 md:gap-10 md:place-self-center">
       <ScrollArea>
-        <div class="max-w-80 justify-self-center md:max-h-[calc(100vh_-_100px)] md:max-w-none">
+        <div class="max-w-80 justify-self-center md:max-h-[calc(100vh-100px)] md:max-w-none">
           <PlayerResults :points-bar-max-width />
         </div>
       </ScrollArea>

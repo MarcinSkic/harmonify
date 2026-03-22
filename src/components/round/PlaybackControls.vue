@@ -109,7 +109,7 @@ onUnmounted(() => {
   <div class="relative flex items-center gap-4">
     <AutoplayButton class="ml-1 mr-2" />
     <!-- eslint-disable-next-line tailwindcss/no-contradicting-classname -->
-    <Button ref="playButton" class="h-20 w-32 rounded-xl bg-[linear-gradient(0.25turn,#1b3162_49%,50%,transparent)] bg-[length:200%_200%] bg-[position:100%_0]" :disabled="trackTimer.playbackRate.value < 0" @click="togglePlay">
+    <Button ref="playButton" class="h-20 w-32 rounded-xl bg-[linear-gradient(0.25turn,#1b3162_49%,50%,transparent)] bg-size-[200%_200%] bg-position-[100%_0]" :disabled="trackTimer.playbackRate.value < 0" @click="togglePlay">
       <Pause v-if="isPlaying" class="size-12" />
       <Play v-else class="size-12" />
     </Button>

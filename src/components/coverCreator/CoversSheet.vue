@@ -34,7 +34,7 @@ function deleteCover(deletedCover: CoverType) {
         <div class="grid grid-cols-2 gap-4 px-1">
           <div v-for="cover, idx of coversStore.savedCovers" :key="idx" class="relative grid w-full gap-1 text-center">
             <Cover
-              class="hover:outline hover:outline-1"
+              class="hover:outline-solid hover:outline-1"
               :base-color="cover.color"
               bottom-color="#18181b"
               :title="cover.title"

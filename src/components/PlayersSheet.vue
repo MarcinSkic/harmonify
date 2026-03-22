@@ -21,7 +21,7 @@ const gameDataStore = useGameDataStore()
       <SheetHeader class="mb-2">
         <SheetTitle>Players</SheetTitle>
       </SheetHeader>
-      <ScrollArea class="h-[calc(100%_-_30px)]">
+      <ScrollArea class="h-[calc(100%-30px)]">
         <div class="space-y-3">
           <Player
             v-for="player of gameDataStore.players" :key="player.guid"
