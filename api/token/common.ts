@@ -42,3 +42,12 @@ export async function fetchSpotifyAuth(query: SpotifyAuthQuery) {
   )
   return await response.json()
 }
+
+export function createSpotifyRedirectUri(protocol: string | string[], host: string) {
+  host = host.replace('localhost', '127.0.0.1')
+
+  return new URL(
+    redirectCallback,
+    `${protocol}://${host}`,
+  ).toString()
+}

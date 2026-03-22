@@ -1,14 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import process from 'node:process'
 import queryString from 'query-string'
-import { redirectCallback } from './common.js'
+import { createSpotifyRedirectUri } from './common.js'
 
 export default async function handler(
   request: VercelRequest,
   response: VercelResponse,
 ) {
   const protocol = request.headers['x-forwarded-proto'] || 'http'
-  const baseURL = `${protocol}://${request.headers.host}`
 
   return response.redirect(
     queryString.stringifyUrl({
@@ -17,7 +16,7 @@ export default async function handler(
         response_type: 'code',
         client_id: process.env.CLIENT_ID,
         scope: process.env.SCOPE,
-        redirect_uri: new URL(redirectCallback, baseURL).toString(),
+        redirect_uri: createSpotifyRedirectUri(protocol, request.headers.host!),
         state: process.env.STATE,
       },
     }),
