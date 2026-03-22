@@ -24,7 +24,7 @@ function isCorrect() {
   const result = nicknameSchema.safeParse(localNickname.value)
 
   if (!result.success) {
-    error.value = result.error.errors[0].message
+    error.value = result.error.issues[0].message
     return false
   }
 
