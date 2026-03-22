@@ -4,7 +4,7 @@ import Player from '@/components/Player.vue'
 import HostView from '@/components/setup/HostView.vue'
 import NicknameModal from '@/components/setup/NicknameModal.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useToast } from '@/components/ui/toast/use-toast'
+import { toast } from 'vue-sonner'
 import { Breakpoint } from '@/consts'
 import { cn } from '@/lib/utils'
 import { useConnectionStore, useGameDataStore, useResultStore } from '@/stores'
@@ -18,7 +18,6 @@ const resultStore = useResultStore()
 const gameDataStore = useGameDataStore()
 const connectionStore = useConnectionStore()
 const { width: screenWidth } = useWindowSize()
-const { toast } = useToast()
 const isNicknameModalOpen = ref(true)
 
 const hostView = ref<InstanceType<typeof HostView> | null>(null)
@@ -31,7 +30,7 @@ onBeforeMount(() => {
       router.push({ name: 'round', params: router.currentRoute.value.params })
     }
     else if (message.$type === 'messageError') {
-      toast({ title: 'Error', description: `${message.type}: ${message.errorMessage}`, variant: 'destructive', duration: 4000 })
+      toast.error('Error', { description: `${message.type}: ${message.errorMessage}`, duration: 4000 })
       if (message.type === 'dataTooLarge' && hostView.value)
         hostView.value.disableLoading()
     }

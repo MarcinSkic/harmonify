@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Input from '@/components/ui/input/Input.vue'
-import { useToast } from '@/components/ui/toast/use-toast'
+import { toast } from 'vue-sonner'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { LOCAL_STORAGE } from '@/consts'
 import { useConnectionStore, useGameDataStore } from '@/stores'
@@ -16,13 +16,9 @@ const props = defineProps<{
 const connectionStore = useConnectionStore()
 const gameDataStore = useGameDataStore()
 
-const { toast } = useToast()
 const localNickname = ref(props.nickname)
 const error = ref('')
-let lastToast: {
-  id: string
-  dismiss: () => void
-} | null = null
+let lastToastId: string | number | null = null
 
 function isCorrect() {
   const result = nicknameSchema.safeParse(localNickname.value)
@@ -83,8 +79,8 @@ watchDebounced(error, () => {
   if (error.value)
     return
 
-  lastToast?.dismiss()
-  lastToast = null
+  if (lastToastId != null) toast.dismiss(lastToastId)
+  lastToastId = null
 }, { debounce: 500 })
 
 /** Display toast if user doesn't fix error for a while */
@@ -92,11 +88,7 @@ watchDebounced(error, () => {
   if (!error.value)
     return
 
-  lastToast = toast({
-    title: 'Couldn\'t save nickname',
-    description: error.value,
-    variant: 'destructive',
-  })
+  lastToastId = toast.error('Couldn\'t save nickname', { description: error.value })
 }, { debounce: 2000 })
 </script>
 

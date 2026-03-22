@@ -4,7 +4,7 @@ import CircularTimer from '@/components/round/CircularTimer.vue'
 import PlaybackControls from '@/components/round/PlaybackControls.vue'
 import SearchInput from '@/components/round/SearchInput.vue'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/toast'
+import { toast } from 'vue-sonner'
 import { useConnectionStore, useGameDataStore, useResultStore } from '@/stores'
 import { useIntervalFn } from '@vueuse/core'
 import { onBeforeMount, onMounted, ref, watch } from 'vue'
@@ -14,8 +14,6 @@ const router = useRouter()
 const gameDataStore = useGameDataStore()
 const connectionStore = useConnectionStore()
 const resultStore = useResultStore()
-const { toast } = useToast()
-
 const guess = ref('')
 
 const isGuessSubmitted = ref(false)
@@ -52,9 +50,9 @@ async function handleGuessSubmit(e: Event) {
 
 watch(() => gameDataStore.isPaused, (isPaused, wasPaused) => {
   if (isPaused)
-    toast({ description: 'Game will be paused after this round' })
+    toast('Game will be paused after this round')
   else if (wasPaused)
-    toast({ description: 'Game pause was cancelled' })
+    toast('Game pause was cancelled')
 }, { immediate: true })
 
 onMounted(() => {

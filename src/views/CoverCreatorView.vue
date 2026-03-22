@@ -8,7 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/ui/toast'
+import { toast } from 'vue-sonner'
 import { DEFAULT_COVER } from '@/consts'
 import { useCoversStore } from '@/stores'
 import { unrefElement } from '@vueuse/core'
@@ -23,8 +23,6 @@ const coverImage = useTemplateRef('coverImage')
 const bottomColor = ref<string>('#18181b')
 const coversStore = useCoversStore()
 
-const { toast } = useToast()
-
 function setCover(selectedCover: CoverType) {
   cover.value = selectedCover
 }
@@ -33,29 +31,21 @@ async function copyToClipboard() {
   const blob = await getCoverBlob()
 
   if (!blob) {
-    toast({
-      variant: 'destructive',
-      description: 'Could not copy, try again!',
-    })
+    toast.error('Could not copy, try again!')
     return
   }
 
   await navigator.clipboard.write([
     new ClipboardItem({ [blob.type]: blob }),
   ])
-  toast({
-    description: 'Cover copied to clipboard!',
-  })
+  toast.success('Cover copied to clipboard!')
 }
 
 async function download() {
   const blob = await getCoverBlob()
 
   if (!blob) {
-    toast({
-      variant: 'destructive',
-      description: 'Could not download, try again!',
-    })
+    toast.error('Could not download, try again!')
     return
   }
 
@@ -78,9 +68,7 @@ function save() {
 
   coversStore.savedCovers.push(cover.value)
 
-  toast({
-    description: duplicated ? 'Succesfully duplicated cover!' : 'Succesfully saved cover!',
-  })
+  toast.success(duplicated ? 'Succesfully duplicated cover!' : 'Succesfully saved cover!')
 }
 
 function getCoverNameOrDefault(cover: CoverType) {

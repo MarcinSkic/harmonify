@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { ConstructorOptions as AudioMotionOptions } from 'audiomotion-analyzer'
-import { Breakpoint } from '@/consts'
-import { cn } from '@/lib/utils'
-import { useMusicPlayerStore, useSettingsStore } from '@/stores'
 import { useWindowSize } from '@vueuse/core'
 import AudioMotionAnalyzer from 'audiomotion-analyzer'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { Breakpoint } from '@/consts'
+import { cn } from '@/lib/utils'
+import { useMusicPlayerStore, useSettingsStore } from '@/stores'
 
 const container = ref<HTMLDivElement | null>(null)
 const musicPlayerStore = useMusicPlayerStore()
