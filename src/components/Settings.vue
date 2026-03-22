@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { Settings } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import Switch from '@/components/ui/switch/Switch.vue'
 import { useSettingsStore } from '@/stores'
-import { Settings } from 'lucide-vue-next'
 
 const settingsStore = useSettingsStore()
 </script>

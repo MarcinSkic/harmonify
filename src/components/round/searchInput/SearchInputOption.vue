@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { DisplayedGuessDto } from '@/types'
-import GuessDisplay from '@/components/trackDisplay/GuessDisplay.vue'
-import { cn } from '@/lib/utils'
 import { whenever } from '@vueuse/core'
 import { ref } from 'vue'
+import GuessDisplay from '@/components/trackDisplay/GuessDisplay.vue'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<{
   displayedGuess: DisplayedGuessDto

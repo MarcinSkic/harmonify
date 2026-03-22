@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { useGameDataStore, useMusicPlayerStore, useSettingsStore } from '@/stores'
 import { useAnimate, watchOnce } from '@vueuse/core'
 import { Pause, Play } from 'lucide-vue-next'
 import { onUnmounted, ref, watch } from 'vue'
+import { Button } from '@/components/ui/button'
+import { useGameDataStore, useMusicPlayerStore, useSettingsStore } from '@/stores'
 import AutoplayButton from './AutoplayButton.vue'
 import VolumeInput from './VolumeInput.vue'
 

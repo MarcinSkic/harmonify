@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Input from '@/components/ui/input/Input.vue'
+import { watchDebounced } from '@vueuse/core'
+import { TriangleAlert } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
+import Input from '@/components/ui/input/Input.vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { LOCAL_STORAGE } from '@/consts'
 import { useConnectionStore, useGameDataStore } from '@/stores'
 import { nicknameSchema } from '@/types'
-import { watchDebounced } from '@vueuse/core'
-import { TriangleAlert } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
 
 const props = defineProps<{
   nickname: string
@@ -79,7 +79,8 @@ watchDebounced(error, () => {
   if (error.value)
     return
 
-  if (lastToastId != null) toast.dismiss(lastToastId)
+  if (lastToastId != null)
+    toast.dismiss(lastToastId)
   lastToastId = null
 }, { debounce: 500 })
 

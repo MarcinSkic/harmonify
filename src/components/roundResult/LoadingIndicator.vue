@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useGameDataStore } from '@/stores'
 import { computed } from 'vue'
+import { useGameDataStore } from '@/stores'
 
 const gameDataStore = useGameDataStore()
 const waitTime = computed(() => `${gameDataStore.gameSettings.breakDurationBetweenRounds}s`)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import 'vue-sonner/style.css'
-import { Toaster } from '@/components/ui/sonner'
 import { RouterView } from 'vue-router'
+import { Toaster } from '@/components/ui/sonner'
+import 'vue-sonner/style.css'
 </script>
 
 <template>

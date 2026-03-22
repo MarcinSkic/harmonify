@@ -74,6 +74,6 @@ api/
 
 Check these files for deeper context when working in related areas:
 
-| File | When to check |
-|------|---------------|
+| File                                                                             | When to check                                                                                    |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [.claude/docs/architectural_patterns.md](.claude/docs/architectural_patterns.md) | Modifying stores, services, WebSocket handling, auth flow, UI components, or adding new features |

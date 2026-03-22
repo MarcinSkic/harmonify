@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { Cover as CoverType } from '../types/'
+import { unrefElement } from '@vueuse/core'
+import { saveAs } from 'file-saver'
+import { toBlob } from 'html-to-image'
+import { ArrowLeft, Clipboard, CopyPlus, Download, Save } from 'lucide-vue-next'
+import { ref, useTemplateRef } from 'vue'
+import { RouterLink } from 'vue-router'
+import { toast } from 'vue-sonner'
 import ColorInput from '@/components/coverCreator/ColorInput.vue'
 import Cover from '@/components/coverCreator/Cover.vue'
 import CoversSheet from '@/components/coverCreator/CoversSheet.vue'
@@ -8,15 +15,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { toast } from 'vue-sonner'
 import { DEFAULT_COVER } from '@/consts'
 import { useCoversStore } from '@/stores'
-import { unrefElement } from '@vueuse/core'
-import { saveAs } from 'file-saver'
-import { toBlob } from 'html-to-image'
-import { ArrowLeft, Clipboard, CopyPlus, Download, Save } from 'lucide-vue-next'
-import { ref, useTemplateRef } from 'vue'
-import { RouterLink } from 'vue-router'
 
 const cover = ref<CoverType>(DEFAULT_COVER)
 const coverImage = useTemplateRef('coverImage')

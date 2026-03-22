@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { X } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,9 +13,6 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { useConnectionStore } from '@/stores'
-import { X } from 'lucide-vue-next'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const connectionStore = useConnectionStore()
