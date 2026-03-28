@@ -87,7 +87,9 @@ async function getCoverBlob() {
 <template>
   <div class="grid justify-items-center">
     <div class="relative w-full max-w-315 p-4 pt-0">
-      <div class="sticky top-0 z-10 grid justify-center bg-gradient bg-fixed py-2">
+      <div
+        class="sticky top-0 z-10 grid justify-center bg-gradient bg-fixed py-2"
+      >
         <div class="flex gap-2">
           <div>
             <Button variant="ghost" size="icon" as-child>
@@ -130,7 +132,7 @@ async function getCoverBlob() {
             <Label>Main color</Label>
             <ColorInput v-model:model-value="cover.color" />
           </div>
-          <div class="grid w-fit justify-center gap-1 ">
+          <div class="grid w-fit justify-center gap-1">
             <Label>Bottom color</Label>
             <ColorInput v-model:model-value="bottomColor" />
           </div>

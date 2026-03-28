@@ -22,7 +22,9 @@ const settingsStore = useSettingsStore()
         <SheetTitle>Settings</SheetTitle>
       </SheetHeader>
       <div class="mt-4 space-y-6">
-        <div class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4">
+        <div
+          class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
+        >
           <Label>Autoplay</Label>
           <Select v-model:model-value="settingsStore.autoplay">
             <SelectTrigger>
@@ -43,11 +45,15 @@ const settingsStore = useSettingsStore()
             </SelectContent>
           </Select>
         </div>
-        <div class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4">
+        <div
+          class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
+        >
           <Label class="text-nowrap">Play animations</Label>
           <Switch v-model:model-value="settingsStore.playAnimations" />
         </div>
-        <div class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4">
+        <div
+          class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
+        >
           <Label class="text-nowrap">Display audio visualizer</Label>
           <Switch v-model:model-value="settingsStore.playAnimations" />
         </div>

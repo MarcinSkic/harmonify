@@ -81,7 +81,13 @@ defineExpose({ disableLoading })
 </script>
 
 <template>
-  <form class="grid h-[80vh] max-h-[80vh] w-[80vw] lg:w-auto lg:grid-cols-[minmax(auto,600px)_270px] lg:grid-rows-[1fr_50px] lg:items-start lg:gap-5" @submit.prevent="handleGameStart">
+  <form
+    class="
+      grid h-[80vh] max-h-[80vh] w-[80vw]
+      lg:w-auto lg:grid-cols-[minmax(auto,600px)_270px] lg:grid-rows-[1fr_50px]
+      lg:items-start lg:gap-5
+    " @submit.prevent="handleGameStart"
+  >
     <Tabs v-if="!isDesktop" default-value="tracks">
       <TabsList class="w-full">
         <TabsTrigger value="tracks" class="flex-1">

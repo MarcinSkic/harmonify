@@ -32,9 +32,13 @@ function deleteCover(deletedCover: CoverType) {
       </SheetHeader>
       <ScrollArea class="mt-2 h-full pr-1">
         <div class="grid grid-cols-2 gap-4 px-1">
-          <div v-for="cover, idx of coversStore.savedCovers" :key="idx" class="relative grid w-full gap-1 text-center">
+          <div
+            v-for="cover, idx of coversStore.savedCovers" :key="idx" class="
+              relative grid w-full gap-1 text-center
+            "
+          >
             <Cover
-              class="hover:outline-solid hover:outline-1"
+              class="hover:outline-1 hover:outline-solid"
               :base-color="cover.color"
               bottom-color="#18181b"
               :title="cover.title"
@@ -46,7 +50,11 @@ function deleteCover(deletedCover: CoverType) {
             <div class="h-7 max-w-[50%] justify-self-center overflow-hidden">
               {{ cover.name }}
             </div>
-            <Button size="icon" variant="ghost" class="absolute bottom-0 right-0 size-1/5" @click="deleteCover(cover)">
+            <Button
+              size="icon" variant="ghost" class="
+                absolute right-0 bottom-0 size-1/5
+              " @click="deleteCover(cover)"
+            >
               <Trash />
             </Button>
           </div>

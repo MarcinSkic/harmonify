@@ -51,10 +51,17 @@ function handleIconClick() {
 <template>
   <div
     ref="rootElement"
-    :class="cn('relative flex items-center text-primary', isSliderVisible && 'text-primary/80')"
+    :class="cn('relative flex items-center text-primary', isSliderVisible && `
+      text-primary/80
+    `)"
     @wheel="handleWheelScroll"
   >
-    <Button size="icon" variant="ghost" class="size-12 hover:bg-inherit hover:text-inherit">
+    <Button
+      size="icon" variant="ghost" class="
+        size-12
+        hover:bg-inherit hover:text-inherit
+      "
+    >
       <component :is="volumeIcon" class="size-full" @click="handleIconClick" />
     </Button>
     <Transition

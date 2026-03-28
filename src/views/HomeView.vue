@@ -57,16 +57,31 @@ function connectToSpotify() {
 
 <template>
   <div class="grid h-screen place-content-center place-items-center">
-    <header class=" grid justify-items-center gap-5">
-      <h1 class="flex h-min items-center gap-5 text-[13vw] font-bold italic text-primary md:text-8xl">
+    <header class="grid justify-items-center gap-5">
+      <h1
+        class="
+          flex h-min items-center gap-5 text-[13vw] font-bold text-primary
+          italic
+          md:text-8xl
+        "
+      >
         <img src="@/assets/logo.png" alt="Logo" class="h-[1.2em]">
         <span>Harmonify!</span>
       </h1>
     </header>
     <main class="mt-10 text-2xl font-bold">
-      <div class="flex flex-col-reverse  items-center gap-10 md:flex-row md:items-end">
+      <div
+        class="
+          flex flex-col-reverse items-center gap-10
+          md:flex-row md:items-end
+        "
+      >
         <form class="grid justify-items-center gap-5" @submit.prevent="joinRoom">
-          <p v-if="isJoinRoomError" class="-mb-3 text-base font-normal text-destructive">
+          <p
+            v-if="isJoinRoomError" class="
+              -mb-3 text-base font-normal text-destructive
+            "
+          >
             No room with such id
           </p>
           <PinInput
@@ -84,10 +99,18 @@ function connectToSpotify() {
           <Button>Join room</Button>
         </form>
         <form v-if="isLogged" class="grid justify-items-center gap-5" @submit.prevent="createRoom">
-          <p v-if="passwordError" class="-mb-3 text-base font-normal text-destructive">
+          <p
+            v-if="passwordError" class="
+              -mb-3 text-base font-normal text-destructive
+            "
+          >
             {{ passwordError }}
           </p>
-          <Input v-model="password" type="text" placeholder="(WIP) Password, leave blank for none" class="invisible" @focus="passwordError = ''" />
+          <Input
+            v-model="password" type="text" placeholder="(WIP) Password, leave blank for none" class="
+              invisible
+            " @focus="passwordError = ''"
+          />
           <Button type="submit">
             Create room
           </Button>

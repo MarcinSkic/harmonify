@@ -55,8 +55,18 @@ function changeAutoplaySetting() {
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger>
-        <Button size="icon" variant="ghost" :class="cn('size-9 hover:bg-inherit', props.class)" @click="changeAutoplaySetting">
-          <component :is="icon" class="size-full text-primary hover:text-primary/80" />
+        <Button
+          size="icon" variant="ghost" :class="cn(`
+            size-9
+            hover:bg-inherit
+          `, props.class)" @click="changeAutoplaySetting"
+        >
+          <component
+            :is="icon" class="
+              size-full text-primary
+              hover:text-primary/80
+            "
+          />
         </Button>
       </TooltipTrigger>
       <TooltipContent>

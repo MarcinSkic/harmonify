@@ -24,7 +24,11 @@ whenever(() => props.selected, () => {
 <template>
   <div
     ref="element"
-    :class="cn('py-1.5 px-3 md:px-5 md:py-3 hover:bg-accent hover:text-accent-foreground', selected && 'bg-accent text-accent-foreground')"
+    :class="cn(`
+      px-3 py-1.5
+      hover:bg-accent hover:text-accent-foreground
+      md:px-5 md:py-3
+    `, selected && `bg-accent text-accent-foreground`)"
     @click="emit('click', displayedGuess.guess ?? '')"
   >
     <GuessDisplay :guess="displayedGuess.guess" />

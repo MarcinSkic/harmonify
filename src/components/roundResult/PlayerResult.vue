@@ -28,18 +28,31 @@ const isSelf = computed(() => props.playerResult.guid === gameDataStore.selfPlay
 <template>
   <div class="grid">
     <div class="relative flex items-center gap-2">
-      <GuessLevelIcon v-if="displayGuessLevel" :guess-level="guessLevel" class="relative -bottom-2 -mr-2 self-end" />
+      <GuessLevelIcon
+        v-if="displayGuessLevel" :guess-level="guessLevel" class="
+          relative -bottom-2 -mr-2 self-end
+        "
+      />
       <div v-else class="relative -bottom-2 -mr-2 min-h-4 min-w-4 self-end" />
-      <CircleUserRound :class="cn('min-w-8 min-h-8', isSelf && 'text-primary')" />
+      <CircleUserRound :class="cn('min-h-8 min-w-8', isSelf && 'text-primary')" />
       <div class="grid grid-rows-2">
         <div class="mr-3 text-sm">
           {{ props.playerResult.nickname }}
         </div>
-        <div :class="cn('h-3/4 origin-left rounded-md bg-primary text-right text-primary-foreground', animation && 'animated')" :style="{ width: `${width}px` }" />
+        <div
+          :class="cn(`
+            h-3/4 origin-left rounded-md bg-primary text-right
+            text-primary-foreground
+          `, animation && `animated`)" :style="{ width: `${width}px` }"
+        />
       </div>
       <div>{{ playerResult.score }}</div>
     </div>
-    <div v-if="displayGuessLevel && guessLevel !== 'full' && guess !== ''" class="text-nowrap text-sm">
+    <div
+      v-if="displayGuessLevel && guessLevel !== 'full' && guess !== ''" class="
+        text-sm text-nowrap
+      "
+    >
       <span>Guess: </span>
       <GuessDisplay :guess="guess" />
     </div>

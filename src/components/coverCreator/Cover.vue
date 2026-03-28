@@ -44,7 +44,12 @@ const [h, s, l] = toRefs(computed(() => convert.hex.hsl(props.baseColor)))
 
 <template>
   <div ref="cover" class="outer-base outer-background">
-    <div class="inner grid size-full justify-center overflow-hidden font-sans *:col-start-1 *:row-start-1">
+    <div
+      class="
+        inner grid size-full justify-center overflow-hidden font-sans
+        *:col-start-1 *:row-start-1
+      "
+    >
       <CircularText
         :path-id="ids.title"
         class="font-bold"

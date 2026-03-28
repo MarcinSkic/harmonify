@@ -94,7 +94,9 @@ watchDebounced(error, () => {
 </script>
 
 <template>
-  <div class="grid w-full grid-cols-[minmax(0,1fr)_2rem] place-items-center gap-2">
+  <div
+    class="grid w-full grid-cols-[minmax(0,1fr)_2rem] place-items-center gap-2"
+  >
     <Input v-model:model-value="localNickname" />
     <TooltipProvider v-if="error">
       <Tooltip>

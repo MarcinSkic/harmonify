@@ -44,7 +44,11 @@ const desktopPlayerContainerVariants = cva('', {
   variants: {
     variant: {
       host: 'space-y-3',
-      guest: 'grid min-h-[60vh] w-full auto-rows-[40px] grid-cols-[repeat(auto-fill,minmax(240px,1fr))] content-start justify-center gap-5',
+      guest: `
+        grid min-h-[60vh] w-full auto-rows-[40px]
+        grid-cols-[repeat(auto-fill,minmax(240px,1fr))] content-start
+        justify-center gap-5
+      `,
     },
   },
   defaultVariants: {
@@ -55,9 +59,25 @@ const desktopPlayerContainerVariants = cva('', {
 
 <template>
   <main
-    :class="cn('grid grid-rows-[minmax(0,auto)_minmax(0,1fr)] content-center justify-center gap-4 p-4 lg:grid-rows-none grid-cols-[minmax(auto,1200px)] mx-10', gameDataStore.selfPlayer.isHost && 'justify-items-center lg:grid-cols-[260px_auto] mx-0')"
+    :class="cn(`
+      mx-10 grid grid-cols-[minmax(auto,1200px)]
+      grid-rows-[minmax(0,auto)_minmax(0,1fr)] content-center justify-center
+      gap-4 p-4
+      lg:grid-rows-none
+    `, gameDataStore.selfPlayer.isHost && `
+      mx-0 justify-items-center
+      lg:grid-cols-[260px_auto]
+    `)"
   >
-    <div :class="cn('grid gap-6 self-start lg:mt-2 justify-items-center', gameDataStore.selfPlayer.isHost && 'lg:justify-items-start gap-3')">
+    <div
+      :class="cn(`
+        grid justify-items-center gap-6 self-start
+        lg:mt-2
+      `, gameDataStore.selfPlayer.isHost && `
+        gap-3
+        lg:justify-items-start
+      `)"
+    >
       <ScrollArea v-if="showPlayers" class="max-h-[calc(100vh-200px)] w-full">
         <div :class="desktopPlayerContainerVariants({ variant: gameDataStore.selfPlayer.isHost ? 'host' : 'guest' })">
           <Player

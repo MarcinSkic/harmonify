@@ -62,10 +62,16 @@ onMounted(() => {
 
 <template>
   <div class="grid grid-rows-[auto_15vh]">
-    <div class="grid grid-cols-2 place-content-center place-items-center gap-x-40 gap-y-10 self-start p-4 md:mb-60 md:mt-4 md:place-self-center md:p-0">
-      <span class=" justify-self-start text-xl">Round: {{ gameDataStore.round }}</span>
+    <div
+      class="
+        grid grid-cols-2 place-content-center place-items-center gap-x-40
+        gap-y-10 self-start p-4
+        md:mt-4 md:mb-60 md:place-self-center md:p-0
+      "
+    >
+      <span class="justify-self-start text-xl">Round: {{ gameDataStore.round }}</span>
 
-      <div class=" flex items-center gap-6 justify-self-end">
+      <div class="flex items-center gap-6 justify-self-end">
         <CircularTimer :x="roundTimeLeft" :x-max="gameDataStore.gameSettings.roundDuration" />
       </div>
       <template v-if="!isGuessSubmitted">
@@ -74,11 +80,19 @@ onMounted(() => {
           :music-play-data="gameDataStore.musicPlayData"
         />
         <form class="col-span-2 grid grid-cols-2 place-items-center gap-y-4" @submit.prevent="handleGuessSubmit">
-          <SearchInput v-model="guess" :guesses="gameDataStore.possibleGuesses" class=" col-span-2" />
+          <SearchInput
+            v-model="guess" :guesses="gameDataStore.possibleGuesses" class="
+              col-span-2
+            "
+          />
           <Button type="submit" value="submit">
             Submit
           </Button>
-          <Button type="submit" value="skip" variant="destructive" class="col-start-1 row-start-2">
+          <Button
+            type="submit" value="skip" variant="destructive" class="
+              col-start-1 row-start-2
+            "
+          >
             Skip
           </Button>
         </form>

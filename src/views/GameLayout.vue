@@ -22,8 +22,15 @@ const displayPlayersButton = computed(() => !isDesktop.value && gameDataStore.se
 </script>
 
 <template>
-  <div class="grid h-screen min-h-screen grid-rows-[minmax(0,auto)_minmax(0,1fr)] place-content-stretch">
-    <div class="z-20 grid grid-cols-[minmax(auto,1200px)] justify-center border-b">
+  <div
+    class="
+      grid h-screen min-h-screen grid-rows-[minmax(0,auto)_minmax(0,1fr)]
+      place-content-stretch
+    "
+  >
+    <div
+      class="z-20 grid grid-cols-[minmax(auto,1200px)] justify-center border-b"
+    >
       <div class="flex items-center justify-start p-1">
         <RoomIdDisplay class="mr-auto" />
         <Settings />
