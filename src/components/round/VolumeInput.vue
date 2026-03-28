@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { useElementHover } from '@vueuse/core'
+import { Volume, Volume1, Volume2, VolumeX } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
 import { useMusicPlayerStore } from '@/stores'
-import { useElementHover } from '@vueuse/core'
-import { Volume, Volume1, Volume2, VolumeX } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
 
 const SCROLL_DELTA = -120
 const VOLUME_CHANGE_ON_SCROLL_TICK = 0.05
@@ -51,10 +51,17 @@ function handleIconClick() {
 <template>
   <div
     ref="rootElement"
-    :class="cn('relative flex items-center text-primary', isSliderVisible && 'text-primary/80')"
+    :class="cn('relative flex items-center text-primary', isSliderVisible && `
+      text-primary/80
+    `)"
     @wheel="handleWheelScroll"
   >
-    <Button size="icon" variant="ghost" class="size-12 hover:bg-inherit hover:text-inherit">
+    <Button
+      size="icon" variant="ghost" class="
+        size-12
+        hover:bg-inherit hover:text-inherit
+      "
+    >
       <component :is="volumeIcon" class="size-full" @click="handleIconClick" />
     </Button>
     <Transition

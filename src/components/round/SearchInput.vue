@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { DisplayedGuessDto } from '@/types'
+import { onStartTyping, useFocus } from '@vueuse/core'
+import { X } from 'lucide-vue-next'
+import { computed, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { onStartTyping, useFocus } from '@vueuse/core'
-import { X } from 'lucide-vue-next'
-import { computed, onUnmounted, ref, watch, watchEffect } from 'vue'
 import SearchInputOption from './searchInput/SearchInputOption.vue'
 
 const props = defineProps<{
@@ -111,20 +111,26 @@ function handleOptionClick(_guess: string) {
 </script>
 
 <template>
-  <div class="relative w-80 ">
+  <div class="relative w-80">
     <div class="inline-flex items-center rounded-lg border">
       <Input
         id="searchInput"
         ref="input"
         v-model="guess"
-        :class="cn(`focus-visible:ring-0 focus-visible:ring-offset-0 box-border text-lg h-12 border-none pr-2`, matchingGuesses.length > 0 && 'rounded-b-none border-b-0')"
+        :class="cn(`
+          box-border h-12 border-none pr-2 text-lg
+          focus-visible:ring-0 focus-visible:ring-offset-0
+        `, matchingGuesses.length > 0 && `rounded-b-none border-b-0`)"
         placeholder="Guess"
         type="text"
         name="guess"
         autocomplete="off"
       />
       <Button
-        class="size-12 min-w-12 bg-gradient bg-fixed hover:bg-slate-800 hover:bg-none"
+        class="
+          size-12 min-w-12 bg-gradient bg-fixed
+          hover:bg-slate-800 hover:bg-none
+        "
         variant="ghost"
         size="icon"
         type="button"
@@ -133,7 +139,12 @@ function handleOptionClick(_guess: string) {
         <X class="size-7" />
       </Button>
     </div>
-    <ScrollArea v-show="matchingGuesses.length > 0" class="!absolute h-60 w-full rounded-b-md border bg-gradient bg-fixed md:h-80">
+    <ScrollArea
+      v-show="matchingGuesses.length > 0" class="
+        absolute! h-60 w-full rounded-b-md border bg-gradient bg-fixed
+        md:h-80
+      "
+    >
       <SearchInputOption
         v-for="displayedGuess of matchingGuesses"
         :key="displayedGuess.id"

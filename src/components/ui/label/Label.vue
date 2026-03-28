@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { LabelProps } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
 import { Label } from 'reka-ui'
 import { computed } from 'vue'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<LabelProps & { class?: HTMLAttributes['class'] }>()
 
@@ -19,7 +19,10 @@ const delegatedProps = computed(() => {
     v-bind="delegatedProps"
     :class="
       cn(
-        'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+        `
+          text-sm leading-none font-medium
+          peer-disabled:cursor-not-allowed peer-disabled:opacity-70
+        `,
         props.class,
       )
     "

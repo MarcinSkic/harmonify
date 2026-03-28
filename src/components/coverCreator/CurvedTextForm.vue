@@ -11,7 +11,12 @@ const curvedText = defineModel<CurvedText>({ required: true })
 <template>
   <div class="grid gap-4">
     <CNInput v-model="curvedText.value" />
-    <div class="grid gap-3 sm:grid-cols-[repeat(4,_minmax(0,12rem))] sm:justify-center">
+    <div
+      class="
+        grid gap-3
+        sm:grid-cols-[repeat(4,minmax(0,12rem))] sm:justify-center
+      "
+    >
       <div class="grid gap-2">
         <Label>Font size</Label>
         <NumberField

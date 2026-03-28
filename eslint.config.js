@@ -1,15 +1,19 @@
 import antfu from '@antfu/eslint-config'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const compat = new FlatCompat()
+import tailwind from 'eslint-plugin-better-tailwindcss'
 
 export default antfu({
   formatters: true,
   typescript: true,
   vue: true,
-}, ...compat.config({
-  extends: ['plugin:tailwindcss/recommended'],
-  rules: {
-    'tailwindcss/no-custom-classname': 'off',
+  settings: {
+    'better-tailwindcss': {
+      entryPoint: 'src/assets/tailwind.css',
+    },
   },
-}))
+}, {
+  ...tailwind.configs['recommended-error'],
+  rules: {
+    ...tailwind.configs['recommended-error'].rules,
+    'better-tailwindcss/no-unknown-classes': 'off',
+  },
+})

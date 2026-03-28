@@ -56,7 +56,12 @@ const selectedPlayer = defineModel<string>()
         />
       </TabsContent>
       <TabsContent value="tracks" class="h-[60vh] max-h-[60vh]">
-        <div class="row-span-2 grid h-full grid-rows-[minmax(0,auto)_minmax(0,1fr)] gap-2">
+        <div
+          class="
+            row-span-2 grid h-full grid-rows-[minmax(0,auto)_minmax(0,1fr)]
+            gap-2
+          "
+        >
           <div class="flex items-center gap-2">
             <Label for="player">Player</Label>
             <Select v-model:model-value="selectedPlayer">
@@ -78,7 +83,7 @@ const selectedPlayer = defineModel<string>()
           </div>
 
           <ScrollArea v-if="displayTracks" class="h-full rounded-lg border">
-            <div class="w-[320px] space-y-4 divide-y py-4 ">
+            <div class="w-80 space-y-4 divide-y py-4">
               <PlayedTrack
                 v-for="playedTrack, idx of playedTracks"
                 :key="`${playedTrack.track.uri}-${idx}`"
@@ -91,7 +96,11 @@ const selectedPlayer = defineModel<string>()
     </Tabs>
     <div class="h-14">
       <Transition name="fade-bottom">
-        <div v-if="displayButton" class="mt-4 flex items-center justify-center gap-5">
+        <div
+          v-if="displayButton" class="
+            mt-4 flex items-center justify-center gap-5
+          "
+        >
           <div class="text-2xl">
             <span>Score: </span>
             <span>{{ score }}</span>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { GuessLevel } from '@/types'
 import type { HTMLAttributes } from 'vue'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+import type { GuessLevel } from '@/types'
 import { toRefs } from '@vueuse/core'
 import { CircleCheck, CircleMinus, CircleX, ShieldQuestion, Unplug } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<{
   guessLevel: GuessLevel
@@ -34,7 +34,9 @@ const [icon, color, message] = toRefs(computed(() => {
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger>
-        <component :is="icon" :class="cn('min-w-4 min-h-4 w-4 h-4 cursor-default', color, props.class)" />
+        <component
+          :is="icon" :class="cn(`size-4 min-h-4 min-w-4 cursor-default`, color, props.class)"
+        />
       </TooltipTrigger>
       <TooltipContent>
         <p>{{ message }}</p>

@@ -1,8 +1,8 @@
-import type { MusicPlayData, SelectableAlbum, SelectablePlaylist, Track } from '@/types'
 import type { Router } from 'vue-router'
+import type { MusicPlayData, SelectableAlbum, SelectablePlaylist, Track } from '@/types'
+import { z } from 'zod'
 import { fetchFromSpotify, getAllPaginatedItems } from '@/lib/spotify'
 import { getAlbumSchema, simplePlaylistObjectSchema, simplifiedTrackObjectSchema, trackSchema } from '@/types'
-import { z } from 'zod'
 
 export async function getUserId(access_token: string, router: Router): Promise<string> {
   const userResponse = await fetchFromSpotify(`/me`, access_token, router)

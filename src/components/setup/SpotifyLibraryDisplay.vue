@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { Heart } from 'lucide-vue-next'
 import CheckableCard from '@/components/CheckableCard.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSpotifyLibraryStore } from '@/stores'
-import { Heart } from 'lucide-vue-next'
 
 const spotifyLibraryStore = useSpotifyLibraryStore()
 
@@ -11,12 +11,25 @@ const favouritesSelected = defineModel<boolean>('favouritesSelected', { required
 </script>
 
 <template>
-  <ScrollArea class="flex max-h-full flex-col justify-start rounded-lg border p-4">
+  <ScrollArea
+    class="flex max-h-full flex-col justify-start rounded-lg border p-4"
+  >
     <div class="flex flex-col gap-3">
-      <h2 class="sticky -top-1 z-10 bg-gradient bg-fixed pb-2 text-center text-xl font-semibold tracking-tight lg:pb-4 lg:text-3xl">
+      <h2
+        class="
+          sticky -top-1 z-10 bg-gradient bg-fixed pb-2 text-center text-xl
+          font-semibold tracking-tight
+          lg:pb-4 lg:text-3xl
+        "
+      >
         Playlists
       </h2>
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(116px,1fr))] gap-5 lg:mt-5">
+      <div
+        class="
+          grid grid-cols-[repeat(auto-fill,minmax(116px,1fr))] gap-5
+          lg:mt-5
+        "
+      >
         <template v-if="spotifyLibraryStore.favourites && spotifyLibraryStore.playlists">
           <CheckableCard
             id="favourites"
@@ -47,10 +60,21 @@ const favouritesSelected = defineModel<boolean>('favouritesSelected', { required
       </div>
     </div>
     <div class="flex flex-col gap-3">
-      <h2 class="sticky -top-1 z-10 bg-gradient bg-fixed pb-2 text-center text-xl font-semibold tracking-tight lg:pb-4  lg:text-3xl">
+      <h2
+        class="
+          sticky -top-1 z-10 bg-gradient bg-fixed pb-2 text-center text-xl
+          font-semibold tracking-tight
+          lg:pb-4 lg:text-3xl
+        "
+      >
         Albums
       </h2>
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(116px,1fr))] gap-5 lg:mt-5">
+      <div
+        class="
+          grid grid-cols-[repeat(auto-fill,minmax(116px,1fr))] gap-5
+          lg:mt-5
+        "
+      >
         <template v-if="spotifyLibraryStore.albums">
           <CheckableCard
             v-for="album of spotifyLibraryStore.albums"

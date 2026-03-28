@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import process from 'node:process'
 import { z } from 'zod'
-import { attachCookiesToResponse, fetchSpotifyAuth, redirectCallback } from './common.js'
+import { attachCookiesToResponse, createSpotifyRedirectUri, fetchSpotifyAuth } from './common.js'
 
 export default async function handler(
   request: VercelRequest,
@@ -38,10 +38,7 @@ export default async function handler(
       const result = await fetchSpotifyAuth({
         grant_type: 'authorization_code',
         code: code.toString(),
-        redirect_uri: new URL(
-          redirectCallback,
-          baseURL,
-        ).toString(),
+        redirect_uri: createSpotifyRedirectUri(protocol, request.headers.host!),
       })
       const { access_token, refresh_token, expires_in } = spotifyResponseType.parse(result)
 

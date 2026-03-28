@@ -42,17 +42,18 @@ Both implementations assign to `musicPlayerStore.player`, so the rest of the app
 
 Stores are domain-scoped in `src/stores/`, re-exported via barrel (`src/stores/index.ts`):
 
-| Store | Concern |
-|-------|---------|
-| `connection` | WebSocket lifecycle, message dispatch |
-| `gameData` | Current game state (room, players, round, settings) |
-| `musicPlayer` | Audio playback abstraction |
-| `result` | Round + game scoring, sorted leaderboards |
-| `settings` | User preferences (autoplay, animations, visualizer) |
-| `spotifyLibrary` | Playlist/album selection, track fetching |
-| `covers` | Saved cover art (Cover Creator feature) |
+| Store            | Concern                                             |
+| ---------------- | --------------------------------------------------- |
+| `connection`     | WebSocket lifecycle, message dispatch               |
+| `gameData`       | Current game state (room, players, round, settings) |
+| `musicPlayer`    | Audio playback abstraction                          |
+| `result`         | Round + game scoring, sorted leaderboards           |
+| `settings`       | User preferences (autoplay, animations, visualizer) |
+| `spotifyLibrary` | Playlist/album selection, track fetching            |
+| `covers`         | Saved cover art (Cover Creator feature)             |
 
 Two store definition styles are used:
+
 - **Options API** (`defineStore('name', { state, getters, actions })`) — used by most stores
 - **Setup function** (`defineStore('name', () => {...})`) — used by `spotifyLibrary` (`src/stores/spotifyLibrary.ts:8`) when computed refs are preferred
 
@@ -102,11 +103,11 @@ This pattern appears in: `GameLayout.vue:18`, `SetupView.vue:41`, `RoundResultVi
 
 OAuth token management lives in `api/token/` as Vercel Functions:
 
-| Endpoint | Purpose |
-|----------|---------|
-| `request` | Redirects to Spotify OAuth authorize URL |
-| `callback` | Exchanges auth code for tokens, sets cookies |
-| `refresh` | Uses refresh_token cookie to get new access_token |
-| `expired` | Clears cookies, redirects to request |
+| Endpoint   | Purpose                                           |
+| ---------- | ------------------------------------------------- |
+| `request`  | Redirects to Spotify OAuth authorize URL          |
+| `callback` | Exchanges auth code for tokens, sets cookies      |
+| `refresh`  | Uses refresh_token cookie to get new access_token |
+| `expired`  | Clears cookies, redirects to request              |
 
 Tokens are stored as HTTP cookies. `access_token` is client-readable; `refresh_token` is `HttpOnly`. Shared helpers in `api/token/common.ts`.

@@ -12,7 +12,12 @@ const fillPercentage = computed(() => {
 </script>
 
 <template>
-  <div class="circle-background grid size-12 place-items-center rounded-full border-8 border-transparent text-xl text-primary">
+  <div
+    class="
+      circle-background grid size-12 place-items-center rounded-full border-8
+      border-transparent text-xl text-primary
+    "
+  >
     {{ x }}
   </div>
 </template>

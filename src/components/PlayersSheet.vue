@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { Users } from 'lucide-vue-next'
 import Player from '@/components/Player.vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useGameDataStore } from '@/stores'
-import { Users } from 'lucide-vue-next'
 
 const gameDataStore = useGameDataStore()
 </script>
@@ -21,7 +21,7 @@ const gameDataStore = useGameDataStore()
       <SheetHeader class="mb-2">
         <SheetTitle>Players</SheetTitle>
       </SheetHeader>
-      <ScrollArea class="h-[calc(100%_-_30px)]">
+      <ScrollArea class="h-[calc(100%-30px)]">
         <div class="space-y-3">
           <Player
             v-for="player of gameDataStore.players" :key="player.guid"

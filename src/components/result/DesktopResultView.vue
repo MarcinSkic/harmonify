@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { PlayedTrack as TPlayedTrack } from '@/types'
+import { useElementBounding, useWindowSize } from '@vueuse/core'
+import { onMounted, ref } from 'vue'
 import GameResults from '@/components/result/GameResults.vue'
 import PlayedTrack from '@/components/result/PlayedTrack.vue'
 import { Button } from '@/components/ui/button'
@@ -8,8 +10,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { useSettingsStore } from '@/stores'
-import { useElementBounding, useWindowSize } from '@vueuse/core'
-import { onMounted, ref } from 'vue'
 
 defineProps<{
   selectablePlayers: {
@@ -58,9 +58,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="box-border grid h-full w-screen grid-cols-[650px_auto] grid-rows-[minmax(0,100%)_150px] place-content-center place-items-center gap-5 p-8">
+  <div
+    class="
+      box-border grid h-full w-screen grid-cols-[650px_auto]
+      grid-rows-[minmax(0,100%)_150px] place-content-center place-items-center
+      gap-5 p-8
+    "
+  >
     <Transition name="fade-left">
-      <div v-if="displayTracks" class="row-span-2 grid size-full grid-rows-[minmax(0,auto)_minmax(0,1fr)] gap-2">
+      <div
+        v-if="displayTracks" class="
+          row-span-2 grid size-full grid-rows-[minmax(0,auto)_minmax(0,1fr)]
+          gap-2
+        "
+      >
         <div class="flex items-center gap-2">
           <Label for="player">Player</Label>
           <Select v-model:model-value="selectedPlayer">
@@ -94,7 +105,9 @@ onMounted(() => {
     <div class="col-start-2 h-full max-h-full self-start">
       <GameResults
         ref="gameResultsEl"
-        :class="cn('max-h-full', settingsStore.playAnimations && 'game-results', !resultsAnimationPending && 'game-results-animation')"
+        :class="cn('max-h-full', settingsStore.playAnimations && 'game-results', !resultsAnimationPending && `
+          game-results-animation
+        `)"
         :is-desktop
         :animate="settingsStore.playAnimations"
         @animation-finished="emit('animationFinished')"

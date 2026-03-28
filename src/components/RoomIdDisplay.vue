@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/toast/use-toast'
 import { useClipboard } from '@vueuse/core'
 import { Copy } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
+import { toast } from 'vue-sonner'
+import { Button } from '@/components/ui/button'
 
 const route = useRoute()
 
 const { copy } = useClipboard()
-const { toast } = useToast()
-
 function copyId() {
   copy(new URL(route.fullPath, window.location.origin).href)
-  toast({ description: 'Room URL copied to clipboard!' })
+  toast.success('Room URL copied to clipboard!')
 }
 </script>
 

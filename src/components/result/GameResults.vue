@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { PlayerScoreDto } from '@/types'
+import { useIntervalFn } from '@vueuse/core'
+import confetti from 'canvas-confetti'
+import { computed, ref } from 'vue'
 import PlayerResult from '@/components/roundResult/PlayerResult.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { AnimationDuration } from '@/consts'
 import { useResultStore } from '@/stores'
-import { useIntervalFn } from '@vueuse/core'
-import confetti from 'canvas-confetti'
-import { computed, ref } from 'vue'
 
 const props = defineProps<{
   isDesktop: boolean
@@ -107,7 +107,9 @@ const { pause } = useIntervalFn(() => {
 
 <template>
   <ScrollArea class="max-h-full" :style="{ width: `${RESULTS_WIDTH}px`, height: resultsHeight, padding: isDesktop ? '0' : `${MOBILE_PADDING}px 0` }">
-    <TransitionGroup name="results" tag="div" class="flex h-full flex-col-reverse rounded-lg" :style="{ gap: `${RESULTS_GAP}px` }">
+    <TransitionGroup
+      name="results" tag="div" class="flex h-full flex-col-reverse rounded-lg" :style="{ gap: `${RESULTS_GAP}px` }"
+    >
       <PlayerResult
         v-for="playerResult in displayedResults"
         :key="playerResult.guid"

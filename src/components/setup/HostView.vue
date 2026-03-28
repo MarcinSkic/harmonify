@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import { useCookies } from '@vueuse/integrations/useCookies'
+import { computed, onBeforeMount, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { z } from 'zod'
 import GameDataForm from '@/components/setup/GameDataForm.vue'
 import SpotifyLibraryDisplay from '@/components/setup/SpotifyLibraryDisplay.vue'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SpotifyService } from '@/services'
 import { useConnectionStore, useGameDataStore, useMusicPlayerStore, useSpotifyLibraryStore } from '@/stores'
-import { useCookies } from '@vueuse/integrations/useCookies'
-import { computed, onBeforeMount, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { z } from 'zod'
 
 defineProps<{
   isDesktop: boolean
@@ -81,7 +81,13 @@ defineExpose({ disableLoading })
 </script>
 
 <template>
-  <form class="grid h-[80vh] max-h-[80vh] w-[80vw] lg:w-auto lg:grid-cols-[minmax(auto,600px)_270px] lg:grid-rows-[1fr_50px] lg:items-start lg:gap-5" @submit.prevent="handleGameStart">
+  <form
+    class="
+      grid h-[80vh] max-h-[80vh] w-[80vw]
+      lg:w-auto lg:grid-cols-[minmax(auto,600px)_270px] lg:grid-rows-[1fr_50px]
+      lg:items-start lg:gap-5
+    " @submit.prevent="handleGameStart"
+  >
     <Tabs v-if="!isDesktop" default-value="tracks">
       <TabsList class="w-full">
         <TabsTrigger value="tracks" class="flex-1">

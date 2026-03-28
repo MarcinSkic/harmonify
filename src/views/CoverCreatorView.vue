@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { Cover as CoverType } from '../types/'
+import { unrefElement } from '@vueuse/core'
+import { saveAs } from 'file-saver'
+import { toBlob } from 'html-to-image'
+import { ArrowLeft, Clipboard, CopyPlus, Download, Save } from 'lucide-vue-next'
+import { ref, useTemplateRef } from 'vue'
+import { RouterLink } from 'vue-router'
+import { toast } from 'vue-sonner'
 import ColorInput from '@/components/coverCreator/ColorInput.vue'
 import Cover from '@/components/coverCreator/Cover.vue'
 import CoversSheet from '@/components/coverCreator/CoversSheet.vue'
@@ -8,22 +15,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/ui/toast'
 import { DEFAULT_COVER } from '@/consts'
 import { useCoversStore } from '@/stores'
-import { unrefElement } from '@vueuse/core'
-import { saveAs } from 'file-saver'
-import { toBlob } from 'html-to-image'
-import { ArrowLeft, Clipboard, CopyPlus, Download, Save } from 'lucide-vue-next'
-import { ref, useTemplateRef } from 'vue'
-import { RouterLink } from 'vue-router'
 
 const cover = ref<CoverType>(DEFAULT_COVER)
 const coverImage = useTemplateRef('coverImage')
 const bottomColor = ref<string>('#18181b')
 const coversStore = useCoversStore()
-
-const { toast } = useToast()
 
 function setCover(selectedCover: CoverType) {
   cover.value = selectedCover
@@ -33,29 +31,21 @@ async function copyToClipboard() {
   const blob = await getCoverBlob()
 
   if (!blob) {
-    toast({
-      variant: 'destructive',
-      description: 'Could not copy, try again!',
-    })
+    toast.error('Could not copy, try again!')
     return
   }
 
   await navigator.clipboard.write([
     new ClipboardItem({ [blob.type]: blob }),
   ])
-  toast({
-    description: 'Cover copied to clipboard!',
-  })
+  toast.success('Cover copied to clipboard!')
 }
 
 async function download() {
   const blob = await getCoverBlob()
 
   if (!blob) {
-    toast({
-      variant: 'destructive',
-      description: 'Could not download, try again!',
-    })
+    toast.error('Could not download, try again!')
     return
   }
 
@@ -78,9 +68,7 @@ function save() {
 
   coversStore.savedCovers.push(cover.value)
 
-  toast({
-    description: duplicated ? 'Succesfully duplicated cover!' : 'Succesfully saved cover!',
-  })
+  toast.success(duplicated ? 'Succesfully duplicated cover!' : 'Succesfully saved cover!')
 }
 
 function getCoverNameOrDefault(cover: CoverType) {
@@ -98,8 +86,10 @@ async function getCoverBlob() {
 
 <template>
   <div class="grid justify-items-center">
-    <div class="relative w-full max-w-[1260px] p-4 pt-0">
-      <div class="sticky top-0 z-10 grid justify-center bg-gradient bg-fixed py-2">
+    <div class="relative w-full max-w-315 p-4 pt-0">
+      <div
+        class="sticky top-0 z-10 grid justify-center bg-gradient bg-fixed py-2"
+      >
         <div class="flex gap-2">
           <div>
             <Button variant="ghost" size="icon" as-child>
@@ -133,7 +123,7 @@ async function getCoverBlob() {
         </div>
       </div>
       <form class="grid gap-2">
-        <div class="mt-1 grid w-[300px] gap-1 justify-self-center text-center">
+        <div class="mt-1 grid w-75 gap-1 justify-self-center text-center">
           <Label>Name</Label>
           <Input v-model:model-value="cover.name" />
         </div>
@@ -142,7 +132,7 @@ async function getCoverBlob() {
             <Label>Main color</Label>
             <ColorInput v-model:model-value="cover.color" />
           </div>
-          <div class="grid w-fit justify-center gap-1 ">
+          <div class="grid w-fit justify-center gap-1">
             <Label>Bottom color</Label>
             <ColorInput v-model:model-value="bottomColor" />
           </div>

@@ -1,7 +1,7 @@
 import type { Message } from '@/types'
+import { defineStore } from 'pinia'
 import router from '@/router'
 import { messageSchema } from '@/types'
-import { defineStore } from 'pinia'
 import { useGameDataStore, useResultStore } from '.'
 
 export const useConnectionStore = defineStore('connection', {

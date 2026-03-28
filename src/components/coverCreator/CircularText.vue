@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CurvedText } from '@/types/'
-import { cn } from '@/lib/utils'
 import { computed, ref, watchEffect } from 'vue'
+import { cn } from '@/lib/utils'
 
 export interface CircularTextProps {
   centerX: number
