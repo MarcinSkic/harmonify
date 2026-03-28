@@ -6,5 +6,5 @@ import 'vue-sonner/style.css'
 
 <template>
   <RouterView />
-  <Toaster />
+  <Toaster theme="dark" />
 </template>
