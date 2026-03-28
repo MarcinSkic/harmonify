@@ -78,7 +78,7 @@ const selectedPlayer = defineModel<string>()
           </div>
 
           <ScrollArea v-if="displayTracks" class="h-full rounded-lg border">
-            <div class="w-[320px] space-y-4 divide-y py-4 ">
+            <div class="w-80 space-y-4 divide-y py-4 ">
               <PlayedTrack
                 v-for="playedTrack, idx of playedTracks"
                 :key="`${playedTrack.track.uri}-${idx}`"

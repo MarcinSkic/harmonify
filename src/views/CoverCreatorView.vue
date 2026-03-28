@@ -86,7 +86,7 @@ async function getCoverBlob() {
 
 <template>
   <div class="grid justify-items-center">
-    <div class="relative w-full max-w-[1260px] p-4 pt-0">
+    <div class="relative w-full max-w-315 p-4 pt-0">
       <div class="sticky top-0 z-10 grid justify-center bg-gradient bg-fixed py-2">
         <div class="flex gap-2">
           <div>
@@ -121,7 +121,7 @@ async function getCoverBlob() {
         </div>
       </div>
       <form class="grid gap-2">
-        <div class="mt-1 grid w-[300px] gap-1 justify-self-center text-center">
+        <div class="mt-1 grid w-75 gap-1 justify-self-center text-center">
           <Label>Name</Label>
           <Input v-model:model-value="cover.name" />
         </div>

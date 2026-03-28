@@ -13,7 +13,7 @@ cookies.remove('refresh_token')
     <h2 class="text-3xl">
       Disclaimer
     </h2>
-    <p class="max-w-[600px] text-lg">
+    <p class="max-w-150 text-lg">
       You are unable to create a room because your spotify account is not added to the developer dashboard (due to Spotify's ToS). However, you can still join rooms created by someone with the necessary privileges.
     </p>
     <RouterLink class="flex items-center gap-2 text-lg text-primary" :to="{ name: 'home' }">
