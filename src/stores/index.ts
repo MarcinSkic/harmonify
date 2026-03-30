@@ -1,6 +1,7 @@
 export { useConnectionStore } from './connection'
 export { useCoversStore } from './covers'
 export { useGameDataStore } from './gameData'
+export { useLibraryStore } from './library'
 export { useMusicPlayerStore } from './musicPlayer'
 export { useResultStore } from './result'
 export { useSettingsStore } from './settings'
