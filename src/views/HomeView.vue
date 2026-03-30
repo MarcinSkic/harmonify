@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useCookies } from '@vueuse/integrations/useCookies'
+import { Library } from 'lucide-vue-next'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PinInput, PinInputGroup, PinInputInput } from '@/components/ui/pin-input'
@@ -69,6 +70,14 @@ function connectToSpotify() {
         <span>Harmonify!</span>
       </h1>
     </header>
+    <nav class="mt-6">
+      <RouterLink to="/library">
+        <Button variant="outline" class="gap-2">
+          <Library class="size-4" />
+          Library
+        </Button>
+      </RouterLink>
+    </nav>
     <main class="mt-10 text-2xl font-bold">
       <div
         class="

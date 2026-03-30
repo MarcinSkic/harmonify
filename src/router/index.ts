@@ -39,6 +39,11 @@ const router = createRouter({
       ],
     },
     {
+      path: '/library',
+      name: 'library',
+      component: () => import('@/views/LibraryView.vue'),
+    },
+    {
       path: '/cover',
       name: 'cover',
       component: () => import(`@/views/CoverCreatorView.vue`),
