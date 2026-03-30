@@ -3,12 +3,12 @@ import { useCookies } from '@vueuse/integrations/useCookies'
 import { computed, onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { z } from 'zod'
-import GameDataForm from '@/components/setup/GameDataForm.vue'
-import SpotifyLibraryDisplay from '@/components/setup/SpotifyLibraryDisplay.vue'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SpotifyService } from '@/services'
 import { useConnectionStore, useGameDataStore, useMusicPlayerStore, useSpotifyLibraryStore } from '@/stores'
+import GameDataForm from './GameDataForm.vue'
+import SpotifyLibraryDisplay from './SpotifyLibraryDisplay.vue'
 
 defineProps<{
   isDesktop: boolean

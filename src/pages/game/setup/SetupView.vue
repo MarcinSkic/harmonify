@@ -6,12 +6,12 @@ import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import LoadingCircle from '@/components/LoadingCircle.vue'
 import Player from '@/components/Player.vue'
-import HostView from '@/components/setup/HostView.vue'
-import NicknameModal from '@/components/setup/NicknameModal.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Breakpoint } from '@/consts'
 import { cn } from '@/lib/utils'
 import { useConnectionStore, useGameDataStore, useResultStore } from '@/stores'
+import HostView from './components/HostView.vue'
+import NicknameModal from './components/NicknameModal.vue'
 
 const router = useRouter()
 const resultStore = useResultStore()
