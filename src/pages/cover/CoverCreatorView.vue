@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Cover as CoverType } from '../types/'
+import type { Cover as CoverType } from '@/types/'
 import { unrefElement } from '@vueuse/core'
 import { saveAs } from 'file-saver'
 import { toBlob } from 'html-to-image'
