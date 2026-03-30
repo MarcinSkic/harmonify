@@ -5,8 +5,8 @@ import { useCookies } from '@vueuse/integrations/useCookies'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { LOCAL_STORAGE } from '@/consts'
+import { useMusicPlayerStore } from '@/pages/game/stores'
 import { SpotifyService } from '@/services'
-import { useMusicPlayerStore } from '@/stores'
 
 declare global {
   interface Window {

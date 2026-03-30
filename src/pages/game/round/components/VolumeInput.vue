@@ -5,7 +5,7 @@ import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
-import { useMusicPlayerStore } from '@/stores'
+import { useMusicPlayerStore } from '@/pages/game/stores'
 
 const SCROLL_DELTA = -120
 const VOLUME_CHANGE_ON_SCROLL_TICK = 0.05

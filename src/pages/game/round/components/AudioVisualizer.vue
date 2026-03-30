@@ -5,7 +5,8 @@ import AudioMotionAnalyzer from 'audiomotion-analyzer'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { Breakpoint } from '@/consts'
 import { cn } from '@/lib/utils'
-import { useMusicPlayerStore, useSettingsStore } from '@/stores'
+import { useMusicPlayerStore } from '@/pages/game/stores'
+import { useSettingsStore } from '@/stores'
 
 const container = ref<HTMLDivElement | null>(null)
 const musicPlayerStore = useMusicPlayerStore()
