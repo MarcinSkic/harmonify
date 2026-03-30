@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CurvedText } from '@/types/'
+import type { CurvedText } from '../types'
 import { Input as CNInput } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CurvedText } from '@/types/'
+import type { CurvedText } from '../types'
 import { computed, ref, watchEffect } from 'vue'
 import { cn } from '@/lib/utils'
 

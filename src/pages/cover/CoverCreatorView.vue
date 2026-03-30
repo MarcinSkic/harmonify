@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Cover as CoverType } from '@/types/'
+import type { Cover as CoverType } from './types'
 import { unrefElement } from '@vueuse/core'
 import { saveAs } from 'file-saver'
 import { toBlob } from 'html-to-image'
@@ -12,11 +12,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DEFAULT_COVER } from '@/consts'
-import { useCoversStore } from '@/stores'
 import ColorInput from './components/ColorInput.vue'
 import Cover from './components/Cover.vue'
 import CoversSheet from './components/CoversSheet.vue'
 import CurvedTextForm from './components/CurvedTextForm.vue'
+import { useCoversStore } from './stores'
 
 const cover = ref<CoverType>(DEFAULT_COVER)
 const coverImage = useTemplateRef('coverImage')

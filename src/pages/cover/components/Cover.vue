@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { CurvedText } from '@/types/'
+import type { CurvedText } from '../types'
 import { toRefs } from '@vueuse/core'
 import convert from 'color-convert'
 import { computed, ref } from 'vue'

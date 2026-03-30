@@ -1,5 +1,5 @@
 import type { RemovableRef } from '@vueuse/core'
-import type { Cover } from '../types/'
+import type { Cover } from '../types'
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { LOCAL_STORAGE } from '@/consts'
