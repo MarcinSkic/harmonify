@@ -3,9 +3,9 @@ import type { PlayerScoreDto } from '@/types'
 import { useIntervalFn } from '@vueuse/core'
 import confetti from 'canvas-confetti'
 import { computed, ref } from 'vue'
-import { PlayerResult } from '@/components/playerResult'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { AnimationDuration } from '@/consts'
+import { PlayerResult } from '@/pages/game/components/playerResult'
 import { useResultStore } from '@/stores'
 
 const props = defineProps<{

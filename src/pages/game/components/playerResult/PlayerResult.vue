@@ -3,10 +3,10 @@ import type { PlayerScoreDto } from '@/types'
 import { TransitionPresets, useTransition } from '@vueuse/core'
 import { CircleUserRound } from 'lucide-vue-next'
 import { computed } from 'vue'
-import { GuessLevelIcon } from '@/components/guessLevelIcon'
-import { GuessDisplay } from '@/components/trackDisplay'
 import { AnimationDuration } from '@/consts'
 import { cn } from '@/lib/utils'
+import { GuessLevelIcon } from '@/pages/game/components/guessLevelIcon'
+import { GuessDisplay } from '@/pages/game/components/trackDisplay'
 import { useGameDataStore } from '@/stores'
 
 const props = defineProps<{

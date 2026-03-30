@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SpotifyPlayedTrack } from '@/types'
-import { GuessLevelIcon } from '@/components/guessLevelIcon'
-import { GuessDisplay, TrackDisplay } from '@/components/trackDisplay'
+import { GuessLevelIcon } from '@/pages/game/components/guessLevelIcon'
+import { GuessDisplay, TrackDisplay } from '@/pages/game/components/trackDisplay'
 
 defineProps<{
   playedTrack: SpotifyPlayedTrack
