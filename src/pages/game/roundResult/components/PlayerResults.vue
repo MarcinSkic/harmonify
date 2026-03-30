@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTimeout } from '@vueuse/core'
 import { computed } from 'vue'
-import PlayerResult from '@/components/PlayerResult.vue'
+import { PlayerResult } from '@/components/playerResult'
 import { useResultStore, useSettingsStore } from '@/stores'
 
 const props = defineProps<{

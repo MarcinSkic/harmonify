@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SpotifyPlayedTrack } from '@/types'
-import GuessLevelIcon from '@/components/GuessLevelIcon.vue'
+import { GuessLevelIcon } from '@/components/guessLevelIcon'
 import { GuessDisplay, TrackDisplay } from '@/components/trackDisplay'
 
 defineProps<{
