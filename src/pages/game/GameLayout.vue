@@ -2,14 +2,14 @@
 import { useWindowSize } from '@vueuse/core'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import PauseGameButton from '@/components/PauseGameButton.vue'
-import PlayersSheet from '@/components/PlayersSheet.vue'
-import PreviewPlayer from '@/components/PreviewPlayer.vue'
-import QuitGameButton from '@/components/QuitGameButton.vue'
-import RoomIdDisplay from '@/components/RoomIdDisplay.vue'
-import Settings from '@/components/Settings.vue'
 import { Breakpoint } from '@/consts'
 import { useGameDataStore } from '@/stores'
+import PauseGameButton from './components/PauseGameButton.vue'
+import PlayersSheet from './components/PlayersSheet.vue'
+import PreviewPlayer from './components/PreviewPlayer.vue'
+import QuitGameButton from './components/QuitGameButton.vue'
+import RoomIdDisplay from './components/RoomIdDisplay.vue'
+import Settings from './components/Settings.vue'
 
 const gameDataStore = useGameDataStore()
 const route = useRoute()
