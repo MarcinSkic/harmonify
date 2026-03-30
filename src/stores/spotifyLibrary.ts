@@ -1,5 +1,5 @@
 import type { Router } from 'vue-router'
-import type { SelectableAlbum, SelectablePlaylist, Track } from '@/types'
+import type { SpotifySelectableAlbum, SpotifySelectablePlaylist, SpotifyTrack } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { removeDuplicatedTracks } from '@/lib/track'
@@ -7,9 +7,9 @@ import { SpotifyService } from '@/services'
 
 export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
   const favouritesSelected = ref(false)
-  const favourites = ref<Track[]>()
-  const playlists = ref<SelectablePlaylist[]>()
-  const albums = ref<SelectableAlbum[]>()
+  const favourites = ref<SpotifyTrack[]>()
+  const playlists = ref<SpotifySelectablePlaylist[]>()
+  const albums = ref<SpotifySelectableAlbum[]>()
   const totalSelectedTracks = computed(() => {
     let count = 0
 
@@ -33,11 +33,11 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
     return tracks
   }
 
-  async function fetchTracksFromSelectedSets(access_token: string, router: Router): Promise<Track[]> {
+  async function fetchTracksFromSelectedSets(access_token: string, router: Router): Promise<SpotifyTrack[]> {
     if (!favourites.value && !playlists.value && !albums.value)
       throw new Error('Tried to fetch tracks before loaded any playlist or album')
 
-    let favouriteTracks: Track[] = []
+    let favouriteTracks: SpotifyTrack[] = []
 
     if (favouritesSelected.value)
       favouriteTracks = favourites.value ?? []

@@ -1,7 +1,7 @@
-import type { Track } from '@/types'
+import type { SpotifyTrack } from '@/types'
 
-export function removeDuplicatedTracks(tracks: Track[]) {
-  return tracks.reduce<Track[]>((filteredTracks, track) => {
+export function removeDuplicatedTracks(tracks: SpotifyTrack[]) {
+  return tracks.reduce<SpotifyTrack[]>((filteredTracks, track) => {
     if (!filteredTracks.some(someTrack => someTrack.uri === track.uri))
       filteredTracks.push(track)
 
@@ -9,7 +9,7 @@ export function removeDuplicatedTracks(tracks: Track[]) {
   }, [])
 }
 
-export function getArtistsAsString(track: Track) {
+export function getArtistsAsString(track: SpotifyTrack) {
   return track.artists
     .reduce((acc, artist) => {
       return `${acc}, ${artist.name}`

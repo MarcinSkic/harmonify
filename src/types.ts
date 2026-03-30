@@ -52,7 +52,7 @@ export const simplifiedTrackObjectSchema = z.object({
   duration_ms: z.number(),
   name: z.string(),
   uri: z.string(),
-  preview_url: z.string().url().nullable().optional(),
+  preview_url: z.url().nullable().optional(),
 })
 export type SimplifiedTrackObject = z.infer<typeof simplifiedTrackObjectSchema>
 
@@ -60,36 +60,36 @@ export type SimplifiedTrackObject = z.infer<typeof simplifiedTrackObjectSchema>
  * Spotify types extended with game logic
  */
 
-export const trackSchema = simplifiedTrackObjectSchema.extend({
-  preview_url: z.string().url(),
+export const spotifyTrackSchema = simplifiedTrackObjectSchema.extend({
+  preview_url: z.url(),
   album: z.object({
     name: z.string(),
     images: z.array(imageObjectSchema),
   }),
   guess: z.string().optional(),
 })
-export type Track = z.infer<typeof trackSchema>
+export type SpotifyTrack = z.infer<typeof spotifyTrackSchema>
 
 export const guessLevelSchema = z.enum(['full', 'album', 'artist', 'none', 'disconnected'])
 export type GuessLevel = z.infer<typeof guessLevelSchema>
 
-export const playedTrackSchema = z.object({
-  track: trackSchema,
+export const spotifyPlayedTrackSchema = z.object({
+  track: spotifyTrackSchema,
   userGuess: z.string(),
   guessLevel: guessLevelSchema,
   score: z.number(),
 })
-export type PlayedTrack = z.infer<typeof playedTrackSchema>
+export type SpotifyPlayedTrack = z.infer<typeof spotifyPlayedTrackSchema>
 
-export const selectablePlaylistSchema = simplePlaylistObjectSchema.extend({
+export const spotifySelectablePlaylistSchema = simplePlaylistObjectSchema.extend({
   selected: z.boolean(),
 })
-export type SelectablePlaylist = z.infer<typeof selectablePlaylistSchema>
+export type SpotifySelectablePlaylist = z.infer<typeof spotifySelectablePlaylistSchema>
 
-export const selectableAlbumSchema = getAlbumSchema(trackSchema).extend({
+export const spotifySelectableAlbumSchema = getAlbumSchema(spotifyTrackSchema).extend({
   selected: z.boolean(),
 })
-export type SelectableAlbum = z.infer<typeof selectableAlbumSchema>
+export type SpotifySelectableAlbum = z.infer<typeof spotifySelectableAlbumSchema>
 
 /**
  * Harmonify API
@@ -97,7 +97,7 @@ export type SelectableAlbum = z.infer<typeof selectableAlbumSchema>
 
 export const createdGameDtoSchema = z.object({
   gameId: z.string().length(4),
-  hostGuid: z.string().uuid(),
+  hostGuid: z.uuid(),
   nickname: z.string(),
 })
 export type CreatedGameDto = z.infer<typeof createdGameDtoSchema>
@@ -125,7 +125,7 @@ export const gameStartedDtoSchema = z.object({
   roundStartTimestamp: z.number(),
   trackStart_ms: z.number(),
   uri: z.string(),
-  preview_url: z.string().url(),
+  preview_url: z.url(),
 })
 export type GameStartedDto = z.infer<typeof gameStartedDtoSchema>
 
@@ -141,7 +141,7 @@ export const roundStartedDto = z.object({
   roundStartTimestamp: z.number(),
   trackStart_ms: z.number(),
   uri: z.string(),
-  preview_url: z.string().url(),
+  preview_url: z.url(),
 })
 export type RoundStartedDto = z.infer<typeof roundStartedDto>
 
@@ -163,13 +163,13 @@ export const playerScoreDtoSchema = z.object({
 export type PlayerScoreDto = z.infer<typeof playerScoreDtoSchema>
 
 export const roundFinishedDto = z.object({
-  track: trackSchema,
+  track: spotifyTrackSchema,
   players: z.array(playerScoreDtoSchema),
 })
 export type RoundFinishedDto = z.infer<typeof roundFinishedDto>
 
 export const endGameResultsDtoSchema = z.object({
-  tracks: z.array(trackSchema),
+  tracks: z.array(spotifyTrackSchema),
   players: z.array(playerScoreDtoSchema),
 })
 export type EndGameResultsDto = z.infer<typeof endGameResultsDtoSchema>
@@ -196,7 +196,7 @@ export const messageSchema = z.discriminatedUnion('$type', [
     $type: z.literal(`${messageTypeString}/startGameDto`),
     type: z.literal('startGame'),
     data: z.object({
-      tracks: z.array(trackSchema),
+      tracks: z.array(spotifyTrackSchema),
       gameSettings: gameSettingsDtoSchema,
     }),
   }),

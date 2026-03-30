@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Track } from '@/types'
+import type { SpotifyTrack } from '@/types'
 import { getArtistsAsString } from '@/lib/track'
 import BaseDisplay from './BaseDisplay.vue'
 
 defineProps<{
-  track: Track
+  track: SpotifyTrack
 }>()
 </script>
 

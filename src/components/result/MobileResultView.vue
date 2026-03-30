@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PlayedTrack as TPlayedTrack } from '@/types'
+import type { SpotifyPlayedTrack as TPlayedTrack } from '@/types'
 import GameResults from '@/components/result/GameResults.vue'
 import PlayedTrack from '@/components/result/PlayedTrack.vue'
 import { Button } from '@/components/ui/button'
