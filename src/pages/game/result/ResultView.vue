@@ -3,10 +3,10 @@ import type { SpotifyPlayedTrack as TPlayedTrack } from '@/types'
 import { useWindowSize, whenever } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import DesktopResultView from '@/components/result/DesktopResultView.vue'
-import MobileResultView from '@/components/result/MobileResultView.vue'
 import { AnimationDuration, Breakpoint } from '@/consts'
 import { useConnectionStore, useGameDataStore, useResultStore, useSettingsStore } from '@/stores'
+import DesktopResultView from './components/DesktopResultView.vue'
+import MobileResultView from './components/MobileResultView.vue'
 
 const resultStore = useResultStore()
 const gameDataStore = useGameDataStore()

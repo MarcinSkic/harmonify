@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { SpotifyPlayedTrack as TPlayedTrack } from '@/types'
-import GameResults from '@/components/result/GameResults.vue'
-import PlayedTrack from '@/components/result/PlayedTrack.vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSettingsStore } from '@/stores'
+import GameResults from './GameResults.vue'
+import PlayedTrack from './PlayedTrack.vue'
 
 defineProps<{
   selectablePlayers: {

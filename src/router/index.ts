@@ -12,7 +12,7 @@ const router = createRouter({
     },
     {
       path: '/game',
-      component: () => import('@/pages/game/GameLayout.vue'),
+      component: () => import('@/pages/game/layout/GameLayout.vue'),
       beforeEnter: beforeGameEnter,
       children: [
         {

@@ -2,11 +2,11 @@
 import type { HTMLAttributes } from 'vue'
 import { Repeat, Repeat1 } from 'lucide-vue-next'
 import { computed } from 'vue'
-import NoRepeat from '@/components/round/NoRepeat.vue'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useSettingsStore } from '@/stores'
+import NoRepeat from './NoRepeat.vue'
 
 const props = defineProps<{
   class?: HTMLAttributes['class']

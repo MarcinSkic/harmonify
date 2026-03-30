@@ -3,12 +3,12 @@ import { useIntervalFn } from '@vueuse/core'
 import { onBeforeMount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import AudioVisualizer from '@/components/AudioVisualizer.vue'
-import CircularTimer from '@/components/round/CircularTimer.vue'
-import PlaybackControls from '@/components/round/PlaybackControls.vue'
-import SearchInput from '@/components/round/SearchInput.vue'
 import { Button } from '@/components/ui/button'
 import { useConnectionStore, useGameDataStore, useResultStore } from '@/stores'
+import AudioVisualizer from './components/AudioVisualizer.vue'
+import CircularTimer from './components/CircularTimer.vue'
+import PlaybackControls from './components/PlaybackControls.vue'
+import SearchInput from './components/SearchInput.vue'
 
 const router = useRouter()
 const gameDataStore = useGameDataStore()

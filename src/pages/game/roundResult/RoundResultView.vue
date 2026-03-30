@@ -2,13 +2,13 @@
 import { useWindowSize } from '@vueuse/core'
 import { computed, onBeforeMount } from 'vue'
 import { useRouter } from 'vue-router'
-import LoadingIndicator from '@/components/roundResult/LoadingIndicator.vue'
-import PauseBackdrop from '@/components/roundResult/PauseBackdrop.vue'
-import PlayerResults from '@/components/roundResult/PlayerResults.vue'
 import { GuessDisplay, TrackDisplay } from '@/components/trackDisplay'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Breakpoint } from '@/consts'
 import { useConnectionStore, useGameDataStore, useResultStore } from '@/stores'
+import LoadingIndicator from './components/LoadingIndicator.vue'
+import PauseBackdrop from './components/PauseBackdrop.vue'
+import PlayerResults from './components/PlayerResults.vue'
 
 const router = useRouter()
 const gameDataStore = useGameDataStore()

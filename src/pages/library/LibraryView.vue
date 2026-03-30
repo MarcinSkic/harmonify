@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import LibraryHeader from '@/components/library/LibraryHeader.vue'
-import PlaylistSidebar from '@/components/library/PlaylistSidebar.vue'
-import TrackTable from '@/components/library/TrackTable.vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import LibraryHeader from './components/LibraryHeader.vue'
+import PlaylistSidebar from './components/PlaylistSidebar.vue'
+import TrackTable from './components/TrackTable.vue'
 
 const mobileTab = ref('tracks')
 </script>

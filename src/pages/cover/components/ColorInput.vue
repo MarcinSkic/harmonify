@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import { Input as CNInput } from '../ui/input'
+import { Input as CNInput } from '@/components/ui/input'
 
 const model = defineModel<string>()
 const input = useTemplateRef('input')
