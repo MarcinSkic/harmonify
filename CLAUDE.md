@@ -29,30 +29,40 @@ pnpm test:e2e:dev       # E2E tests against dev server
 pnpm cypress run --spec "cypress/e2e/[file].cy.ts"  # Single e2e test
 ```
 
-## Project Structure
+## Architecture — Vertical Slices
+
+The codebase is organized by **vertical slices** under `src/pages/`. Each slice owns its components, stores, types, and services. Shared code lives at `src/` level.
+
+- **Slice-local code** (used only within one slice) → `src/pages/<slice>/` (components, stores, types)
+- **Shared code** (used across slices) → `src/` level (stores, types, lib, services, components/ui)
+- When a slice-local module starts being used by another slice, **promote it** to `src/`
 
 ```
 src/
-├── types.ts              # Zod schemas + inferred TS types (Spotify API, WebSocket messages, game DTOs)
-├── types/                # Additional types (coverCreator.types.ts)
+├── types/                # Shared Zod schemas + TS types, split by domain (spotify, game, message)
 ├── consts.ts             # LocalStorage keys, animation durations, responsive breakpoints
-├── stores/               # Pinia stores by domain (connection, gameData, musicPlayer, result, settings, spotifyLibrary, covers)
-├── services/spotify.ts   # Spotify Web API service functions (stateless, namespace-exported)
-├── lib/spotify.ts        # Low-level fetch wrapper (auth headers, token refresh, pagination)
-├── lib/track.ts          # Track utility functions
-├── lib/utils.ts          # cn() Tailwind class merge utility
-├── router/index.ts       # Routes + beforeGameEnter guard (WebSocket connection setup)
-├── views/                # Page-level components (Home, GameLayout, CoverCreator, game/*)
-├── components/           # Reusable components organized by feature
-│   ├── ui/               # shadcn-vue primitives (button, dialog, toast, etc.)
-│   ├── round/            # In-game round UI (timer, search, playback)
-│   ├── roundResult/      # Round result display
-│   ├── result/           # Final game result (Desktop/Mobile variants)
-│   ├── setup/            # Game setup UI (host view, nickname, library)
-│   ├── coverCreator/     # Cover Creator components
-│   └── trackDisplay/     # Track/guess display components
+├── stores/               # Shared Pinia stores (connection, gameData, result, library)
+├── services/             # Shared services (spotify, library)
+├── lib/                  # Shared utilities (spotify fetch wrapper, track utils, cn())
+├── composables/          # Shared composables
+├── router/index.ts       # Routes + beforeGameEnter guard
+├── components/ui/        # shadcn-vue primitives (button, dialog, toast, etc.)
+├── pages/
+│   ├── game/             # Game slice
+│   │   ├── components/   # Game-only components (player, trackDisplay, guessLevelIcon, playerResult)
+│   │   ├── stores/       # Game-only stores (musicPlayer, settings, spotifyLibrary)
+│   │   ├── types.ts      # Game-only types (SpotifyPlayedTrack, MusicPlayer)
+│   │   ├── setup/        # Game setup view
+│   │   ├── round/        # In-game round view
+│   │   ├── roundResult/  # Round result view
+│   │   ├── result/       # Final result view
+│   │   └── layout/       # Game layout wrapper
+│   ├── cover/            # Cover Creator slice (own stores, types, components)
+│   ├── home/             # Home slice
+│   ├── library/          # Library slice
+│   └── disclaimer/       # Disclaimer slice
 api/
-└── token/                # Vercel serverless functions for Spotify OAuth (request, callback, refresh, expired)
+└── token/                # Vercel serverless functions for Spotify OAuth
 ```
 
 ## Environment Variables
@@ -67,7 +77,7 @@ api/
 - **Store access**: import from `@/stores` barrel, not individual store files
 - **Service access**: use `SpotifyService.method()` namespace pattern via `@/services` barrel
 - **Path alias**: `@/` maps to `src/`
-- **WebSocket messages**: validated with `messageSchema` discriminated union on `$type` field (`src/types.ts:180`)
+- **WebSocket messages**: validated with `messageSchema` discriminated union on `$type` field (`src/types/message.ts`)
 - **Audio playback**: abstracted via `MusicPlayer` interface — two implementations (Spotify SDK, HTML audio)
 
 ## Additional Documentation
