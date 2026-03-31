@@ -8,6 +8,7 @@ function makeTrack(overrides: Partial<Omit<Track, 'id' | 'createdAt'>> = {}): Om
     sourceId: 'src-1',
     name: 'Test Track',
     artists: ['Artist A'],
+    durationMs: 180000,
     albumName: 'Album X',
     tags: [],
     playlistIds: [],

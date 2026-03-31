@@ -16,6 +16,7 @@ export const trackSchema = z.object({
   artists: z.array(z.string()),
   albumName: z.string(),
   albumImageUrl: z.string().optional(),
+  durationMs: z.number(),
   audioUrl: z.string().optional(),
   playbackRange: playbackRangeSchema.nullable(),
   tags: z.array(z.string()),

@@ -10,8 +10,26 @@ const audioContext = ref(new AudioContext())
 
 const { playing, currentTime, volume } = useMediaControls(audioEl)
 
+const musicServerUrl = import.meta.env.VITE_MUSIC_SERVER_URL ?? ''
+const musicServerUser = import.meta.env.VITE_MUSIC_SERVER_USER ?? ''
+const musicServerPassword = import.meta.env.VITE_MUSIC_SERVER_PASSWORD ?? ''
+
+function needsAuth(url: string): boolean {
+  return musicServerUrl !== '' && url.startsWith(musicServerUrl)
+}
+
+// TODO: Maybe create seperate player for playing authenticated audio
+async function fetchAuthenticatedAudio(url: string): Promise<string> {
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Basic ${btoa(`${musicServerUser}:${musicServerPassword}`)}`,
+    },
+  })
+  const blob = await response.blob()
+  return URL.createObjectURL(blob)
+}
+
 onMounted(() => {
-  // Volume is controlled by AudioVisualizer
   volume.value = 1
   musicPlayerStore.audioSource = audioContext.value.createMediaElementSource(audioEl.value!)
 })
@@ -19,7 +37,13 @@ onMounted(() => {
 musicPlayerStore.player = {
   async _turnOn() {},
   async _play(playData) {
-    src.value = playData.uri
+    if (src.value?.startsWith('blob:'))
+      URL.revokeObjectURL(src.value)
+
+    src.value = needsAuth(playData.uri)
+      ? await fetchAuthenticatedAudio(playData.uri)
+      : playData.uri
+
     await nextTick()
     currentTime.value = playData.trackStart_ms / 1000
     playing.value = true
@@ -34,7 +58,6 @@ musicPlayerStore.player = {
     playing.value = true
   },
   async _setVolume(_newVolume) {
-    // Volume is controlled by AudioVisualizer
     volume.value = 1
   },
 }

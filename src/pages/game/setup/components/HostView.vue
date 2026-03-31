@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { useCookies } from '@vueuse/integrations/useCookies'
-import { computed, onBeforeMount, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { z } from 'zod'
-import SpotifyLibraryDisplay from '@/components/spotify/SpotifyLibraryDisplay.vue'
+import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMusicPlayerStore } from '@/pages/game/stores'
-import { SpotifyService } from '@/services'
-import { useConnectionStore, useGameDataStore, useSpotifyLibraryStore } from '@/stores'
+import { LibraryImportService } from '@/services'
+import { useConnectionStore, useGameDataStore, useLibraryStore } from '@/stores'
 import GameDataForm from './GameDataForm.vue'
+import LibraryTrackPicker from './LibraryTrackPicker.vue'
 
 defineProps<{
   isDesktop: boolean
@@ -17,20 +14,9 @@ defineProps<{
 
 const isLoading = ref(false)
 const musicPlayerStore = useMusicPlayerStore()
-const spotifyLibraryStore = useSpotifyLibraryStore()
-const router = useRouter()
-const cookies = useCookies()
-const access_token = cookies.get('access_token')
+const libraryStore = useLibraryStore()
 const connectionStore = useConnectionStore()
 const gameData = useGameDataStore()
-
-async function loadData() {
-  const access_token = z.string().parse(cookies.get('access_token'))
-
-  spotifyLibraryStore.favourites = await SpotifyService.getTracksFromFavourites(access_token, router)
-  spotifyLibraryStore.playlists = await SpotifyService.getPlaylists(access_token, router)
-  spotifyLibraryStore.albums = await SpotifyService.getAlbums(access_token, router)
-}
 
 async function handleGameStart() {
   if (!musicPlayerStore.ready)
@@ -39,12 +25,14 @@ async function handleGameStart() {
   isLoading.value = true
 
   await musicPlayerStore.turnOn()
-  const tracks = await spotifyLibraryStore.getTracksFromSelectedSets(access_token, router)
+
+  const spotifyTracks = libraryStore.tracks.map(t => LibraryImportService.trackToSpotifyTrack(t))
+
   connectionStore.sendMessage({
     $type: 'message/startGameDto',
     type: 'startGame',
     data: {
-      tracks,
+      tracks: spotifyTracks,
       gameSettings: gameData.gameSettings,
     },
   })
@@ -54,25 +42,13 @@ function disableLoading() {
   isLoading.value = false
 }
 
-onBeforeMount(() => {
-  loadData()
-})
-
-const selectedAnything = computed(() => {
-  return spotifyLibraryStore.playlists?.some(i => i.selected)
-    || spotifyLibraryStore.albums?.some(i => i.selected)
-    || spotifyLibraryStore.favouritesSelected
-})
-
-const selectedAnyTrack = computed(() => selectedAnything.value && spotifyLibraryStore.totalSelectedTracks !== 0)
+const hasTracksSelected = computed(() => libraryStore.tracks.length > 0)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)
     return 'Connecting...'
-  else if (!selectedAnything.value)
-    return 'Select tracks'
-  else if (!selectedAnyTrack.value)
-    return 'Selected empty playlists'
+  else if (!hasTracksSelected.value)
+    return 'Select a playlist'
   else if (isLoading.value)
     return 'Loading...'
   else return 'Play!'
@@ -92,34 +68,26 @@ defineExpose({ disableLoading })
     <Tabs v-if="!isDesktop" default-value="tracks">
       <TabsList class="w-full">
         <TabsTrigger value="tracks" class="flex-1">
-          Playlists & Albums
+          Library
         </TabsTrigger>
         <TabsTrigger value="settings" class="flex-1">
           Game settings
         </TabsTrigger>
       </TabsList>
       <TabsContent value="tracks" class="h-[60vh]">
-        <SpotifyLibraryDisplay
-          v-model:favourites-selected="spotifyLibraryStore.favouritesSelected"
-          :playlists="spotifyLibraryStore.playlists"
-          :albums="spotifyLibraryStore.albums"
-        />
+        <LibraryTrackPicker />
       </TabsContent>
       <TabsContent value="settings" class="h-[60vh]">
         <GameDataForm />
       </TabsContent>
     </Tabs>
     <template v-else>
-      <SpotifyLibraryDisplay
-        v-model:favourites-selected="spotifyLibraryStore.favouritesSelected"
-        :playlists="spotifyLibraryStore.playlists"
-        :albums="spotifyLibraryStore.albums"
-      />
+      <LibraryTrackPicker />
       <GameDataForm />
     </template>
     <Button
       class="min-w-32 place-self-center"
-      :disabled="!musicPlayerStore.player || !selectedAnyTrack || isLoading"
+      :disabled="!musicPlayerStore.player || !hasTracksSelected || isLoading"
       type="submit"
     >
       {{ startButtonText }}

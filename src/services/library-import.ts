@@ -5,11 +5,26 @@ import { LibraryService, SpotifyService } from '@/services'
 
 type NewTrack = Omit<Track, 'id' | 'createdAt'>
 
+export function trackToSpotifyTrack(track: Track): SpotifyTrack {
+  return {
+    uri: track.audioUrl ?? track.sourceId,
+    name: track.name,
+    artists: track.artists.map(name => ({ name, id: name })),
+    duration_ms: track.durationMs,
+    album: {
+      name: track.albumName,
+      images: track.albumImageUrl ? [{ url: track.albumImageUrl, height: null, width: null }] : [],
+    },
+    preview_url: track.audioUrl ?? null,
+  }
+}
+
 export function spotifyTrackToTrack(track: SpotifyTrack, playlistIds: string[]): NewTrack {
   return {
     sourceId: track.uri,
     name: track.name,
     artists: track.artists.map(a => a.name),
+    durationMs: track.duration_ms,
     albumName: track.album.name,
     albumImageUrl: track.album.images[0]?.url,
     audioUrl: track.preview_url ?? undefined,

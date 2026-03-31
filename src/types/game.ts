@@ -56,7 +56,7 @@ export const gameStartedDtoSchema = z.object({
   roundStartTimestamp: z.number(),
   trackStart_ms: z.number(),
   uri: z.string(),
-  preview_url: z.url(),
+  preview_url: z.string(),
 })
 export type GameStartedDto = z.infer<typeof gameStartedDtoSchema>
 
@@ -72,7 +72,7 @@ export const roundStartedDto = z.object({
   roundStartTimestamp: z.number(),
   trackStart_ms: z.number(),
   uri: z.string(),
-  preview_url: z.url(),
+  preview_url: z.string(),
 })
 export type RoundStartedDto = z.infer<typeof roundStartedDto>
 
