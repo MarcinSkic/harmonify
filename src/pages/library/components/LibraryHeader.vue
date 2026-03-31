@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Download } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useLibraryStore } from '@/stores'
+
+defineEmits<{
+  spotifyImport: []
+}>()
 
 const libraryStore = useLibraryStore()
 </script>
@@ -23,5 +27,15 @@ const libraryStore = useLibraryStore()
         {{ libraryStore.tracks.length }} {{ libraryStore.tracks.length === 1 ? 'track' : 'tracks' }}
       </p>
     </div>
+
+    <Button variant="outline" class="gap-2" @click="$emit('spotifyImport')">
+      <Download class="size-4" />
+      <span
+        class="
+          hidden
+          sm:inline
+        "
+      >Import from Spotify</span>
+    </Button>
   </header>
 </template>

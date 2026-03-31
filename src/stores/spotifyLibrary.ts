@@ -18,7 +18,7 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
 
     count += playlists.value
       ?.filter(p => p.selected)
-      .reduce((acc, p) => acc + p.tracks.total, 0) ?? 0
+      .reduce((acc, p) => acc + p.items.total, 0) ?? 0
 
     count += albums.value
       ?.filter(p => p.selected)

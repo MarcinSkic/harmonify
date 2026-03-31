@@ -26,7 +26,7 @@ export interface Album<T> {
   id: string
   images: ImageObject[]
   name: string
-  tracks: {
+  items: {
     items: T[]
   }
 }
@@ -35,7 +35,7 @@ export const simplePlaylistObjectSchema = z.object({
   id: z.string(),
   images: z.array(imageObjectSchema).nullable(),
   name: z.string(),
-  tracks: z.object({
+  items: z.object({
     href: z.string(),
     total: z.number(),
   }),
