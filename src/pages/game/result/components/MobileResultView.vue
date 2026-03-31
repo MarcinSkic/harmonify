@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SpotifyPlayedTrack as TPlayedTrack } from '@/types'
+import type { SpotifyPlayedTrack as TPlayedTrack } from '@/pages/game/types'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'

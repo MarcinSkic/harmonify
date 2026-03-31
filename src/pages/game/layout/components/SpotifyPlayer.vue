@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MusicPlayer } from '@/types'
+import type { MusicPlayer } from '@/pages/game/types'
 import { useStorage } from '@vueuse/core'
 import { useCookies } from '@vueuse/integrations/useCookies'
 import { onMounted, ref } from 'vue'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SpotifyPlayedTrack as TPlayedTrack } from '@/types'
+import type { SpotifyPlayedTrack as TPlayedTrack } from '@/pages/game/types'
 import { useElementBounding, useWindowSize } from '@vueuse/core'
 import { onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'

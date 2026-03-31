@@ -1,5 +1,6 @@
 import type { RemovableRef } from '@vueuse/core'
-import type { MusicPlayData, MusicPlayer } from '@/types'
+import type { MusicPlayer } from '@/pages/game/types'
+import type { MusicPlayData } from '@/types'
 import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { LOCAL_STORAGE } from '@/consts'

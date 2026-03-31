@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SpotifyPlayedTrack as TPlayedTrack } from '@/types'
+import type { SpotifyPlayedTrack as TPlayedTrack } from '@/pages/game/types'
 import { useWindowSize, whenever } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'

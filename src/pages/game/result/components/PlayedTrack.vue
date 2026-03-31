@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SpotifyPlayedTrack } from '@/types'
+import type { SpotifyPlayedTrack } from '@/pages/game/types'
 import { GuessLevelIcon } from '@/pages/game/components/guessLevelIcon'
 import { GuessDisplay, TrackDisplay } from '@/pages/game/components/trackDisplay'
 
