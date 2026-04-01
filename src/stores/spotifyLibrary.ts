@@ -26,6 +26,7 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
 
     return count
   })
+  const hasData = computed(() => !!favourites || !!playlists || !!albums)
 
   async function getTracksFromSelectedSets(access_token: string, router: Router) {
     let tracks = await fetchTracksFromSelectedSets(access_token, router)
@@ -48,5 +49,5 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
     return [...favouriteTracks, ...playlistsTracks, ...albumTracks]
   }
 
-  return { favourites, favouritesSelected, playlists, albums, totalSelectedTracks, getTracksFromSelectedSets }
+  return { favourites, favouritesSelected, playlists, albums, totalSelectedTracks, hasData, getTracksFromSelectedSets }
 })

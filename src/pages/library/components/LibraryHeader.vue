@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { ArrowLeft, Download } from 'lucide-vue-next'
+import { ArrowLeft, Download, Server } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import { MusicServerService } from '@/services'
 import { useLibraryStore } from '@/stores'
 
 defineEmits<{
   spotifyImport: []
+  serverImport: []
 }>()
 
 const libraryStore = useLibraryStore()
+const serverConfigured = MusicServerService.isConfigured()
 </script>
 
 <template>
@@ -28,14 +31,25 @@ const libraryStore = useLibraryStore()
       </p>
     </div>
 
-    <Button variant="outline" class="gap-2" @click="$emit('spotifyImport')">
-      <Download class="size-4" />
-      <span
-        class="
-          hidden
-          sm:inline
-        "
-      >Import from Spotify</span>
-    </Button>
+    <div class="flex gap-2">
+      <Button v-if="serverConfigured" variant="outline" class="gap-2" @click="$emit('serverImport')">
+        <Server class="size-4" />
+        <span
+          class="
+            hidden
+            sm:inline
+          "
+        >Music server</span>
+      </Button>
+      <Button variant="outline" class="gap-2" @click="$emit('spotifyImport')">
+        <Download class="size-4" />
+        <span
+          class="
+            hidden
+            sm:inline
+          "
+        >Spotify</span>
+      </Button>
+    </div>
   </header>
 </template>

@@ -95,5 +95,5 @@ const favouritesSelected = defineModel<boolean>('favouritesSelected', { required
         </template>
       </div>
     </div>
-  </scrollarea>
+  </ScrollArea>
 </template>

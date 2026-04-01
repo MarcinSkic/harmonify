@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useCookies } from '@vueuse/integrations/useCookies'
 import { Loader2 } from 'lucide-vue-next'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import SpotifyLibraryDisplay from '@/components/spotify/SpotifyLibraryDisplay.vue'
 import { Button } from '@/components/ui/button'
-import { LibraryImportService, SpotifyService } from '@/services'
+import { useLoadSpotifyLibrary } from '@/composables/useLoadSpotifyLibrary'
+import { LibraryImportService } from '@/services'
 import { useSpotifyLibraryStore } from '@/stores'
 
 const emit = defineEmits<{
@@ -18,26 +19,7 @@ const cookies = useCookies()
 const spotifyLibraryStore = useSpotifyLibraryStore()
 
 const isImporting = ref(false)
-const loadError = ref(false)
-
-onMounted(async () => {
-  try {
-    const accessToken = cookies.get('access_token')
-    const [fav, pl, al] = await Promise.all([
-      SpotifyService.getTracksFromFavourites(accessToken, router),
-      SpotifyService.getPlaylists(accessToken, router),
-      SpotifyService.getAlbums(accessToken, router),
-    ])
-    spotifyLibraryStore.favourites = fav
-    spotifyLibraryStore.playlists = pl
-    spotifyLibraryStore.albums = al
-  }
-  catch (e) {
-    loadError.value = true
-    console.error(e)
-    toast.error('Failed to load Spotify library')
-  }
-})
+const { isLoadError } = useLoadSpotifyLibrary()
 
 async function handleImport() {
   isImporting.value = true
@@ -64,7 +46,7 @@ async function handleImport() {
 </script>
 
 <template>
-  <template v-if="!loadError">
+  <template v-if="!isLoadError">
     <SpotifyLibraryDisplay v-model:favourites-selected="spotifyLibraryStore.favouritesSelected" />
 
     <div class="flex justify-end pt-2">
