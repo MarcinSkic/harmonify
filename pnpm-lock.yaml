@@ -47,6 +47,9 @@ importers:
       lucide-vue-next:
         specifier: ^0.483.0
         version: 0.483.0(vue@3.5.30(typescript@5.8.3))
+      papaparse:
+        specifier: ^5.5.3
+        version: 5.5.3
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.8.3)(vue@3.5.30(typescript@5.8.3))
@@ -96,6 +99,9 @@ importers:
       '@types/node':
         specifier: ^22.19.15
         version: 22.19.15
+      '@types/papaparse':
+        specifier: ^5.5.2
+        version: 5.5.2
       '@vercel/node':
         specifier: ^5.6.18
         version: 5.6.18(rollup@4.60.0)
@@ -1370,6 +1376,9 @@ packages:
 
   '@types/node@22.19.15':
     resolution: {integrity: sha512-F0R/h2+dsy5wJAUe3tAU6oqa2qbWY5TpNfL/RGmo1y38hiyO1w3x2jPtt76wmuaJI4DQnOBu21cNXQ2STIUUWg==}
+
+  '@types/papaparse@5.5.2':
+    resolution: {integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==}
 
   '@types/sinonjs__fake-timers@8.1.1':
     resolution: {integrity: sha512-0kSuKjAS0TrGLJ0M/+8MaFkGsQhZpB6pxOmvS3K8FYI72K//YmdfoW9X2qPsAKh1mkwxGD5zib9s1FIFed6E8g==}
@@ -3485,6 +3494,9 @@ packages:
   package-manager-detector@1.6.0:
     resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
 
+  papaparse@5.5.3:
+    resolution: {integrity: sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==}
+
   parse-gitignore@2.0.0:
     resolution: {integrity: sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog==}
     engines: {node: '>=14'}
@@ -5356,6 +5368,10 @@ snapshots:
   '@types/node@22.19.15':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/papaparse@5.5.2':
+    dependencies:
+      '@types/node': 22.19.15
 
   '@types/sinonjs__fake-timers@8.1.1': {}
 
@@ -7849,6 +7865,8 @@ snapshots:
   package-json-from-dist@1.0.1: {}
 
   package-manager-detector@1.6.0: {}
+
+  papaparse@5.5.3: {}
 
   parse-gitignore@2.0.0: {}
 

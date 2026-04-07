@@ -1,4 +1,4 @@
-import type { Playlist, Track } from '@/db/schemas'
+import type { Playlist, Track, TrackAnnotation } from '@/db/schemas'
 import { db } from '@/db'
 
 type NewPlaylist = Omit<Playlist, 'id' | 'createdAt'>
@@ -64,6 +64,34 @@ export async function getTracksByPlaylist(playlistId: string): Promise<Track[]> 
 
 export async function getTracksByTag(tag: string): Promise<Track[]> {
   return db.tracks.where('tags').equals(tag).toArray()
+}
+
+export interface CSVApplyResult {
+  updated: number
+  notFound: string[]
+}
+
+export async function applyCSVToPlaylist(
+  playlistId: string,
+  rows: TrackAnnotation[],
+): Promise<CSVApplyResult> {
+  const tracks = await db.tracks.where('playlistIds').equals(playlistId).toArray()
+  const bySourceId = new Map(tracks.map(t => [t.sourceId, t]))
+
+  const notFound: string[] = []
+  let updated = 0
+
+  for (const row of rows) {
+    const track = bySourceId.get(row.sourceId)
+    if (!track) {
+      notFound.push(row.sourceId)
+      continue
+    }
+    await db.tracks.update(track.id, { tags: row.tags, playbackRange: row.playbackRange })
+    updated++
+  }
+
+  return { updated, notFound }
 }
 
 export async function getAllTags(): Promise<string[]> {

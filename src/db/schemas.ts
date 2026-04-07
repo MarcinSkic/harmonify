@@ -9,6 +9,12 @@ export const playbackRangeSchema = z.object({
 })
 export type PlaybackRange = z.infer<typeof playbackRangeSchema>
 
+export interface TrackAnnotation {
+  sourceId: string
+  tags: string[]
+  playbackRange: PlaybackRange | null
+}
+
 export const trackSchema = z.object({
   id: z.uuid(),
   sourceId: z.string(),

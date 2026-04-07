@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { MusicServerService } from '@/services'
 import { useLibraryStore } from '@/stores'
+import CsvImportButton from './CsvImportButton.vue'
 
 defineEmits<{
   spotifyImport: []
@@ -32,6 +33,7 @@ const serverConfigured = MusicServerService.isConfigured()
     </div>
 
     <div class="flex gap-2">
+      <CsvImportButton v-if="libraryStore.selectedPlaylistId !== null" />
       <Button v-if="serverConfigured" variant="outline" class="gap-2" @click="$emit('serverImport')">
         <Server class="size-4" />
         <span
