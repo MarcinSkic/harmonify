@@ -2,6 +2,7 @@ import antfu from '@antfu/eslint-config'
 import tailwind from 'eslint-plugin-better-tailwindcss'
 
 export default antfu({
+  ignores: ['.claude/**'],
   formatters: true,
   typescript: true,
   vue: true,
