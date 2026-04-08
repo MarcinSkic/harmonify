@@ -11,9 +11,12 @@ export const useLibraryStore = defineStore('library', () => {
   const selectedPlaylistId = ref<string | null>(null)
 
   const tracks = useLiveQuery(
-    () => selectedPlaylistId.value
-      ? db.tracks.where('playlistIds').equals(selectedPlaylistId.value).toArray()
-      : db.tracks.toArray(),
+    async () => {
+      const result = selectedPlaylistId.value
+        ? await db.tracks.where('playlistIds').equals(selectedPlaylistId.value).toArray()
+        : await db.tracks.toArray()
+      return result.sort((a, b) => a.sourceId.localeCompare(b.sourceId, undefined, { numeric: true }))
+    },
     [] as Track[],
     [selectedPlaylistId],
   )

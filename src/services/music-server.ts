@@ -17,7 +17,7 @@ const serverPlaylistSchema = z.object({
 export type ServerPlaylist = z.infer<typeof serverPlaylistSchema>
 
 const serverTrackSchema = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   title: z.string(),
   artist: z.string(),
   album: z.string(),
