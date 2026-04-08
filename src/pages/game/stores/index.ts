@@ -1,0 +1,1 @@
+export { useMusicPlayerStore } from './musicPlayer'

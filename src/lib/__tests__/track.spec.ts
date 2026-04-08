@@ -1,8 +1,8 @@
-import type { Track } from '@/types'
+import type { SpotifyTrack } from '@/types'
 import { describe, expect, it } from 'vitest'
 import { removeDuplicatedTracks } from '../track'
 
-const rawTracks: Track[] = [{
+const rawTracks: SpotifyTrack[] = [{
   artists: [{ name: 'Michael Hunter', id: '4J86DBDnC5acWsN0dpZe3j' }],
   duration_ms: 171486,
   name: 'Soviet Connection — The Theme from Grand Theft Auto IV',
@@ -215,7 +215,7 @@ const rawTracks: Track[] = [{
   preview_url: 'https://p.scdn.co/mp3-preview/8eac33a173cab23887351e37de248c5ef8aa4962?cid=090ef6814927448cb1a093339513c594',
 }]
 
-const duplicatedTracks: Track[] = [{
+const duplicatedTracks: SpotifyTrack[] = [{
   artists: [{ name: 'Michael Hunter', id: '4J86DBDnC5acWsN0dpZe3j' }],
   duration_ms: 171486,
   name: 'Soviet Connection — The Theme from Grand Theft Auto IV',

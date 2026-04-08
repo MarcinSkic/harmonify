@@ -35,6 +35,9 @@ importers:
       color-convert:
         specifier: ^3.1.3
         version: 3.1.3
+      dexie:
+        specifier: ^4.4.1
+        version: 4.4.1
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -44,6 +47,9 @@ importers:
       lucide-vue-next:
         specifier: ^0.483.0
         version: 0.483.0(vue@3.5.30(typescript@5.8.3))
+      papaparse:
+        specifier: ^5.5.3
+        version: 5.5.3
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.8.3)(vue@3.5.30(typescript@5.8.3))
@@ -93,6 +99,9 @@ importers:
       '@types/node':
         specifier: ^22.19.15
         version: 22.19.15
+      '@types/papaparse':
+        specifier: ^5.5.2
+        version: 5.5.2
       '@vercel/node':
         specifier: ^5.6.18
         version: 5.6.18(rollup@4.60.0)
@@ -117,6 +126,9 @@ importers:
       eslint-plugin-format:
         specifier: ^2.0.1
         version: 2.0.1(eslint@10.1.0(jiti@2.6.1))
+      fake-indexeddb:
+        specifier: ^6.2.5
+        version: 6.2.5
       jsdom:
         specifier: ^26.1.0
         version: 26.1.0
@@ -1365,6 +1377,9 @@ packages:
   '@types/node@22.19.15':
     resolution: {integrity: sha512-F0R/h2+dsy5wJAUe3tAU6oqa2qbWY5TpNfL/RGmo1y38hiyO1w3x2jPtt76wmuaJI4DQnOBu21cNXQ2STIUUWg==}
 
+  '@types/papaparse@5.5.2':
+    resolution: {integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==}
+
   '@types/sinonjs__fake-timers@8.1.1':
     resolution: {integrity: sha512-0kSuKjAS0TrGLJ0M/+8MaFkGsQhZpB6pxOmvS3K8FYI72K//YmdfoW9X2qPsAKh1mkwxGD5zib9s1FIFed6E8g==}
 
@@ -2198,6 +2213,9 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
+  dexie@4.4.1:
+    resolution: {integrity: sha512-4Xec5+yrS+TgyFAnMrneFOt/QG8sD3FxlkUVpfypui3SriRN80UN0SZBWmkNAY7ulfKgk0ilvv7M6pBURprdgA==}
+
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -2568,6 +2586,10 @@ packages:
   extsprintf@1.3.0:
     resolution: {integrity: sha512-11Ndz7Nv+mvAC1j0ktTa7fAb0vLyGGX+rMHNBYQviQDGU0Hw7lhctJANqbPhu9nV9/izT/IntTgZ7Im/9LJs9g==}
     engines: {'0': node >=0.6.0}
+
+  fake-indexeddb@6.2.5:
+    resolution: {integrity: sha512-CGnyrvbhPlWYMngksqrSSUT1BAVP49dZocrHuK0SvtR0D5TMs5wP0o3j7jexDJW01KSadjBp1M/71o/KR3nD1w==}
+    engines: {node: '>=18'}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -3471,6 +3493,9 @@ packages:
 
   package-manager-detector@1.6.0:
     resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
+
+  papaparse@5.5.3:
+    resolution: {integrity: sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==}
 
   parse-gitignore@2.0.0:
     resolution: {integrity: sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog==}
@@ -5344,6 +5369,10 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/papaparse@5.5.2':
+    dependencies:
+      '@types/node': 22.19.15
+
   '@types/sinonjs__fake-timers@8.1.1': {}
 
   '@types/sizzle@2.3.10': {}
@@ -6268,6 +6297,8 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
+  dexie@4.4.1: {}
+
   diff-sequences@29.6.3: {}
 
   dunder-proto@1.0.1:
@@ -6770,6 +6801,8 @@ snapshots:
       - supports-color
 
   extsprintf@1.3.0: {}
+
+  fake-indexeddb@6.2.5: {}
 
   fast-deep-equal@3.1.3: {}
 
@@ -7832,6 +7865,8 @@ snapshots:
   package-json-from-dist@1.0.1: {}
 
   package-manager-detector@1.6.0: {}
+
+  papaparse@5.5.3: {}
 
   parse-gitignore@2.0.0: {}
 

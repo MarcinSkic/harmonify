@@ -1,5 +1,5 @@
 import type { Router } from 'vue-router'
-import type { SelectableAlbum, SelectablePlaylist, Track } from '@/types'
+import type { SpotifySelectableAlbum, SpotifySelectablePlaylist, SpotifyTrack } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { removeDuplicatedTracks } from '@/lib/track'
@@ -7,9 +7,9 @@ import { SpotifyService } from '@/services'
 
 export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
   const favouritesSelected = ref(false)
-  const favourites = ref<Track[]>()
-  const playlists = ref<SelectablePlaylist[]>()
-  const albums = ref<SelectableAlbum[]>()
+  const favourites = ref<SpotifyTrack[]>()
+  const playlists = ref<SpotifySelectablePlaylist[]>()
+  const albums = ref<SpotifySelectableAlbum[]>()
   const totalSelectedTracks = computed(() => {
     let count = 0
 
@@ -18,7 +18,7 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
 
     count += playlists.value
       ?.filter(p => p.selected)
-      .reduce((acc, p) => acc + p.tracks.total, 0) ?? 0
+      .reduce((acc, p) => acc + p.items.total, 0) ?? 0
 
     count += albums.value
       ?.filter(p => p.selected)
@@ -26,6 +26,7 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
 
     return count
   })
+  const hasData = computed(() => !!favourites || !!playlists || !!albums)
 
   async function getTracksFromSelectedSets(access_token: string, router: Router) {
     let tracks = await fetchTracksFromSelectedSets(access_token, router)
@@ -33,11 +34,11 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
     return tracks
   }
 
-  async function fetchTracksFromSelectedSets(access_token: string, router: Router): Promise<Track[]> {
+  async function fetchTracksFromSelectedSets(access_token: string, router: Router): Promise<SpotifyTrack[]> {
     if (!favourites.value && !playlists.value && !albums.value)
       throw new Error('Tried to fetch tracks before loaded any playlist or album')
 
-    let favouriteTracks: Track[] = []
+    let favouriteTracks: SpotifyTrack[] = []
 
     if (favouritesSelected.value)
       favouriteTracks = favourites.value ?? []
@@ -48,5 +49,5 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
     return [...favouriteTracks, ...playlistsTracks, ...albumTracks]
   }
 
-  return { favourites, favouritesSelected, playlists, albums, totalSelectedTracks, getTracksFromSelectedSets }
+  return { favourites, favouritesSelected, playlists, albums, totalSelectedTracks, hasData, getTracksFromSelectedSets }
 })

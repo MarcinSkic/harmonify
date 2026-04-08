@@ -8,45 +8,50 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/HomeView.vue'),
+      component: () => import('@/pages/home/HomeView.vue'),
     },
     {
       path: '/game',
-      component: () => import('@/views/GameLayout.vue'),
+      component: () => import('@/pages/game/layout/GameLayout.vue'),
       beforeEnter: beforeGameEnter,
       children: [
         {
           path: ':id/setup',
           name: 'setup',
-          component: () => import('@/views/game/SetupView.vue'),
+          component: () => import('@/pages/game/setup/SetupView.vue'),
 
         },
         {
           path: ':id',
           name: 'round',
-          component: () => import(`@/views/game/RoundView.vue`),
+          component: () => import(`@/pages/game/round/RoundView.vue`),
         },
         {
           path: ':id/roundResult',
           name: 'roundResult',
-          component: () => import(`@/views/game/RoundResultView.vue`),
+          component: () => import(`@/pages/game/roundResult/RoundResultView.vue`),
         },
         {
           path: ':id/result',
           name: 'result',
-          component: () => import(`@/views/game/ResultView.vue`),
+          component: () => import(`@/pages/game/result/ResultView.vue`),
         },
       ],
     },
     {
+      path: '/library',
+      name: 'library',
+      component: () => import('@/pages/library/LibraryView.vue'),
+    },
+    {
       path: '/cover',
       name: 'cover',
-      component: () => import(`@/views/CoverCreatorView.vue`),
+      component: () => import(`@/pages/cover/CoverCreatorView.vue`),
     },
     {
       path: '/disclaimer',
       name: 'disclaimer',
-      component: () => import(`@/views/DisclaimerView.vue`),
+      component: () => import(`@/pages/disclaimer/DisclaimerView.vue`),
     },
   ],
 })
