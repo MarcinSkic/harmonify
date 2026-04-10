@@ -58,3 +58,31 @@ The app, unfortunately, will never leave development mode due to Spotify's ToS (
 [<img align="left" width="26" height="26" alt="TailwindCSS" src="https://api.iconify.design/devicon:tailwindcss.svg" style="padding: 0 20px 16px 0"/>](https://tailwindcss.com 'TailwindCSS')
 [<img align="left" width="26" height="26" alt="Vite" src="https://api.iconify.design/devicon:vitejs.svg" style="padding: 0 20px 16px 0"/>](https://vitejs.dev/ 'Vite')
 [<img align="left" width="26" height="26" alt="Vitest" src="https://api.iconify.design/devicon:vitest.svg" style="padding: 0 20px 16px 0"/>](https://vitest.dev 'Vitest')
+
+services:
+e2e:
+image: mcr.microsoft.com/playwright:v1.59.1-noble
+init: true
+ipc: host
+user: "${UID:-1000}:${GID:-1000}"
+working_dir: /work
+volumes: - .:/work - e2e-node-modules:/work/node_modules - e2e-pnpm-store:/pnpm-store - e2e-corepack:/.cache
+environment:
+CI: ${CI:-}
+      PNPM_STORE_DIR: /pnpm-store
+      COREPACK_HOME: /.cache/corepack
+      HOME: /tmp
+    command: >
+      sh -c "
+      corepack enable --install-directory /tmp/bin &&
+      export PATH=/tmp/bin:$$PATH &&
+pnpm config set store-dir /pnpm-store &&
+pnpm install --frozen-lockfile &&
+pnpm build &&
+pnpm exec playwright test
+"
+
+volumes:
+e2e-node-modules:
+e2e-pnpm-store:
+e2e-corepack:

@@ -66,7 +66,7 @@ function handleFinishGame() {
         >
           <NumberFieldContent>
             <NumberFieldDecrement />
-            <NumberFieldInput />
+            <NumberFieldInput :data-testid="`team-score-${team.name}`" />
             <NumberFieldIncrement />
           </NumberFieldContent>
         </NumberField>
