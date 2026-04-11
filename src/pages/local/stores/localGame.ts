@@ -1,6 +1,6 @@
 import type { LocalGame, LocalGameSettings, Track } from '@/db/schemas'
 import { defineStore } from 'pinia'
-import { computed, ref, toRaw } from 'vue'
+import { computed, ref } from 'vue'
 import { db } from '@/db'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
 
@@ -31,7 +31,8 @@ export const useLocalGameStore = defineStore('localGame', () => {
   async function _persist() {
     if (!game.value)
       return
-    await db.localGames.put(toRaw(game.value))
+    // Deep-unwrap Vue reactivity to avoid DataCloneError from IndexedDB
+    await db.localGames.put(JSON.parse(JSON.stringify(game.value)) as LocalGame)
   }
 
   async function _loadTrack(trackId: string) {
