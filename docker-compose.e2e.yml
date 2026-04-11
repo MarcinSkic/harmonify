@@ -3,7 +3,7 @@ services:
     image: mcr.microsoft.com/playwright:v1.59.1-noble
     init: true
     ipc: host
-    user: "${UID:-1000}:${GID:-1000}"
+    user: '${UID:-1000}:${GID:-1000}'
     working_dir: /work
     volumes:
       - .:/work
