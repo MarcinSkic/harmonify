@@ -49,6 +49,12 @@ export const trackPoolStateSchema = z.object({
 })
 export type TrackPoolState = z.infer<typeof trackPoolStateSchema>
 
+export const categoryPoolStateSchema = z.object({
+  tagPools: z.record(z.string(), z.array(z.string())),
+  playedTrackIds: z.array(z.string()),
+})
+export type CategoryPoolState = z.infer<typeof categoryPoolStateSchema>
+
 export const localGameTeamSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -72,7 +78,7 @@ export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 export const localGameStatusSchema = z.enum(['setup', 'playing', 'finished'])
 export type LocalGameStatus = z.infer<typeof localGameStatusSchema>
 
-export const localGameRoundPhaseSchema = z.enum(['playing', 'scoring'])
+export const localGameRoundPhaseSchema = z.enum(['pickingCategory', 'playing', 'scoring'])
 export type LocalGameRoundPhase = z.infer<typeof localGameRoundPhaseSchema>
 
 export const localGameSchema = z.object({
@@ -83,8 +89,10 @@ export const localGameSchema = z.object({
   settings: localGameSettingsSchema,
   currentRound: z.number(),
   trackPoolState: trackPoolStateSchema,
+  categoryPoolState: categoryPoolStateSchema.optional(),
   selectedPlaylistIds: z.array(z.string()),
   currentTrackId: z.string().optional(),
+  currentCategory: z.string().optional(),
   roundPhase: localGameRoundPhaseSchema,
 })
 export type LocalGame = z.infer<typeof localGameSchema>

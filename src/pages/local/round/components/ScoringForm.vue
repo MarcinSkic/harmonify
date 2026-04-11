@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LocalGameTeam, Track } from '@/db/schemas'
 import { reactive } from 'vue'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
@@ -11,6 +12,7 @@ const props = defineProps<{
   teams: LocalGameTeam[]
   hideScores: boolean
   canAdvanceRound: boolean
+  category?: string
 }>()
 
 const emit = defineEmits<{
@@ -38,6 +40,9 @@ function handleFinishGame() {
 <template>
   <div class="grid place-items-center gap-6">
     <div class="grid justify-items-center gap-2 text-center">
+      <Badge v-if="category" variant="secondary" class="text-sm">
+        {{ category }}
+      </Badge>
       <img
         v-if="track.albumImageUrl"
         :src="track.albumImageUrl"

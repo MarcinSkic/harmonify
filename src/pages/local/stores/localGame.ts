@@ -2,6 +2,12 @@ import type { LocalGame, LocalGameSettings, Track } from '@/db/schemas'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
+import {
+  createCategoryPool,
+  getAllCategories,
+  isCategoryPoolExhausted,
+  pickFromTag,
+} from '@/pages/local/engine/categoryPool'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
 
 export const useLocalGameStore = defineStore('localGame', () => {
@@ -21,12 +27,22 @@ export const useLocalGameStore = defineStore('localGame', () => {
   const canAdvanceRound = computed(() => {
     if (!game.value)
       return false
-    if (isExhausted(game.value.trackPoolState))
+    const g = game.value
+    const poolExhausted = g.settings.gameMode === 'category'
+      ? !g.categoryPoolState || isCategoryPoolExhausted(g.categoryPoolState)
+      : isExhausted(g.trackPoolState)
+    if (poolExhausted)
       return false
-    if (game.value.settings.maxRounds !== null && game.value.currentRound >= game.value.settings.maxRounds)
+    if (g.settings.maxRounds !== null && g.currentRound >= g.settings.maxRounds)
       return false
     return true
   })
+
+  const allCategories = computed(() =>
+    game.value?.categoryPoolState
+      ? getAllCategories(game.value.categoryPoolState)
+      : [],
+  )
 
   async function _persist() {
     if (!game.value)
@@ -48,9 +64,11 @@ export const useLocalGameStore = defineStore('localGame', () => {
       ? await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds).toArray()
       : await db.tracks.toArray()
 
-    const playableTrackIds = tracks
-      .filter(t => t.audioUrl)
-      .map(t => t.id)
+    const playableTracks = tracks.filter(t => t.audioUrl)
+
+    const isCategory = settings.gameMode === 'category'
+    const trackPoolState = createPool(isCategory ? [] : playableTracks.map(t => t.id))
+    const categoryPoolState = isCategory ? createCategoryPool(playableTracks) : undefined
 
     const id = crypto.randomUUID()
 
@@ -66,7 +84,8 @@ export const useLocalGameStore = defineStore('localGame', () => {
       })),
       settings,
       currentRound: 0,
-      trackPoolState: createPool(playableTrackIds),
+      trackPoolState,
+      categoryPoolState,
       selectedPlaylistIds,
       roundPhase: 'playing',
     }
@@ -100,14 +119,46 @@ export const useLocalGameStore = defineStore('localGame', () => {
   async function startRound() {
     if (!game.value)
       return
-    if (isExhausted(game.value.trackPoolState))
+    const g = game.value
+
+    if (g.settings.gameMode === 'random') {
+      if (isExhausted(g.trackPoolState))
+        return
+
+      const { trackId, newState } = pickRandom(g.trackPoolState)
+
+      g.currentRound++
+      g.trackPoolState = newState
+      g.currentTrackId = trackId
+      g.roundPhase = 'playing'
+
+      await _loadTrack(trackId)
+    }
+    else {
+      if (!g.categoryPoolState || isCategoryPoolExhausted(g.categoryPoolState))
+        return
+
+      g.currentRound++
+      g.currentTrackId = undefined
+      g.currentCategory = undefined
+      currentTrack.value = null
+      g.roundPhase = 'pickingCategory'
+    }
+
+    await _persist()
+  }
+
+  async function pickCategory(tag: string) {
+    if (!game.value || game.value.settings.gameMode !== 'category')
+      return
+    if (!game.value.categoryPoolState)
       return
 
-    const { trackId, newState } = pickRandom(game.value.trackPoolState)
+    const { trackId, newState } = pickFromTag(game.value.categoryPoolState, tag)
 
-    game.value.currentRound++
-    game.value.trackPoolState = newState
+    game.value.categoryPoolState = newState
     game.value.currentTrackId = trackId
+    game.value.currentCategory = tag
     game.value.roundPhase = 'playing'
 
     await _loadTrack(trackId)
@@ -171,10 +222,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     isGameInProgress,
     sortedTeams,
     canAdvanceRound,
+    allCategories,
     createGame,
     resumeGame,
     findUnfinishedGame,
     startRound,
+    pickCategory,
     showAnswer,
     submitScores,
     nextRound,

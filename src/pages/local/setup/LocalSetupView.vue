@@ -36,6 +36,10 @@ const hasTracksSelected = computed(() => libraryStore.tracks.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
 )
+const taggedTracksCount = computed(() =>
+  libraryStore.tracks.filter(t => t.tags.length > 0).length,
+)
+const hasTaggedTracks = computed(() => taggedTracksCount.value > 0)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)
@@ -44,6 +48,8 @@ const startButtonText = computed(() => {
     return 'Select a playlist'
   if (!hasValidTeams.value)
     return 'Fill in team names'
+  if (settings.gameMode === 'category' && !hasTaggedTracks.value)
+    return 'No tagged tracks'
   if (isLoading.value)
     return 'Loading...'
   return 'Play!'
@@ -52,6 +58,11 @@ const startButtonText = computed(() => {
 async function handleGameStart() {
   if (!hasValidTeams.value || !hasTracksSelected.value)
     return
+
+  if (settings.gameMode === 'category' && !hasTaggedTracks.value) {
+    toast.error('No tracks with tags in selection')
+    return
+  }
 
   isLoading.value = true
 
@@ -114,7 +125,13 @@ async function handleGameStart() {
     </template>
     <Button
       class="min-w-32 place-self-center"
-      :disabled="!musicPlayerStore.ready || !hasTracksSelected || !hasValidTeams || isLoading"
+      :disabled="
+        !musicPlayerStore.ready
+          || !hasTracksSelected
+          || !hasValidTeams
+          || (settings.gameMode === 'category' && !hasTaggedTracks)
+          || isLoading
+      "
       type="submit"
     >
       {{ startButtonText }}
