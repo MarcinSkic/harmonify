@@ -7,7 +7,7 @@ Harmonify is a multiplayer "Name that tune" game. Players join a room, listen to
 ## Tech Stack
 
 Vue 3 (Composition API, `<script setup>`) + TypeScript + Pinia + Vue Router + TailwindCSS + Zod
-UI: shadcn-vue (built on reka-ui) + class-variance-authority + lucide-vue-next
+UI: shadcn-vue (built on reka-ui) + class-variance-authority + @lucide/vue
 Build: Vite + Vercel (hosting + serverless functions)
 Testing: Vitest (unit) + Cypress (e2e)
 Linting: @antfu/eslint-config + eslint-plugin-tailwindcss

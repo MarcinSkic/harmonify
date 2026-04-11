@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { TriangleAlert } from '@lucide/vue'
 import { watchDebounced } from '@vueuse/core'
-import { TriangleAlert } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import Input from '@/components/ui/input/Input.vue'

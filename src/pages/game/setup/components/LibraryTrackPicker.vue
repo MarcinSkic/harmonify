@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ListMusic, Music } from 'lucide-vue-next'
+import { ListMusic, Music } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'

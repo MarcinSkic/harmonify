@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import type { GuessLevel } from '@/types'
+import { CircleCheck, CircleMinus, CircleX, ShieldQuestion, Unplug } from '@lucide/vue'
 import { toRefs } from '@vueuse/core'
-import { CircleCheck, CircleMinus, CircleX, ShieldQuestion, Unplug } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'

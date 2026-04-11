@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileSpreadsheet } from 'lucide-vue-next'
+import { FileSpreadsheet } from '@lucide/vue'
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'

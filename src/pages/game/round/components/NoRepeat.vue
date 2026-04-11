@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Repeat, Slash } from 'lucide-vue-next'
+import { Repeat, Slash } from '@lucide/vue'
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlayerScoreDto } from '@/types'
+import { CircleUserRound } from '@lucide/vue'
 import { TransitionPresets, useTransition } from '@vueuse/core'
-import { CircleUserRound } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { AnimationDuration } from '@/consts'
 import { cn } from '@/lib/utils'

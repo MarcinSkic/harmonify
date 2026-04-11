@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { Pause, Play } from '@lucide/vue'
 import { useAnimate } from '@vueuse/core'
-import { Pause, Play } from 'lucide-vue-next'
 import { onUnmounted, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import VolumeInput from '@/pages/game/round/components/VolumeInput.vue'

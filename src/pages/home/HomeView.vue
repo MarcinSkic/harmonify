@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LocalGame } from '@/db/schemas'
-import { Library, Monitor } from 'lucide-vue-next'
+import { Library, Monitor } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'

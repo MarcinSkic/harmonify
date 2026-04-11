@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LocalGameSettings } from '@/db/schemas'
-import { Infinity as InfinityIcon, Slash } from 'lucide-vue-next'
+import { Infinity as InfinityIcon, Slash } from '@lucide/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'

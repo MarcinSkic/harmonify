@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { Copy } from '@lucide/vue'
 import { useClipboard } from '@vueuse/core'
-import { Copy } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'

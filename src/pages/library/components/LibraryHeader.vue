@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Download, Server } from 'lucide-vue-next'
+import { ArrowLeft, Download, Server } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { MusicServerService } from '@/services'

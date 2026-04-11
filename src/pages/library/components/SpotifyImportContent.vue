@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2 } from '@lucide/vue'
 import Cookies from 'universal-cookie'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'

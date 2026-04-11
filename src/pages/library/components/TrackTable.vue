@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Music, Trash2 } from 'lucide-vue-next'
+import { Music, Trash2 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {

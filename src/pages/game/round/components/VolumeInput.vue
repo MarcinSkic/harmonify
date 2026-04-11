@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { Volume, Volume1, Volume2, VolumeX } from '@lucide/vue'
 import { useElementHover } from '@vueuse/core'
-import { Volume, Volume1, Volume2, VolumeX } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'

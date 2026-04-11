@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Heart } from 'lucide-vue-next'
+import { Heart } from '@lucide/vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSpotifyLibraryStore } from '@/stores'

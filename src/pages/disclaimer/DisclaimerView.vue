@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Home } from 'lucide-vue-next'
+import { Home } from '@lucide/vue'
 import Cookies from 'universal-cookie'
 
 const cookies = new Cookies(null, { path: '/' })

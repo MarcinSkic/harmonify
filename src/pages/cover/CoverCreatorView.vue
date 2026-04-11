@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Cover as CoverType } from './types'
+import { ArrowLeft, Clipboard, CopyPlus, Download, Save } from '@lucide/vue'
 import { unrefElement } from '@vueuse/core'
 import { saveAs } from 'file-saver'
 import { toBlob } from 'html-to-image'
-import { ArrowLeft, Clipboard, CopyPlus, Download, Save } from 'lucide-vue-next'
 import { ref, useTemplateRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'

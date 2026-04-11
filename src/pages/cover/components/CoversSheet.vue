@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Cover as CoverType } from '../types'
-import { Folder, Trash } from 'lucide-vue-next'
+import { Folder, Trash } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'

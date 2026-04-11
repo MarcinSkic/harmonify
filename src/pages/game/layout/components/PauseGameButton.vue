@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Pause, Play } from 'lucide-vue-next'
+import { Pause, Play } from '@lucide/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useConnectionStore, useGameDataStore } from '@/stores'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Library, ListMusic, Plus, Trash2 } from 'lucide-vue-next'
+import { Library, ListMusic, Plus, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useLibraryStore } from '@/stores'

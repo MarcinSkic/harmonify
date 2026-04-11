@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Slash } from 'lucide-vue-next'
+import { Slash } from '@lucide/vue'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
 import { useGameDataStore, useSpotifyLibraryStore } from '@/stores'

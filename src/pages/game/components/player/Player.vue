@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlayerDto } from '@/types'
-import { CircleUserRound } from 'lucide-vue-next'
+import { CircleUserRound } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import NicknameForm from './NicknameForm.vue'
 

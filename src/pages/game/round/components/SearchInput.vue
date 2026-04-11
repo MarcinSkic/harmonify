@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DisplayedGuessDto } from '@/types'
+import { X } from '@lucide/vue'
 import { onStartTyping, useFocus } from '@vueuse/core'
-import { X } from 'lucide-vue-next'
 import { computed, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
