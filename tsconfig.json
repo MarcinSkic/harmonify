@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "module": "NodeNext",
     "paths": {
       "@/*": ["./src/*"]
