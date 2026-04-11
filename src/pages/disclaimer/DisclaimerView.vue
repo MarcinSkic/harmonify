@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useCookies } from '@vueuse/integrations/useCookies'
 import { Home } from 'lucide-vue-next'
+import Cookies from 'universal-cookie'
 
-const cookies = useCookies()
+const cookies = new Cookies(null, { path: '/' })
 
 cookies.remove('access_token')
 cookies.remove('refresh_token')

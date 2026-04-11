@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MusicPlayer } from '@/pages/game/types'
 import { useStorage } from '@vueuse/core'
-import { useCookies } from '@vueuse/integrations/useCookies'
+import Cookies from 'universal-cookie'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { LOCAL_STORAGE } from '@/consts'
@@ -16,7 +16,7 @@ declare global {
 }
 
 const scriptTag = ref<HTMLDivElement | null>(null)
-const cookies = useCookies()
+const cookies = new Cookies(null, { path: '/' })
 const router = useRouter()
 const access_token = cookies.get('access_token')
 const volume = useStorage(LOCAL_STORAGE.VOLUME, 0.05)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useCookies } from '@vueuse/integrations/useCookies'
+import Cookies from 'universal-cookie'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +13,7 @@ import SpotifyImportContent from './SpotifyImportContent.vue'
 
 const open = defineModel<boolean>('open', { required: true })
 
-const cookies = useCookies()
+const cookies = new Cookies(null, { path: '/' })
 const isLoggedIn = computed(() => !!cookies.get('access_token') || !!cookies.get('refresh_token'))
 
 function connectToSpotify() {

@@ -1,4 +1,4 @@
-import { useCookies } from '@vueuse/integrations/useCookies'
+import Cookies from 'universal-cookie'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -8,7 +8,7 @@ import { useSpotifyLibraryStore } from '@/stores'
 export function useLoadSpotifyLibrary() {
   const spotifyLibraryStore = useSpotifyLibraryStore()
   const router = useRouter()
-  const cookies = useCookies()
+  const cookies = new Cookies(null, { path: '/' })
   const isLoadError = ref(false)
 
   onMounted(async () => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useCookies } from '@vueuse/integrations/useCookies'
 import { Loader2 } from 'lucide-vue-next'
+import Cookies from 'universal-cookie'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
-const cookies = useCookies()
+const cookies = new Cookies(null, { path: '/' })
 const spotifyLibraryStore = useSpotifyLibraryStore()
 
 const isImporting = ref(false)

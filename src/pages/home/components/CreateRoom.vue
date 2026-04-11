@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useCookies } from '@vueuse/integrations/useCookies'
+import Cookies from 'universal-cookie'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useConnectionStore, useGameDataStore } from '@/stores'
 
-const cookies = useCookies()
+const cookies = new Cookies(null, { path: '/' })
 const isLogged = ref(!!cookies.get('access_token') || !!cookies.get('refresh_token'))
 
 const connectionStore = useConnectionStore()
