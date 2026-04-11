@@ -1,5 +1,6 @@
 import type { RouteLocationNormalized } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import { db } from '@/db'
 import { useConnectionStore, useGameDataStore } from '@/stores'
 
 const router = createRouter({
@@ -35,6 +36,29 @@ const router = createRouter({
           path: ':id/result',
           name: 'result',
           component: () => import(`@/pages/game/result/ResultView.vue`),
+        },
+      ],
+    },
+    {
+      path: '/local',
+      component: () => import('@/pages/local/layout/LocalGameLayout.vue'),
+      children: [
+        {
+          path: 'setup',
+          name: 'localSetup',
+          component: () => import('@/pages/local/setup/LocalSetupView.vue'),
+        },
+        {
+          path: ':id/round',
+          name: 'localRound',
+          beforeEnter: beforeLocalGameEnter,
+          component: () => import('@/pages/local/round/LocalRoundView.vue'),
+        },
+        {
+          path: ':id/result',
+          name: 'localResult',
+          beforeEnter: beforeLocalGameEnter,
+          component: () => import('@/pages/local/result/LocalResultView.vue'),
         },
       ],
     },
@@ -87,6 +111,14 @@ async function beforeGameEnter(to: RouteLocationNormalized) {
   catch (e) {
     return { name: 'home' }
   }
+}
+
+async function beforeLocalGameEnter(to: RouteLocationNormalized) {
+  const gameId = to.params.id.toString()
+  const game = await db.localGames.get(gameId)
+
+  if (!game)
+    return { name: 'localSetup' }
 }
 
 export default router

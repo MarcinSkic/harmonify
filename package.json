@@ -10,8 +10,7 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
+    "test:e2e": "UID=$(id -u) GID=$(id -g) docker compose -f docker-compose.e2e.yml run --rm e2e",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint .",
@@ -45,6 +44,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.7.3",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.2.2",
     "@total-typescript/ts-reset": "^0.6.1",
     "@tsconfig/node20": "^20.1.9",
@@ -55,7 +55,6 @@
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
-    "cypress": "^15.12.0",
     "eslint": "^10.1.0",
     "eslint-plugin-better-tailwindcss": "^4.3.2",
     "eslint-plugin-format": "^2.0.1",
@@ -63,7 +62,6 @@
     "jsdom": "^26.1.0",
     "npm-run-all2": "^8.0.4",
     "postcss": "^8.5.8",
-    "start-server-and-test": "^2.1.5",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.8.3",
     "vite": "^8.0.1",
@@ -73,7 +71,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "cypress",
       "esbuild",
       "vue-demi"
     ]

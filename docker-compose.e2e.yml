@@ -1,0 +1,29 @@
+services:
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    init: true
+    ipc: host
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /work
+    volumes:
+      - .:/work
+      - e2e-node-modules:/work/node_modules
+      - e2e-pnpm-store:/pnpm-store
+      - e2e-home:/home/pwuser
+    environment:
+      CI: ${CI:-}
+      HOME: /home/pwuser
+    command: >
+      sh -c "
+      mkdir -p /home/pwuser/bin &&
+      corepack enable --install-directory /home/pwuser/bin &&
+      export PATH=/home/pwuser/bin:$$PATH &&
+      pnpm install --frozen-lockfile --store-dir /pnpm-store &&
+      pnpm build &&
+      pnpm exec playwright test
+      "
+
+volumes:
+  e2e-node-modules:
+  e2e-pnpm-store:
+  e2e-home:
