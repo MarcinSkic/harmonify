@@ -11,13 +11,11 @@ import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 const props = defineProps<{
   track: Track
   teams: LocalGameTeam[]
-  canAdvanceRound: boolean
   category?: { displayName: string, points?: number }
 }>()
 
 const emit = defineEmits<{
   submit: [scores: Map<string, number>]
-  finish: [scores: Map<string, number>]
 }>()
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
@@ -32,10 +30,6 @@ function buildScoresMap(): Map<string, number> {
 
 function handleNextRound() {
   emit('submit', buildScoresMap())
-}
-
-function handleFinishGame() {
-  emit('finish', buildScoresMap())
 }
 </script>
 
@@ -97,21 +91,11 @@ function handleFinishGame() {
       </div>
     </div>
 
-    <div class="flex gap-3">
-      <Button
-        v-if="canAdvanceRound"
-        type="button"
-        @click="handleNextRound"
-      >
-        Next round
-      </Button>
-      <Button
-        type="button"
-        :variant="canAdvanceRound ? 'outline' : 'default'"
-        @click="handleFinishGame"
-      >
-        Finish game
-      </Button>
-    </div>
+    <Button
+      type="button"
+      @click="handleNextRound"
+    >
+      Next round
+    </Button>
   </div>
 </template>
