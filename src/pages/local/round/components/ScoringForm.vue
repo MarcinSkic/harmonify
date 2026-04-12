@@ -48,18 +48,17 @@ function handleNextRound() {
           {{ category.points }} pts
         </Badge>
       </div>
-      <div class="flex items-center justify-center gap-4">
+      <div class="flex items-stretch justify-center gap-4">
         <div
           class="
-            grid w-50 justify-items-center gap-2
-            lg:w-[320px]
+            grid h-0 min-h-full grid-rows-[1fr_auto] justify-items-center gap-2
           "
         >
           <img
             v-if="track.albumImageUrl"
             :src="track.albumImageUrl"
             alt="Album cover"
-            class="aspect-square w-full rounded-md"
+            class="aspect-square h-full min-h-0 rounded-md object-cover"
           >
           <BaseDisplay
             :title="track.name"
@@ -73,7 +72,7 @@ function handleNextRound() {
           alt="Link preview"
           class="
             max-h-[400px] max-w-xs rounded-md object-cover
-            lg:max-h-[600px] lg:max-w-5xl
+            lg:max-h-[680px] lg:max-w-[1200px]
           "
         >
       </div>
