@@ -71,8 +71,8 @@ function handleNextRound() {
           :src="previewImageUrl"
           alt="Link preview"
           class="
-            max-h-[400px] max-w-xs rounded-md object-cover
-            lg:max-h-[680px] lg:max-w-[1200px]
+            max-h-100 max-w-xs rounded-md object-cover
+            lg:max-h-170 lg:max-w-300
           "
         >
       </div>
