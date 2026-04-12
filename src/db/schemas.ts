@@ -58,14 +58,14 @@ export type Category = z.infer<typeof categorySchema>
 // Local game schemas
 
 export const trackPoolStateSchema = z.object({
-  availableTrackIds: z.array(z.string()),
-  playedTrackIds: z.array(z.string()),
+  availableTrackIds: z.array(z.uuid()),
+  playedTrackIds: z.array(z.uuid()),
 })
 export type TrackPoolState = z.infer<typeof trackPoolStateSchema>
 
 export const categoryPoolStateSchema = z.object({
-  categoryPools: z.record(z.string(), z.array(z.string())),
-  playedTrackIds: z.array(z.string()),
+  categoryPools: z.record(z.uuid(), z.array(z.uuid())),
+  playedTrackIds: z.array(z.uuid()),
 })
 export type CategoryPoolState = z.infer<typeof categoryPoolStateSchema>
 
