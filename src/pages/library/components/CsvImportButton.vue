@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { parseCSV } from '@/lib/csv'
-import { LibraryService } from '@/services'
+import { LibraryService, LinkPreviewService } from '@/services'
 import { useLibraryStore } from '@/stores'
 
 const libraryStore = useLibraryStore()
@@ -19,6 +19,9 @@ async function onCSVFileSelected(event: Event) {
     const text = await file.text()
     const rows = parseCSV(text)
     const result = await LibraryService.applyCSVToPlaylist(libraryStore.selectedPlaylistId, rows)
+
+    if (result.previewUrls.length > 0)
+      LinkPreviewService.triggerForUrls(result.previewUrls)
 
     toast.success(`Updated ${result.updated} tracks`)
 

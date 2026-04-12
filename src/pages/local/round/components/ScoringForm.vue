@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { LocalGameTeam, Track } from '@/db/schemas'
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
+import { useLinkPreview } from '@/composables/useLinkPreview'
 import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 
 const props = defineProps<{
@@ -19,6 +20,8 @@ const emit = defineEmits<{
   submit: [scores: Map<string, number>]
   finish: [scores: Map<string, number>]
 }>()
+
+const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewPageUrl))
 
 const scores = reactive<Record<string, number>>(
   Object.fromEntries(props.teams.map(t => [t.id, 0])),
@@ -52,14 +55,22 @@ function handleFinishGame() {
           {{ category.points }} pts
         </Badge>
       </div>
-      <img
-        v-if="track.albumImageUrl"
-        :src="track.albumImageUrl"
-        alt="Album cover"
-        width="200"
-        height="200"
-        class="rounded-md"
-      >
+      <div class="flex items-center justify-center gap-3">
+        <img
+          v-if="track.albumImageUrl"
+          :src="track.albumImageUrl"
+          alt="Album cover"
+          width="200"
+          height="200"
+          class="rounded-md"
+        >
+        <img
+          v-if="previewImageUrl"
+          :src="previewImageUrl"
+          alt="Link preview"
+          class="aspect-1200/630 max-w-md rounded-md object-cover"
+        >
+      </div>
       <BaseDisplay
         :title="track.name"
         :author="track.artists.join(', ')"

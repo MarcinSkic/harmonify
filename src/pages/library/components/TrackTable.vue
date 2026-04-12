@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { Music, Trash2 } from '@lucide/vue'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
+import { Music } from '@lucide/vue'
 import {
   Table,
   TableBody,
-  TableCell,
   TableEmpty,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
 import { useLibraryStore } from '@/stores'
+import TrackRow from './TrackRow.vue'
 
 const libraryStore = useLibraryStore()
 </script>
@@ -50,79 +47,7 @@ const libraryStore = useLibraryStore()
           <p>No tracks yet</p>
         </div>
       </TableEmpty>
-      <TableRow v-for="track in libraryStore.tracks" :key="track.id" :class="{ 'opacity-50': track.enabled === false }">
-        <TableCell>
-          <div class="flex items-center gap-3">
-            <img
-              v-if="track.albumImageUrl"
-              :src="track.albumImageUrl"
-              :alt="track.albumName"
-              class="size-10 rounded-sm object-cover"
-            >
-            <div
-              v-else
-              class="
-                flex size-10 items-center justify-center rounded-sm bg-muted
-              "
-            >
-              <Music class="size-5 text-muted-foreground" />
-            </div>
-            <div class="min-w-0">
-              <p class="truncate font-medium">
-                {{ track.name }}
-              </p>
-              <p class="truncate text-sm text-muted-foreground">
-                {{ track.artists.join(', ') }}
-              </p>
-            </div>
-          </div>
-        </TableCell>
-        <TableCell
-          class="
-            hidden
-            md:table-cell
-          "
-        >
-          {{ track.albumName }}
-        </TableCell>
-        <TableCell
-          class="
-            hidden
-            lg:table-cell
-          "
-        >
-          <div class="flex flex-wrap gap-1">
-            <Badge
-              v-for="tag in track.tags" :key="tag" variant="secondary" class="
-                text-xs
-              "
-            >
-              {{ tag }}
-            </Badge>
-          </div>
-        </TableCell>
-        <TableCell>
-          <div class="flex items-center gap-1">
-            <Switch
-              :model-value="track.enabled !== false"
-              @update:model-value="libraryStore.setTrackEnabled(track.id, $event)"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              class="size-8"
-              @click="libraryStore.removeTrack(track.id)"
-            >
-              <Trash2
-                class="
-                  size-4 text-muted-foreground
-                  hover:text-destructive
-                "
-              />
-            </Button>
-          </div>
-        </TableCell>
-      </TableRow>
+      <TrackRow v-for="track in libraryStore.tracks" :key="track.id" :track="track" />
     </TableBody>
   </Table>
 </template>

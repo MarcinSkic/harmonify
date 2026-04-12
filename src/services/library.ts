@@ -70,6 +70,7 @@ export async function getTracksByTag(tag: string): Promise<Track[]> {
 export interface CSVApplyResult {
   updated: number
   notFound: string[]
+  previewUrls: string[]
 }
 
 export async function applyCSVToPlaylist(
@@ -80,6 +81,7 @@ export async function applyCSVToPlaylist(
   const bySourceId = new Map(tracks.map(t => [t.sourceId, t]))
 
   const notFound: string[] = []
+  const previewUrlSet = new Set<string>()
   let updated = 0
 
   for (const row of rows) {
@@ -91,11 +93,15 @@ export async function applyCSVToPlaylist(
     const updateData: Partial<Track> = { tags: row.tags, playbackRange: row.playbackRange }
     if (row.enabled !== undefined)
       updateData.enabled = row.enabled
+    if (row.previewPageUrl !== undefined) {
+      updateData.previewPageUrl = row.previewPageUrl
+      previewUrlSet.add(row.previewPageUrl)
+    }
     await db.tracks.update(track.id, updateData)
     updated++
   }
 
-  return { updated, notFound }
+  return { updated, notFound, previewUrls: [...previewUrlSet] }
 }
 
 export async function getAllTags(): Promise<string[]> {
