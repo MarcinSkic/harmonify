@@ -30,7 +30,11 @@ When the plan is split into phases, ask the user before starting:
 - Run `pnpm type-check` after significant changes to catch type errors early
 - If a phase has related tests, run them with `pnpm vitest run <path>` before moving on
 
-## 5. After completing work
+## 5. Committing
+
+**Always stop and ask the user before creating a commit.** Never commit automatically. Present a summary of changes and wait for approval. Point 3 defines *how often* to commit (per phase or at the end), but the user always confirms each commit.
+
+## 6. After completing all work
 
 - Run `pnpm lint:fix` on the full project
 - Run `pnpm type-check` to verify no type errors remain
