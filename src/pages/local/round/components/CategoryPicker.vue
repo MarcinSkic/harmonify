@@ -20,8 +20,19 @@ function handleClick(categoryId: string, count: number) {
 </script>
 
 <template>
-  <div class="grid w-full max-w-3xl gap-4">
-    <h2 class="text-center text-2xl font-bold">
+  <div
+    class="
+      grid w-full max-w-3xl gap-4
+      lg:max-w-5xl
+      xl:max-w-7xl
+    "
+  >
+    <h2
+      class="
+        text-center text-2xl font-bold
+        lg:text-4xl
+      "
+    >
       Pick a category
     </h2>
     <div
@@ -36,6 +47,7 @@ function handleClick(categoryId: string, count: number) {
         grid grid-cols-2 gap-3
         sm:grid-cols-3
         md:grid-cols-4
+        lg:gap-4
       "
     >
       <Card
@@ -52,12 +64,25 @@ function handleClick(categoryId: string, count: number) {
         :data-testid="`category-${category.id}`"
         @click="handleClick(category.id, count)"
       >
-        <CardContent class="flex flex-col items-center gap-3 p-4 text-center">
+        <CardContent
+          class="
+            flex flex-col items-center gap-3 p-4 text-center
+            lg:p-6
+          "
+        >
           <CategoryProgressRing :current="count" :initial="initialCount" />
-          <span class="text-lg font-semibold">{{ category.displayName }}</span>
+          <span
+            class="
+              text-lg font-semibold
+              lg:text-2xl
+            "
+          >{{ category.displayName }}</span>
           <span
             v-if="category.description"
-            class="text-xs text-muted-foreground"
+            class="
+              text-xs text-muted-foreground
+              lg:text-sm
+            "
           >
             {{ category.description }}
           </span>
