@@ -102,7 +102,6 @@ export const localGameSettingsSchema = z.object({
   trackDuration: z.number(),
   gameMode: localGameGameModeSchema,
   hostSeesAnswer: z.boolean(),
-  hideScores: z.boolean(),
   maxRounds: z.number().nullable(),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
@@ -110,7 +109,7 @@ export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 export const localGameStatusSchema = z.enum(['setup', 'playing', 'finished'])
 export type LocalGameStatus = z.infer<typeof localGameStatusSchema>
 
-export const localGameRoundPhaseSchema = z.enum(['pickingCategory', 'playing', 'scoring'])
+export const localGameRoundPhaseSchema = z.enum(['pickingCategory', 'playing', 'scoring', 'leaderboard'])
 export type LocalGameRoundPhase = z.infer<typeof localGameRoundPhaseSchema>
 
 export const localGameSchema = z.object({

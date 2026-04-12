@@ -29,7 +29,6 @@ const settings = reactive<LocalGameSettings>({
   trackDuration: 10,
   gameMode: 'random',
   hostSeesAnswer: false,
-  hideScores: false,
   maxRounds: 10,
 })
 

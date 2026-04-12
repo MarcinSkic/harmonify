@@ -11,7 +11,6 @@ import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 const props = defineProps<{
   track: Track
   teams: LocalGameTeam[]
-  hideScores: boolean
   canAdvanceRound: boolean
   category?: { displayName: string, points?: number }
 }>()
@@ -95,13 +94,6 @@ function handleFinishGame() {
             <NumberFieldIncrement />
           </NumberFieldContent>
         </NumberField>
-        <span
-          v-if="!hideScores" class="
-            min-w-12 text-right text-sm text-muted-foreground
-          "
-        >
-          {{ team.score }} pts
-        </span>
       </div>
     </div>
 
