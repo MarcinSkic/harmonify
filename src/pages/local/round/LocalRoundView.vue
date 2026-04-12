@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 import AudioVisualizer from '@/pages/game/round/components/AudioVisualizer.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
+import { useSettingsStore } from '@/stores'
 import CategoryPicker from './components/CategoryPicker.vue'
+import LocalLeaderboard from './components/LocalLeaderboard.vue'
 import LocalPlaybackControls from './components/LocalPlaybackControls.vue'
 import ScoringForm from './components/ScoringForm.vue'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
 const musicPlayerStore = useMusicPlayerStore()
+const settingsStore = useSettingsStore()
+
+const pendingFinish = ref(false)
 
 const game = computed(() => localGameStore.game)
 const track = computed(() => localGameStore.currentTrack)
@@ -52,15 +57,44 @@ async function handlePickCategory(categoryId: string) {
 
 async function handleSubmitScores(scores: Map<string, number>) {
   await localGameStore.submitScores(scores)
-  await localGameStore.nextRound()
 
-  if (localGameStore.game?.status === 'finished') {
-    router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
+  if (settingsStore.hideScores) {
+    await localGameStore.nextRound()
+    if (localGameStore.game?.status === 'finished')
+      router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
+    return
   }
+
+  pendingFinish.value = false
+  await localGameStore.showLeaderboard()
 }
 
 async function handleFinishGame(scores: Map<string, number>) {
   await localGameStore.submitScores(scores)
+
+  if (settingsStore.hideScores) {
+    await localGameStore.finishGame()
+    router.push({ name: 'localResult', params: { id: localGameStore.game!.id } })
+    return
+  }
+
+  pendingFinish.value = true
+  await localGameStore.showLeaderboard()
+}
+
+async function handleContinueFromLeaderboard() {
+  if (pendingFinish.value) {
+    await localGameStore.finishGame()
+    router.push({ name: 'localResult', params: { id: localGameStore.game!.id } })
+  }
+  else {
+    await localGameStore.nextRound()
+    if (localGameStore.game?.status === 'finished')
+      router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
+  }
+}
+
+async function handleFinishFromLeaderboard() {
   await localGameStore.finishGame()
   router.push({ name: 'localResult', params: { id: localGameStore.game!.id } })
 }
@@ -117,11 +151,21 @@ async function handleFinishGame(scores: Map<string, number>) {
         <ScoringForm
           :track="track"
           :teams="game.teams"
-          :hide-scores="game.settings.hideScores"
           :can-advance-round="localGameStore.canAdvanceRound"
           :category="localGameStore.currentCategoryInfo"
           @submit="handleSubmitScores"
           @finish="handleFinishGame"
+        />
+      </template>
+
+      <!-- Leaderboard phase -->
+      <template v-else-if="game.roundPhase === 'leaderboard'">
+        <LocalLeaderboard
+          :teams="localGameStore.sortedTeams"
+          :previous-teams="localGameStore.previousTeams"
+          :can-advance-round="localGameStore.canAdvanceRound && !pendingFinish"
+          @continue="handleContinueFromLeaderboard"
+          @finish="handleFinishFromLeaderboard"
         />
       </template>
     </div>

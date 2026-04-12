@@ -55,7 +55,13 @@ const settingsStore = useSettingsStore()
           class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
         >
           <Label class="text-nowrap">Display audio visualizer</Label>
-          <Switch v-model:model-value="settingsStore.playAnimations" />
+          <Switch v-model:model-value="settingsStore.displayVisualizer" />
+        </div>
+        <div
+          class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
+        >
+          <Label class="text-nowrap">Hide scores</Label>
+          <Switch v-model:model-value="settingsStore.hideScores" />
         </div>
       </div>
     </SheetContent>

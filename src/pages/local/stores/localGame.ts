@@ -16,6 +16,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
 
   const game = ref<LocalGame | null>(null)
   const currentTrack = ref<Track | null>(null)
+  const previousTeams = ref<LocalGame['teams']>([])
 
   const isGameInProgress = computed(() =>
     game.value !== null && game.value.status !== 'finished',
@@ -202,12 +203,22 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!game.value)
       return
 
+    previousTeams.value = JSON.parse(JSON.stringify(game.value.teams)) as LocalGame['teams']
+
     for (const team of game.value.teams) {
       const roundScore = scores.get(team.id) ?? 0
       team.score += roundScore
       team.roundScores.push(roundScore)
     }
 
+    await _persist()
+  }
+
+  async function showLeaderboard() {
+    if (!game.value)
+      return
+
+    game.value.roundPhase = 'leaderboard'
     await _persist()
   }
 
@@ -244,6 +255,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
   return {
     game,
     currentTrack,
+    previousTeams,
     isGameInProgress,
     sortedTeams,
     canAdvanceRound,
@@ -256,6 +268,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     pickCategory,
     showAnswer,
     submitScores,
+    showLeaderboard,
     nextRound,
     finishGame,
     deleteGame,

@@ -10,6 +10,7 @@ export const useSettingsStore = defineStore('settings', {
     autoplay: RemovableRef<Autoplay>
     playAnimations: RemovableRef<boolean>
     displayVisualizer: RemovableRef<boolean>
+    hideScores: RemovableRef<boolean>
   } => {
     const prefferedMotion = usePreferredReducedMotion()
 
@@ -17,6 +18,7 @@ export const useSettingsStore = defineStore('settings', {
       autoplay: useStorage<Autoplay>(LOCAL_STORAGE.AUTOPLAY, 'always'),
       playAnimations: useStorage<boolean>(LOCAL_STORAGE.PLAY_ANIMATIONS, prefferedMotion.value === 'no-preference'),
       displayVisualizer: useStorage<boolean>(LOCAL_STORAGE.DISPLAY_VISUALIZER, true),
+      hideScores: useStorage<boolean>(LOCAL_STORAGE.HIDE_SCORES, false),
     }
   },
 })

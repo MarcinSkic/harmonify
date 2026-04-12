@@ -132,9 +132,6 @@ function toggleUnlimitedRounds() {
 
       <Label class="text-base">Host sees answer</Label>
       <Switch v-model:model-value="settings.hostSeesAnswer" class="mb-2" />
-
-      <Label class="text-base">Hide scores</Label>
-      <Switch v-model:model-value="settings.hideScores" class="mb-2" />
     </div>
   </div>
 </template>
