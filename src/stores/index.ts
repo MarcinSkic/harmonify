@@ -1,3 +1,4 @@
+export { useCategoriesStore } from './categories'
 export { useConnectionStore } from './connection'
 export { useGameDataStore } from './gameData'
 export { useLibraryStore } from './library'

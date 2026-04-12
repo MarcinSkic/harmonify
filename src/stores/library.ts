@@ -21,6 +21,8 @@ export const useLibraryStore = defineStore('library', () => {
     [selectedPlaylistId],
   )
 
+  const enabledTracks = computed(() => tracks.value.filter(t => t.enabled !== false))
+
   const allTags = useLiveQuery(() => LibraryService.getAllTags(), [] as string[])
 
   const selectedPlaylist = computed(() =>
@@ -53,11 +55,16 @@ export const useLibraryStore = defineStore('library', () => {
     return LibraryService.deleteTrack(id)
   }
 
+  async function setTrackEnabled(id: string, enabled: boolean) {
+    return LibraryService.updateTrack(id, { enabled })
+  }
+
   return {
     playlists,
     selectedPlaylistId,
     selectedPlaylist,
     tracks,
+    enabledTracks,
     allTags,
     selectPlaylist,
     createPlaylist,
@@ -65,5 +72,6 @@ export const useLibraryStore = defineStore('library', () => {
     createTrack,
     importTracks,
     removeTrack,
+    setTrackEnabled,
   }
 })

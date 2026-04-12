@@ -44,25 +44,21 @@ async function startPlaying() {
   }
 }
 
-async function stopPlaying() {
-  await musicPlayerStore.pause()
-}
-
-watch(isPlaying, (playing) => {
+watch(isPlaying, async (playing) => {
   if (playing) {
+    await startPlaying()
     if (trackTimer.animate.value)
       trackTimer.animate.value.onfinish = handleTrackTimerFinish
     trackTimer.play()
-    startPlaying()
   }
   else {
     trackTimer.pause()
-    stopPlaying()
+    musicPlayerStore.pause()
   }
 })
 
 onUnmounted(() => {
-  stopPlaying()
+  musicPlayerStore.pause()
 })
 </script>
 

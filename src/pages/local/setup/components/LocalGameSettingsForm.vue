@@ -110,6 +110,26 @@ function toggleUnlimitedRounds() {
         </div>
       </NumberField>
 
+      <Label class="text-base">Game mode</Label>
+      <div class="mb-2 flex w-full gap-2">
+        <Button
+          type="button"
+          class="flex-1"
+          :variant="settings.gameMode === 'random' ? 'default' : 'outline'"
+          @click="settings.gameMode = 'random'"
+        >
+          Random
+        </Button>
+        <Button
+          type="button"
+          class="flex-1"
+          :variant="settings.gameMode === 'category' ? 'default' : 'outline'"
+          @click="settings.gameMode = 'category'"
+        >
+          Categories
+        </Button>
+      </div>
+
       <Label class="text-base">Host sees answer</Label>
       <Switch v-model:model-value="settings.hostSeesAnswer" class="mb-2" />
 

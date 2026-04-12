@@ -6,6 +6,7 @@ import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 import AudioVisualizer from '@/pages/game/round/components/AudioVisualizer.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
+import CategoryPicker from './components/CategoryPicker.vue'
 import LocalPlaybackControls from './components/LocalPlaybackControls.vue'
 import ScoringForm from './components/ScoringForm.vue'
 
@@ -45,6 +46,10 @@ async function handleShowAnswer() {
   await localGameStore.showAnswer()
 }
 
+async function handlePickCategory(categoryId: string) {
+  await localGameStore.pickCategory(categoryId)
+}
+
 async function handleSubmitScores(scores: Map<string, number>) {
   await localGameStore.submitScores(scores)
   await localGameStore.nextRound()
@@ -62,7 +67,7 @@ async function handleFinishGame(scores: Map<string, number>) {
 </script>
 
 <template>
-  <div v-if="game && track" class="grid grid-rows-[1fr_15vh]">
+  <div v-if="game" class="grid grid-rows-[1fr_15vh]">
     <div
       class="
         grid place-content-center place-items-center gap-y-6 self-start p-4
@@ -71,8 +76,16 @@ async function handleFinishGame(scores: Map<string, number>) {
     >
       <span class="text-xl">Round: {{ game.currentRound }}</span>
 
+      <!-- Picking category phase -->
+      <template v-if="game.roundPhase === 'pickingCategory'">
+        <CategoryPicker
+          :categories="localGameStore.allCategories"
+          @pick="handlePickCategory"
+        />
+      </template>
+
       <!-- Playing phase -->
-      <template v-if="game.roundPhase === 'playing'">
+      <template v-else-if="game.roundPhase === 'playing' && track">
         <LocalPlaybackControls
           v-if="musicPlayData"
           :track-duration="game.settings.trackDuration"
@@ -100,12 +113,13 @@ async function handleFinishGame(scores: Map<string, number>) {
       </template>
 
       <!-- Scoring phase -->
-      <template v-else-if="game.roundPhase === 'scoring'">
+      <template v-else-if="game.roundPhase === 'scoring' && track">
         <ScoringForm
           :track="track"
           :teams="game.teams"
           :hide-scores="game.settings.hideScores"
           :can-advance-round="localGameStore.canAdvanceRound"
+          :category="localGameStore.currentCategoryInfo"
           @submit="handleSubmitScores"
           @finish="handleFinishGame"
         />

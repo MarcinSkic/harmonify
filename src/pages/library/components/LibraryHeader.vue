@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Download, Server } from '@lucide/vue'
+import { ArrowLeft, Download, Server, Tags } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { MusicServerService } from '@/services'
@@ -33,6 +33,17 @@ const serverConfigured = MusicServerService.isConfigured()
     </div>
 
     <div class="flex gap-2">
+      <RouterLink :to="{ name: 'libraryCategories' }">
+        <Button variant="outline" class="gap-2">
+          <Tags class="size-4" />
+          <span
+            class="
+              hidden
+              sm:inline
+            "
+          >Categories</span>
+        </Button>
+      </RouterLink>
       <CsvImportButton v-if="libraryStore.selectedPlaylistId !== null" />
       <Button v-if="serverConfigured" variant="outline" class="gap-2" @click="$emit('serverImport')">
         <Server class="size-4" />

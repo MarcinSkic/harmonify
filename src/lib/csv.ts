@@ -1,5 +1,6 @@
 import type { PlaybackRange, TrackAnnotation } from '@/db/schemas'
 import Papa from 'papaparse'
+import z from 'zod'
 
 const PLAYBACK_RANGE_RE = /^(\d+):(\d+)\s*-\s*(\d+):(\d+)$/
 
@@ -31,5 +32,8 @@ export function parseCSV(text: string): TrackAnnotation[] {
       sourceId: row.sourceid.trim(),
       tags: row.tags ? row.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
       playbackRange: row.playbackrange ? parsePlaybackRange(row.playbackrange) : null,
+      enabled: row.enabled != null && row.enabled.trim() !== ''
+        ? z.stringbool().parse(row.enabled.trim().toLowerCase())
+        : undefined,
     }))
 }

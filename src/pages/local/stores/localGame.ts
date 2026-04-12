@@ -1,10 +1,19 @@
-import type { LocalGame, LocalGameSettings, Track } from '@/db/schemas'
+import type { Category, LocalGame, LocalGameSettings, Track } from '@/db/schemas'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
+import {
+  createCategoryPool,
+  getCategoryCounts,
+  isCategoryPoolExhausted,
+  pickFromCategory,
+} from '@/pages/local/engine/categoryPool'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
+import { useCategoriesStore } from '@/stores'
 
 export const useLocalGameStore = defineStore('localGame', () => {
+  const categoriesStore = useCategoriesStore()
+
   const game = ref<LocalGame | null>(null)
   const currentTrack = ref<Track | null>(null)
 
@@ -21,11 +30,37 @@ export const useLocalGameStore = defineStore('localGame', () => {
   const canAdvanceRound = computed(() => {
     if (!game.value)
       return false
-    if (isExhausted(game.value.trackPoolState))
+    const g = game.value
+    const poolExhausted = g.settings.gameMode === 'category'
+      ? !g.categoryPoolState || isCategoryPoolExhausted(g.categoryPoolState)
+      : isExhausted(g.trackPoolState)
+    if (poolExhausted)
       return false
-    if (game.value.settings.maxRounds !== null && game.value.currentRound >= game.value.settings.maxRounds)
+    if (g.settings.maxRounds !== null && g.currentRound >= g.settings.maxRounds)
       return false
     return true
+  })
+
+  const allCategories = computed<Array<{ category: Category, count: number }>>(() => {
+    if (!game.value?.categoryPoolState)
+      return []
+    const counts = getCategoryCounts(game.value.categoryPoolState)
+    const result: Array<{ category: Category, count: number }> = []
+    for (const category of categoriesStore.categories) {
+      if (category.id in counts)
+        result.push({ category, count: counts[category.id] })
+    }
+    return result.sort((a, b) => a.category.order - b.category.order)
+  })
+
+  const currentCategoryInfo = computed<{ displayName: string, points?: number } | undefined>(() => {
+    const categoryId = game.value?.currentCategory
+    if (!categoryId)
+      return undefined
+    const category = categoriesStore.categories.find(c => c.id === categoryId)
+    if (!category)
+      return { displayName: categoryId }
+    return { displayName: category.displayName, points: category.points }
   })
 
   async function _persist() {
@@ -43,14 +78,19 @@ export const useLocalGameStore = defineStore('localGame', () => {
     teams: { name: string }[],
     settings: LocalGameSettings,
     selectedPlaylistIds: string[],
+    enabledCategories: Category[] = [],
   ): Promise<string> {
     const tracks = selectedPlaylistIds.length > 0
       ? await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds).toArray()
       : await db.tracks.toArray()
 
-    const playableTrackIds = tracks
-      .filter(t => t.audioUrl)
-      .map(t => t.id)
+    const playableTracks = tracks.filter(t => t.audioUrl && t.enabled !== false)
+
+    const isCategory = settings.gameMode === 'category'
+    const trackPoolState = createPool(isCategory ? [] : playableTracks.map(t => t.id))
+    const categoryPoolState = isCategory
+      ? createCategoryPool(playableTracks, enabledCategories)
+      : undefined
 
     const id = crypto.randomUUID()
 
@@ -66,7 +106,8 @@ export const useLocalGameStore = defineStore('localGame', () => {
       })),
       settings,
       currentRound: 0,
-      trackPoolState: createPool(playableTrackIds),
+      trackPoolState,
+      categoryPoolState,
       selectedPlaylistIds,
       roundPhase: 'playing',
     }
@@ -100,14 +141,49 @@ export const useLocalGameStore = defineStore('localGame', () => {
   async function startRound() {
     if (!game.value)
       return
-    if (isExhausted(game.value.trackPoolState))
+    const g = game.value
+
+    if (g.settings.gameMode === 'random') {
+      if (isExhausted(g.trackPoolState))
+        return
+
+      const { trackId, newState } = pickRandom(g.trackPoolState)
+
+      g.currentRound++
+      g.trackPoolState = newState
+      g.currentTrackId = trackId
+      g.roundPhase = 'playing'
+
+      await _loadTrack(trackId)
+    }
+    else {
+      if (!g.categoryPoolState || isCategoryPoolExhausted(g.categoryPoolState))
+        return
+
+      g.currentRound++
+      g.currentTrackId = undefined
+      g.currentCategory = undefined
+      currentTrack.value = null
+      g.roundPhase = 'pickingCategory'
+    }
+
+    await _persist()
+  }
+
+  async function pickCategory(categoryId: string) {
+    if (!game.value || game.value.settings.gameMode !== 'category')
+      return
+    if (!game.value.categoryPoolState)
       return
 
-    const { trackId, newState } = pickRandom(game.value.trackPoolState)
+    const { trackId, newState } = pickFromCategory(
+      game.value.categoryPoolState,
+      categoryId,
+    )
 
-    game.value.currentRound++
-    game.value.trackPoolState = newState
+    game.value.categoryPoolState = newState
     game.value.currentTrackId = trackId
+    game.value.currentCategory = categoryId
     game.value.roundPhase = 'playing'
 
     await _loadTrack(trackId)
@@ -171,10 +247,13 @@ export const useLocalGameStore = defineStore('localGame', () => {
     isGameInProgress,
     sortedTeams,
     canAdvanceRound,
+    allCategories,
+    currentCategoryInfo,
     createGame,
     resumeGame,
     findUnfinishedGame,
     startRound,
+    pickCategory,
     showAnswer,
     submitScores,
     nextRound,

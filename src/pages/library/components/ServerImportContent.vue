@@ -47,6 +47,7 @@ async function handleImport() {
         tags: [],
         playlistIds: [playlistId],
         metadataSource: 'server' as const,
+        enabled: true,
       }))
 
       await LibraryService.addTracks(tracks)

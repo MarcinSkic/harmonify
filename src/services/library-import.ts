@@ -32,6 +32,7 @@ export function spotifyTrackToTrack(track: SpotifyTrack, playlistIds: string[]):
     tags: [],
     playlistIds,
     metadataSource: 'spotify',
+    enabled: true,
   }
 }
 

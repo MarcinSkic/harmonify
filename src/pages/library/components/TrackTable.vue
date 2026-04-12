@@ -2,6 +2,7 @@
 import { Music, Trash2 } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -39,7 +40,7 @@ const libraryStore = useLibraryStore()
         >
           Tags
         </TableHead>
-        <TableHead class="w-10" />
+        <TableHead class="w-20" />
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -49,7 +50,7 @@ const libraryStore = useLibraryStore()
           <p>No tracks yet</p>
         </div>
       </TableEmpty>
-      <TableRow v-for="track in libraryStore.tracks" :key="track.id">
+      <TableRow v-for="track in libraryStore.tracks" :key="track.id" :class="{ 'opacity-50': track.enabled === false }">
         <TableCell>
           <div class="flex items-center gap-3">
             <img
@@ -101,19 +102,25 @@ const libraryStore = useLibraryStore()
           </div>
         </TableCell>
         <TableCell>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="size-8"
-            @click="libraryStore.removeTrack(track.id)"
-          >
-            <Trash2
-              class="
-                size-4 text-muted-foreground
-                hover:text-destructive
-              "
+          <div class="flex items-center gap-1">
+            <Switch
+              :model-value="track.enabled !== false"
+              @update:model-value="libraryStore.setTrackEnabled(track.id, $event)"
             />
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="size-8"
+              @click="libraryStore.removeTrack(track.id)"
+            >
+              <Trash2
+                class="
+                  size-4 text-muted-foreground
+                  hover:text-destructive
+                "
+              />
+            </Button>
+          </div>
         </TableCell>
       </TableRow>
     </TableBody>
