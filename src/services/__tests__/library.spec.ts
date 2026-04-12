@@ -14,6 +14,7 @@ function makeTrack(overrides: Partial<Omit<Track, 'id' | 'createdAt'>> = {}): Om
     playlistIds: [],
     metadataSource: 'manual',
     playbackRange: null,
+    enabled: true,
     ...overrides,
   }
 }

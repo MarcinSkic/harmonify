@@ -31,5 +31,8 @@ export function parseCSV(text: string): TrackAnnotation[] {
       sourceId: row.sourceid.trim(),
       tags: row.tags ? row.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
       playbackRange: row.playbackrange ? parsePlaybackRange(row.playbackrange) : null,
+      enabled: row.enabled != null && row.enabled.trim() !== ''
+        ? !['false', '0', 'no'].includes(row.enabled.trim().toLowerCase())
+        : undefined,
     }))
 }

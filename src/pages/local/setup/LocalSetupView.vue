@@ -33,7 +33,7 @@ const settings = reactive<LocalGameSettings>({
   maxRounds: 10,
 })
 
-const hasTracksSelected = computed(() => libraryStore.tracks.length > 0)
+const hasTracksSelected = computed(() => libraryStore.enabledTracks.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
 )
@@ -114,14 +114,14 @@ async function handleGameStart() {
       </TabsContent>
       <TabsContent value="settings" class="h-[60vh] space-y-4 overflow-y-auto">
         <TeamManager v-model="teams" />
-        <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.tracks.length" />
+        <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
       </TabsContent>
     </Tabs>
     <template v-else>
       <LibraryTrackPicker />
       <div class="space-y-4">
         <TeamManager v-model="teams" />
-        <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.tracks.length" />
+        <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
       </div>
     </template>
     <Button

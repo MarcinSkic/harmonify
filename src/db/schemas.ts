@@ -13,6 +13,7 @@ export interface TrackAnnotation {
   sourceId: string
   tags: string[]
   playbackRange: PlaybackRange | null
+  enabled?: boolean
 }
 
 export const trackSchema = z.object({
@@ -28,6 +29,7 @@ export const trackSchema = z.object({
   tags: z.array(z.string()),
   playlistIds: z.array(z.uuid()),
   metadataSource: metadataSourceSchema,
+  enabled: z.boolean().default(true),
   createdAt: z.number(),
 })
 export type Track = z.infer<typeof trackSchema>

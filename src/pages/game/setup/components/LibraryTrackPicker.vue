@@ -49,7 +49,7 @@ const libraryStore = useLibraryStore()
         <ListMusic class="size-4 shrink-0" />
         <span class="flex-1 truncate text-left">All tracks</span>
         <Badge variant="secondary" class="ml-auto">
-          {{ libraryStore.tracks.length }}
+          {{ libraryStore.enabledTracks.length }}
         </Badge>
       </Button>
 
@@ -71,7 +71,7 @@ const libraryStore = useLibraryStore()
       v-if="libraryStore.selectedPlaylistId !== null" class="mt-4 border-t pt-3"
     >
       <p class="text-sm text-muted-foreground">
-        {{ libraryStore.tracks.length }} tracks selected
+        {{ libraryStore.enabledTracks.length }} tracks selected
       </p>
     </div>
   </ScrollArea>

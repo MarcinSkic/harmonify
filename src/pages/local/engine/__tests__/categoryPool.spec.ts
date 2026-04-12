@@ -20,6 +20,7 @@ function makeTrack(id: string, tags: string[]): Track {
     tags,
     playlistIds: [],
     metadataSource: 'manual',
+    enabled: true,
     createdAt: 0,
   }
 }

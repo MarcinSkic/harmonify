@@ -26,3 +26,13 @@ db.version(3).stores({
   localGames: 'id, status, createdAt',
   categories: 'id, order, enabled, *tagFilter',
 })
+
+db.version(4).stores({
+  playlists: 'id, name, source, createdAt',
+  tracks: 'id, sourceId, name, *playlistIds, *tags, metadataSource, createdAt, enabled',
+  localGames: 'id, status, createdAt',
+  categories: 'id, order, enabled, *tagFilter',
+}).upgrade(tx => tx.table('tracks').toCollection().modify((track) => {
+  if (track.enabled === undefined)
+    track.enabled = true
+}))

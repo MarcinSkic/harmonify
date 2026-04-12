@@ -26,7 +26,7 @@ async function handleGameStart() {
 
   await musicPlayerStore.turnOn()
 
-  const spotifyTracks = libraryStore.tracks.map(t => LibraryImportService.trackToSpotifyTrack(t))
+  const spotifyTracks = libraryStore.enabledTracks.map(t => LibraryImportService.trackToSpotifyTrack(t))
 
   connectionStore.sendMessage({
     $type: 'message/startGameDto',
@@ -42,7 +42,7 @@ function disableLoading() {
   isLoading.value = false
 }
 
-const hasTracksSelected = computed(() => libraryStore.tracks.length > 0)
+const hasTracksSelected = computed(() => libraryStore.enabledTracks.length > 0)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)

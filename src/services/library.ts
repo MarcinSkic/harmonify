@@ -88,7 +88,10 @@ export async function applyCSVToPlaylist(
       notFound.push(row.sourceId)
       continue
     }
-    await db.tracks.update(track.id, { tags: row.tags, playbackRange: row.playbackRange })
+    const updateData: Partial<Track> = { tags: row.tags, playbackRange: row.playbackRange }
+    if (row.enabled !== undefined)
+      updateData.enabled = row.enabled
+    await db.tracks.update(track.id, updateData)
     updated++
   }
 
@@ -173,7 +176,9 @@ export async function countTracksMatchingTagFilter(
     return 0
   const matchedIds = new Set<string>()
   const tracks = await db.tracks.where('tags').anyOf(tagFilter).toArray()
-  for (const track of tracks)
-    matchedIds.add(track.id)
+  for (const track of tracks) {
+    if (track.enabled !== false)
+      matchedIds.add(track.id)
+  }
   return matchedIds.size
 }

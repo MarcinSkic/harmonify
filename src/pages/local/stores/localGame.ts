@@ -84,7 +84,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
       ? await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds).toArray()
       : await db.tracks.toArray()
 
-    const playableTracks = tracks.filter(t => t.audioUrl)
+    const playableTracks = tracks.filter(t => t.audioUrl && t.enabled !== false)
 
     const isCategory = settings.gameMode === 'category'
     const trackPoolState = createPool(isCategory ? [] : playableTracks.map(t => t.id))
