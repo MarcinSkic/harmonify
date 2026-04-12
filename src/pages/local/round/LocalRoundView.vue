@@ -32,6 +32,13 @@ const musicPlayData = computed(() => {
   }
 })
 
+const effectiveDuration = computed(() => {
+  const range = track.value?.playbackRange
+  if (range)
+    return (range.endMs - range.startMs) / 1000
+  return game.value?.settings.trackDuration ?? 30
+})
+
 onMounted(async () => {
   if (!game.value) {
     const gameId = router.currentRoute.value.params.id as string
@@ -95,7 +102,7 @@ async function handleContinueFromLeaderboard() {
       <template v-else-if="game.roundPhase === 'playing' && track">
         <LocalPlaybackControls
           v-if="musicPlayData"
-          :track-duration="game.settings.trackDuration"
+          :track-duration="effectiveDuration"
           :music-play-data="musicPlayData"
         />
 
