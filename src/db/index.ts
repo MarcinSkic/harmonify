@@ -45,3 +45,16 @@ db.version(5).stores({
   categories: 'id, order, enabled, *tagFilter',
   linkPreviews: 'url, status, nextRetryAt',
 })
+
+db.version(6).stores({
+  playlists: 'id, name, source, createdAt',
+  tracks: 'id, sourceId, name, *playlistIds, *tags, metadataSource, createdAt, enabled',
+  localGames: 'id, status, createdAt',
+  categories: 'id, order, enabled, *tagFilter',
+  linkPreviews: 'url, status, nextRetryAt',
+}).upgrade(tx => tx.table('tracks').toCollection().modify((track) => {
+  if (track.previewPageUrl !== undefined) {
+    track.previewImageUrl = track.previewPageUrl
+    delete track.previewPageUrl
+  }
+}))
