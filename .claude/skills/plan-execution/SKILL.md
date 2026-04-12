@@ -1,6 +1,6 @@
 ---
 name: plan-execution
-description: Skill describing standard workflow when executing plan
+description: "Standard workflow when executing a plan. TRIGGER when: user asks to execute/implement/realize a plan from .claude/.plans/, user says 'zrealizuj plan', 'execute plan', 'implement plan', or references a plan file path."
 ---
 
 # Plan Execution Workflow

@@ -58,3 +58,18 @@ db.version(6).stores({
     delete track.previewPageUrl
   }
 }))
+
+db.version(7).stores({
+  playlists: 'id, name, source, createdAt',
+  tracks: 'id, sourceId, name, *playlistIds, *tags, metadataSource, createdAt, enabled',
+  localGames: 'id, status, createdAt',
+  categories: 'id, order, enabled, *tagFilter',
+  linkPreviews: 'url, status, nextRetryAt',
+}).upgrade(tx => tx.table('localGames').toCollection().modify((game) => {
+  if (game.categoryPoolState && !game.categoryPoolState.initialCounts) {
+    const initialCounts: Record<string, number> = {}
+    for (const [id, ids] of Object.entries(game.categoryPoolState.categoryPools))
+      initialCounts[id] = (ids as string[]).length
+    game.categoryPoolState.initialCounts = initialCounts
+  }
+}))
