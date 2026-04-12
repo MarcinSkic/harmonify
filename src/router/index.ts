@@ -68,6 +68,11 @@ const router = createRouter({
       component: () => import('@/pages/library/LibraryView.vue'),
     },
     {
+      path: '/library/categories',
+      name: 'libraryCategories',
+      component: () => import('@/pages/library/categories/CategoriesView.vue'),
+    },
+    {
       path: '/cover',
       name: 'cover',
       component: () => import(`@/pages/cover/CoverCreatorView.vue`),

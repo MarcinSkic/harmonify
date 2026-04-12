@@ -10,13 +10,14 @@ import { Breakpoint } from '@/consts'
 import LibraryTrackPicker from '@/pages/game/setup/components/LibraryTrackPicker.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
-import { useLibraryStore } from '@/stores'
+import { useCategoriesStore, useLibraryStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
 import TeamManager from './components/TeamManager.vue'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
 const libraryStore = useLibraryStore()
+const categoriesStore = useCategoriesStore()
 const musicPlayerStore = useMusicPlayerStore()
 const { width: screenWidth } = useWindowSize()
 
@@ -36,10 +37,9 @@ const hasTracksSelected = computed(() => libraryStore.tracks.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
 )
-const taggedTracksCount = computed(() =>
-  libraryStore.tracks.filter(t => t.tags.length > 0).length,
+const hasEnabledCategories = computed(() =>
+  categoriesStore.enabledCategories.length > 0,
 )
-const hasTaggedTracks = computed(() => taggedTracksCount.value > 0)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)
@@ -48,8 +48,8 @@ const startButtonText = computed(() => {
     return 'Select a playlist'
   if (!hasValidTeams.value)
     return 'Fill in team names'
-  if (settings.gameMode === 'category' && !hasTaggedTracks.value)
-    return 'No tagged tracks'
+  if (settings.gameMode === 'category' && !hasEnabledCategories.value)
+    return 'Create a category first'
   if (isLoading.value)
     return 'Loading...'
   return 'Play!'
@@ -59,8 +59,8 @@ async function handleGameStart() {
   if (!hasValidTeams.value || !hasTracksSelected.value)
     return
 
-  if (settings.gameMode === 'category' && !hasTaggedTracks.value) {
-    toast.error('No tracks with tags in selection')
+  if (settings.gameMode === 'category' && !hasEnabledCategories.value) {
+    toast.error('Create an enabled category in the library first')
     return
   }
 
@@ -77,6 +77,7 @@ async function handleGameStart() {
       teams.value.map(t => ({ name: t.name.trim() })),
       settings,
       selectedPlaylistIds,
+      categoriesStore.enabledCategories,
     )
 
     await localGameStore.startRound()
@@ -129,7 +130,7 @@ async function handleGameStart() {
         !musicPlayerStore.ready
           || !hasTracksSelected
           || !hasValidTeams
-          || (settings.gameMode === 'category' && !hasTaggedTracks)
+          || (settings.gameMode === 'category' && !hasEnabledCategories)
           || isLoading
       "
       type="submit"

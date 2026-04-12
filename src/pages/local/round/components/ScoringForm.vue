@@ -12,7 +12,7 @@ const props = defineProps<{
   teams: LocalGameTeam[]
   hideScores: boolean
   canAdvanceRound: boolean
-  category?: string
+  category?: { displayName: string, points?: number }
 }>()
 
 const emit = defineEmits<{
@@ -40,9 +40,18 @@ function handleFinishGame() {
 <template>
   <div class="grid place-items-center gap-6">
     <div class="grid justify-items-center gap-2 text-center">
-      <Badge v-if="category" variant="secondary" class="text-sm">
-        {{ category }}
-      </Badge>
+      <div
+        v-if="category" class="flex flex-wrap items-center justify-center gap-2"
+      >
+        <Badge variant="secondary" class="text-sm">
+          {{ category.displayName }}
+        </Badge>
+        <Badge
+          v-if="category.points !== undefined" variant="outline" class="text-sm"
+        >
+          {{ category.points }} pts
+        </Badge>
+      </div>
       <img
         v-if="track.albumImageUrl"
         :src="track.albumImageUrl"

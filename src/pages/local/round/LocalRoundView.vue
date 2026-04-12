@@ -46,8 +46,8 @@ async function handleShowAnswer() {
   await localGameStore.showAnswer()
 }
 
-async function handlePickCategory(tag: string) {
-  await localGameStore.pickCategory(tag)
+async function handlePickCategory(categoryId: string) {
+  await localGameStore.pickCategory(categoryId)
 }
 
 async function handleSubmitScores(scores: Map<string, number>) {
@@ -119,7 +119,7 @@ async function handleFinishGame(scores: Map<string, number>) {
           :teams="game.teams"
           :hide-scores="game.settings.hideScores"
           :can-advance-round="localGameStore.canAdvanceRound"
-          :category="game.currentCategory"
+          :category="localGameStore.currentCategoryInfo"
           @submit="handleSubmitScores"
           @finish="handleFinishGame"
         />

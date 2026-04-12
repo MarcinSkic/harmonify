@@ -41,6 +41,18 @@ export const playlistSchema = z.object({
 })
 export type Playlist = z.infer<typeof playlistSchema>
 
+export const categorySchema = z.object({
+  id: z.uuid(),
+  tagFilter: z.array(z.string()).min(1),
+  displayName: z.string(),
+  description: z.string().optional(),
+  points: z.number().optional(),
+  order: z.number(),
+  enabled: z.boolean(),
+  createdAt: z.number(),
+})
+export type Category = z.infer<typeof categorySchema>
+
 // Local game schemas
 
 export const trackPoolStateSchema = z.object({
@@ -50,7 +62,7 @@ export const trackPoolStateSchema = z.object({
 export type TrackPoolState = z.infer<typeof trackPoolStateSchema>
 
 export const categoryPoolStateSchema = z.object({
-  tagPools: z.record(z.string(), z.array(z.string())),
+  categoryPools: z.record(z.string(), z.array(z.string())),
   playedTrackIds: z.array(z.string()),
 })
 export type CategoryPoolState = z.infer<typeof categoryPoolStateSchema>

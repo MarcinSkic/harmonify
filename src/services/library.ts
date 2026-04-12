@@ -1,8 +1,9 @@
-import type { Playlist, Track, TrackAnnotation } from '@/db/schemas'
+import type { Category, Playlist, Track, TrackAnnotation } from '@/db/schemas'
 import { db } from '@/db'
 
 type NewPlaylist = Omit<Playlist, 'id' | 'createdAt'>
 type NewTrack = Omit<Track, 'id' | 'createdAt'>
+type NewCategory = Omit<Category, 'id' | 'createdAt' | 'order'>
 
 // Playlists
 
@@ -102,4 +103,77 @@ export async function getAllTags(): Promise<string[]> {
       tags.add(tag)
   }
   return [...tags].sort()
+}
+
+// Categories
+
+export async function addCategory(data: NewCategory): Promise<string> {
+  const id = crypto.randomUUID()
+  await db.transaction('rw', db.categories, async () => {
+    const existing = await db.categories.toArray()
+    const maxOrder = existing.reduce((acc, c) => Math.max(acc, c.order), -1)
+    await db.categories.add({
+      ...data,
+      id,
+      order: maxOrder + 1,
+      createdAt: Date.now(),
+    })
+  })
+  return id
+}
+
+export async function updateCategory(
+  id: string,
+  data: Partial<Omit<Category, 'id' | 'createdAt'>>,
+): Promise<void> {
+  await db.categories.update(id, data)
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await db.categories.delete(id)
+}
+
+export async function getAllCategories(): Promise<Category[]> {
+  const categories = await db.categories.toArray()
+  return categories.sort((a, b) => {
+    if (a.order !== b.order)
+      return a.order - b.order
+    return a.createdAt - b.createdAt
+  })
+}
+
+export async function moveCategory(
+  id: string,
+  direction: 'up' | 'down',
+): Promise<void> {
+  await db.transaction('rw', db.categories, async () => {
+    const sorted = (await db.categories.toArray()).sort((a, b) => {
+      if (a.order !== b.order)
+        return a.order - b.order
+      return a.createdAt - b.createdAt
+    })
+    const index = sorted.findIndex(c => c.id === id)
+    if (index === -1)
+      return
+    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= sorted.length)
+      return
+
+    const current = sorted[index]
+    const neighbor = sorted[swapIndex]
+    await db.categories.update(current.id, { order: neighbor.order })
+    await db.categories.update(neighbor.id, { order: current.order })
+  })
+}
+
+export async function countTracksMatchingTagFilter(
+  tagFilter: string[],
+): Promise<number> {
+  if (tagFilter.length === 0)
+    return 0
+  const matchedIds = new Set<string>()
+  const tracks = await db.tracks.where('tags').anyOf(tagFilter).toArray()
+  for (const track of tracks)
+    matchedIds.add(track.id)
+  return matchedIds.size
 }

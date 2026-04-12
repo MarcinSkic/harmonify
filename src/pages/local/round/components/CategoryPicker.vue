@@ -1,18 +1,19 @@
 <script setup lang="ts">
+import type { Category } from '@/db/schemas'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
 defineProps<{
-  categories: Array<{ tag: string, count: number }>
+  categories: Array<{ category: Category, count: number }>
 }>()
 
 const emit = defineEmits<{
-  pick: [tag: string]
+  pick: [categoryId: string]
 }>()
 
-function handleClick(tag: string, count: number) {
+function handleClick(categoryId: string, count: number) {
   if (count > 0)
-    emit('pick', tag)
+    emit('pick', categoryId)
 }
 </script>
 
@@ -36,24 +37,35 @@ function handleClick(tag: string, count: number) {
       "
     >
       <Card
-        v-for="cat in categories"
-        :key="cat.tag"
+        v-for="{ category, count } in categories"
+        :key="category.id"
         class="transition" :class="[
-          cat.count > 0
+          count > 0
             ? `
               cursor-pointer
               hover:border-primary
             `
             : 'pointer-events-none opacity-40',
         ]"
-        :data-testid="`category-${cat.tag}`"
-        @click="handleClick(cat.tag, cat.count)"
+        :data-testid="`category-${category.id}`"
+        @click="handleClick(category.id, count)"
       >
-        <CardContent class="flex flex-col items-center gap-2 p-4">
-          <span class="text-lg font-semibold">{{ cat.tag }}</span>
-          <Badge :variant="cat.count > 0 ? 'secondary' : 'outline'">
-            {{ cat.count }} left
-          </Badge>
+        <CardContent class="flex flex-col items-center gap-2 p-4 text-center">
+          <span class="text-lg font-semibold">{{ category.displayName }}</span>
+          <span
+            v-if="category.description"
+            class="text-xs text-muted-foreground"
+          >
+            {{ category.description }}
+          </span>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <Badge v-if="category.points !== undefined" variant="secondary">
+              {{ category.points }} pts
+            </Badge>
+            <Badge :variant="count > 0 ? 'secondary' : 'outline'">
+              {{ count }} left
+            </Badge>
+          </div>
         </CardContent>
       </Card>
     </div>
