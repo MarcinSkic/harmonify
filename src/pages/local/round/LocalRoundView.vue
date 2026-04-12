@@ -138,6 +138,7 @@ async function handleContinueFromLeaderboard() {
           :track="track"
           :teams="game.teams"
           :category="localGameStore.currentCategoryInfo"
+          :settings="game.settings"
           @submit="handleSubmitScores"
         />
       </template>

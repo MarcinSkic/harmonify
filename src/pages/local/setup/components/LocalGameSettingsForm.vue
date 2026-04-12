@@ -130,6 +130,24 @@ function toggleUnlimitedRounds() {
         </Button>
       </div>
 
+      <Label for="partialPoints" class="text-base">Partial points (artist/album)</Label>
+      <NumberField
+        id="partialPoints"
+        v-model:model-value="settings.partialPoints"
+        class="
+          mb-2 flex w-full items-stretch gap-0 justify-self-end
+          sm:w-40
+          lg:w-full
+        "
+        :min="0"
+      >
+        <NumberFieldContent>
+          <NumberFieldDecrement />
+          <NumberFieldInput />
+          <NumberFieldIncrement />
+        </NumberFieldContent>
+      </NumberField>
+
       <Label class="text-base">Host sees answer</Label>
       <Switch v-model:model-value="settings.hostSeesAnswer" class="mb-2" />
     </div>

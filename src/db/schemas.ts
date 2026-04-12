@@ -104,6 +104,7 @@ export const localGameSettingsSchema = z.object({
   gameMode: localGameGameModeSchema,
   hostSeesAnswer: z.boolean(),
   maxRounds: z.number().nullable(),
+  partialPoints: z.number().default(2),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 

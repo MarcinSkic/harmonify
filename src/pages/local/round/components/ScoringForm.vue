@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LocalGameTeam, Track } from '@/db/schemas'
+import type { LocalGameSettings, LocalGameTeam, Track } from '@/db/schemas'
 import { computed, reactive } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,11 +12,14 @@ const props = defineProps<{
   track: Track
   teams: LocalGameTeam[]
   category?: { displayName: string, points?: number }
+  settings: LocalGameSettings
 }>()
 
 const emit = defineEmits<{
   submit: [scores: Map<string, number>]
 }>()
+const categoryPoints = computed(() => props.category?.points)
+const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.round(categoryPoints.value / 2) : undefined)
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 
@@ -78,7 +81,7 @@ function handleNextRound() {
       </div>
     </div>
 
-    <div class="w-full max-w-sm space-y-3">
+    <div class="w-full max-w-lg space-y-3">
       <div
         v-for="team in teams" :key="team.id"
         class="flex items-center gap-3"
@@ -95,6 +98,32 @@ function handleNextRound() {
             <NumberFieldIncrement />
           </NumberFieldContent>
         </NumberField>
+        <div v-if="categoryPoints !== undefined" class="flex shrink-0 gap-1">
+          <Button
+            type="button" variant="outline" size="sm"
+            @click="scores[team.id] = categoryPoints!"
+          >
+            Full
+          </Button>
+          <Button
+            type="button" variant="outline" size="sm"
+            @click="scores[team.id] = halfPoints!"
+          >
+            Half
+          </Button>
+          <Button
+            type="button" variant="outline" size="sm"
+            @click="scores[team.id] += settings.partialPoints"
+          >
+            Artist
+          </Button>
+          <Button
+            type="button" variant="outline" size="sm"
+            @click="scores[team.id] += settings.partialPoints"
+          >
+            Album
+          </Button>
+        </div>
       </div>
     </div>
 
