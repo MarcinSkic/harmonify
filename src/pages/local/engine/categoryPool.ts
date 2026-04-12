@@ -24,7 +24,11 @@ export function createCategoryPool(
     categoryPools[category.id] = shuffle(matchingIds)
   }
 
-  return { categoryPools, playedTrackIds: [] }
+  const initialCounts: Record<string, number> = {}
+  for (const [id, ids] of Object.entries(categoryPools))
+    initialCounts[id] = ids.length
+
+  return { categoryPools, playedTrackIds: [], initialCounts }
 }
 
 export function pickFromCategory(
@@ -48,6 +52,7 @@ export function pickFromCategory(
     newState: {
       categoryPools: newCategoryPools,
       playedTrackIds: [...state.playedTrackIds, trackId],
+      initialCounts: state.initialCounts,
     },
   }
 }

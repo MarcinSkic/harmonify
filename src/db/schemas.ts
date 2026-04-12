@@ -84,6 +84,7 @@ export type TrackPoolState = z.infer<typeof trackPoolStateSchema>
 export const categoryPoolStateSchema = z.object({
   categoryPools: z.record(z.uuid(), z.array(z.uuid())),
   playedTrackIds: z.array(z.uuid()),
+  initialCounts: z.record(z.uuid(), z.number()),
 })
 export type CategoryPoolState = z.infer<typeof categoryPoolStateSchema>
 

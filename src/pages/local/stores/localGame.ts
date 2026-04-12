@@ -42,14 +42,15 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return true
   })
 
-  const allCategories = computed<Array<{ category: Category, count: number }>>(() => {
+  const allCategories = computed<Array<{ category: Category, count: number, initialCount: number }>>(() => {
     if (!game.value?.categoryPoolState)
       return []
     const counts = getCategoryCounts(game.value.categoryPoolState)
-    const result: Array<{ category: Category, count: number }> = []
+    const initials = game.value.categoryPoolState.initialCounts
+    const result: Array<{ category: Category, count: number, initialCount: number }> = []
     for (const category of categoriesStore.categories) {
       if (category.id in counts)
-        result.push({ category, count: counts[category.id] })
+        result.push({ category, count: counts[category.id], initialCount: initials[category.id] ?? counts[category.id] })
     }
     return result.sort((a, b) => a.category.order - b.category.order)
   })
