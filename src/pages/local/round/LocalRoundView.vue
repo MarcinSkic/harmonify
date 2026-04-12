@@ -55,6 +55,14 @@ async function handlePickCategory(categoryId: string) {
   await localGameStore.pickCategory(categoryId)
 }
 
+async function handleCheckSourceId(sourceId: string) {
+  return localGameStore.checkSourceId(sourceId)
+}
+
+async function handlePlaySpecificTrack(sourceId: string) {
+  return localGameStore.playSpecificTrack(sourceId)
+}
+
 async function handleSubmitScores(scores: Map<string, number>) {
   await localGameStore.submitScores(scores)
 
@@ -114,6 +122,8 @@ async function handleFinishFromLeaderboard() {
       <template v-if="game.roundPhase === 'pickingCategory'">
         <CategoryPicker
           :categories="localGameStore.allCategories"
+          :on-check-source-id="handleCheckSourceId"
+          :on-play-specific-track="handlePlaySpecificTrack"
           @pick="handlePickCategory"
         />
       </template>

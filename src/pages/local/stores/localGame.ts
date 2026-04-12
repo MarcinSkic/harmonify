@@ -192,6 +192,47 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
+  async function checkSourceId(sourceId: string): Promise<'available' | 'already-played' | 'not-found'> {
+    const track = await db.tracks.where('sourceId').equals(sourceId).first()
+    if (!track)
+      return 'not-found'
+    if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
+      return 'already-played'
+    return 'available'
+  }
+
+  async function playSpecificTrack(sourceId: string): Promise<'played' | 'already-played' | 'not-found'> {
+    if (!game.value || game.value.settings.gameMode !== 'category')
+      return 'not-found'
+    if (!game.value.categoryPoolState)
+      return 'not-found'
+
+    const track = await db.tracks.where('sourceId').equals(sourceId).first()
+    if (!track)
+      return 'not-found'
+
+    const poolState = game.value.categoryPoolState
+    const alreadyPlayed = poolState.playedTrackIds.includes(track.id)
+
+    // Remove this track from all category pools
+    const newCategoryPools: Record<string, string[]> = {}
+    for (const [id, ids] of Object.entries(poolState.categoryPools))
+      newCategoryPools[id] = ids.filter(tid => tid !== track.id)
+
+    game.value.categoryPoolState = {
+      categoryPools: newCategoryPools,
+      playedTrackIds: [...poolState.playedTrackIds, track.id],
+      initialCounts: poolState.initialCounts,
+    }
+    game.value.currentTrackId = track.id
+    game.value.currentCategory = undefined
+    game.value.roundPhase = 'playing'
+
+    await _loadTrack(track.id)
+    await _persist()
+    return alreadyPlayed ? 'already-played' : 'played'
+  }
+
   async function showAnswer() {
     if (!game.value)
       return
@@ -267,6 +308,8 @@ export const useLocalGameStore = defineStore('localGame', () => {
     findUnfinishedGame,
     startRound,
     pickCategory,
+    checkSourceId,
+    playSpecificTrack,
     showAnswer,
     submitScores,
     showLeaderboard,
