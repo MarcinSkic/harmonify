@@ -14,6 +14,7 @@ export interface TrackAnnotation {
   tags: string[]
   playbackRange: PlaybackRange | null
   enabled?: boolean
+  previewImageUrl?: string
 }
 
 export const trackSchema = z.object({
@@ -30,6 +31,7 @@ export const trackSchema = z.object({
   playlistIds: z.array(z.uuid()),
   metadataSource: metadataSourceSchema,
   enabled: z.boolean().default(true),
+  previewImageUrl: z.string().optional(),
   createdAt: z.number(),
 })
 export type Track = z.infer<typeof trackSchema>
@@ -54,6 +56,22 @@ export const categorySchema = z.object({
   createdAt: z.number(),
 })
 export type Category = z.infer<typeof categorySchema>
+
+// Link preview schemas
+
+export const linkPreviewStatusSchema = z.enum(['pending', 'fetched', 'error'])
+export type LinkPreviewStatus = z.infer<typeof linkPreviewStatusSchema>
+
+export const linkPreviewSchema = z.object({
+  url: z.string(),
+  imageBlob: z.instanceof(Blob).optional(),
+  status: linkPreviewStatusSchema,
+  fetchedAt: z.number().optional(),
+  error: z.string().optional(),
+  retryCount: z.number().default(0),
+  nextRetryAt: z.number().optional(),
+})
+export type LinkPreview = z.infer<typeof linkPreviewSchema>
 
 // Local game schemas
 
