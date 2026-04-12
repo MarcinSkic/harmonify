@@ -4,15 +4,15 @@ import { computed, ref, watch } from 'vue'
 import { db } from '@/db'
 import { useLiveQuery } from './useLiveQuery'
 
-export function useLinkPreview(previewPageUrl: Ref<string | undefined>) {
+export function useLinkPreview(previewImageUrl: Ref<string | undefined>) {
   const preview = useLiveQuery(
     async () => {
-      if (!previewPageUrl.value)
+      if (!previewImageUrl.value)
         return null
-      return await db.linkPreviews.get(previewPageUrl.value) ?? null
+      return await db.linkPreviews.get(previewImageUrl.value) ?? null
     },
     null,
-    [previewPageUrl],
+    [previewImageUrl],
   )
 
   const blobUrl = ref<string | null>(null)

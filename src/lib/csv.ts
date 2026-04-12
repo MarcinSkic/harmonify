@@ -35,6 +35,6 @@ export function parseCSV(text: string): TrackAnnotation[] {
       enabled: row.enabled != null && row.enabled.trim() !== ''
         ? z.stringbool().parse(row.enabled.trim().toLowerCase())
         : undefined,
-      previewPageUrl: row.previewpageurl?.trim() || undefined,
+      previewImageUrl: row.previewimageurl?.trim() || undefined,
     }))
 }

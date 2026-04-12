@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const libraryStore = useLibraryStore()
-const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewPageUrl))
+const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 </script>
 
 <template>

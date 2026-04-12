@@ -14,7 +14,7 @@ export interface TrackAnnotation {
   tags: string[]
   playbackRange: PlaybackRange | null
   enabled?: boolean
-  previewPageUrl?: string
+  previewImageUrl?: string
 }
 
 export const trackSchema = z.object({
@@ -31,7 +31,7 @@ export const trackSchema = z.object({
   playlistIds: z.array(z.uuid()),
   metadataSource: metadataSourceSchema,
   enabled: z.boolean().default(true),
-  previewPageUrl: z.string().optional(),
+  previewImageUrl: z.string().optional(),
   createdAt: z.number(),
 })
 export type Track = z.infer<typeof trackSchema>

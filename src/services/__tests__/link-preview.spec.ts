@@ -13,9 +13,9 @@ afterEach(() => {
 
 describe('ensurePreviewRecord', () => {
   it('should create a pending record when none exists', async () => {
-    await ensurePreviewRecord('https://anilist.co/anime/123/')
+    await ensurePreviewRecord('https://img.anili.st/media/123')
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/123/')
+    const record = await db.linkPreviews.get('https://img.anili.st/media/123')
     expect(record).toBeDefined()
     expect(record!.status).toBe('pending')
     expect(record!.retryCount).toBe(0)
@@ -24,38 +24,38 @@ describe('ensurePreviewRecord', () => {
   it('should not overwrite an existing fetched record', async () => {
     const blob = new Blob(['img'], { type: 'image/jpeg' })
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/123/',
+      url: 'https://img.anili.st/media/123',
       imageBlob: blob,
       status: 'fetched',
       fetchedAt: 1000,
       retryCount: 0,
     })
 
-    await ensurePreviewRecord('https://anilist.co/anime/123/')
+    await ensurePreviewRecord('https://img.anili.st/media/123')
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/123/')
+    const record = await db.linkPreviews.get('https://img.anili.st/media/123')
     expect(record!.status).toBe('fetched')
     expect(record!.fetchedAt).toBe(1000)
   })
 
   it('should not overwrite an existing error record', async () => {
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/456/',
+      url: 'https://example.com/image.jpg',
       status: 'error',
       error: 'HTTP 500',
       retryCount: 2,
     })
 
-    await ensurePreviewRecord('https://anilist.co/anime/456/')
+    await ensurePreviewRecord('https://example.com/image.jpg')
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/456/')
+    const record = await db.linkPreviews.get('https://example.com/image.jpg')
     expect(record!.status).toBe('error')
     expect(record!.retryCount).toBe(2)
   })
 })
 
 describe('processQueue', () => {
-  it('should fetch and store blob for valid anilist URL', async () => {
+  it('should fetch and store blob via proxy', async () => {
     const fakeBlob = new Blob(['fake-image'], { type: 'image/jpeg' })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -63,47 +63,32 @@ describe('processQueue', () => {
     }))
 
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/12345/',
+      url: 'https://img.anili.st/media/12345',
       status: 'pending',
       retryCount: 0,
     })
 
     await processQueue()
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/12345/')
+    const record = await db.linkPreviews.get('https://img.anili.st/media/12345')
     expect(record!.status).toBe('fetched')
     expect(record!.imageBlob).toBeDefined()
     expect(record!.fetchedAt).toBeGreaterThan(0)
     expect(fetch).toHaveBeenCalledWith(`/api/linkPreview?url=${encodeURIComponent('https://img.anili.st/media/12345')}`)
   })
 
-  it('should mark unsupported host as permanent error', async () => {
-    await db.linkPreviews.put({
-      url: 'https://example.com/some-page',
-      status: 'pending',
-      retryCount: 0,
-    })
-
-    await processQueue()
-
-    const record = await db.linkPreviews.get('https://example.com/some-page')
-    expect(record!.status).toBe('error')
-    expect(record!.error).toBe('unsupported host')
-    expect(record!.retryCount).toBe(3)
-  })
-
   it('should increment retryCount on fetch failure', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')))
 
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/999/',
+      url: 'https://example.com/image.jpg',
       status: 'pending',
       retryCount: 0,
     })
 
     await processQueue()
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/999/')
+    const record = await db.linkPreviews.get('https://example.com/image.jpg')
     expect(record!.status).toBe('error')
     expect(record!.error).toBe('Network error')
     expect(record!.retryCount).toBe(1)
@@ -114,7 +99,7 @@ describe('processQueue', () => {
     vi.stubGlobal('fetch', vi.fn())
 
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/111/',
+      url: 'https://example.com/image.jpg',
       status: 'error',
       retryCount: 1,
       nextRetryAt: Date.now() + 999999,
@@ -122,7 +107,7 @@ describe('processQueue', () => {
 
     await processQueue()
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/111/')
+    const record = await db.linkPreviews.get('https://example.com/image.jpg')
     expect(record!.retryCount).toBe(1)
     expect(fetch).not.toHaveBeenCalled()
   })
@@ -135,7 +120,7 @@ describe('processQueue', () => {
     }))
 
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/222/',
+      url: 'https://example.com/image.jpg',
       status: 'error',
       retryCount: 1,
       nextRetryAt: Date.now() - 1000,
@@ -143,7 +128,7 @@ describe('processQueue', () => {
 
     await processQueue()
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/222/')
+    const record = await db.linkPreviews.get('https://example.com/image.jpg')
     expect(record!.status).toBe('fetched')
   })
 
@@ -151,7 +136,7 @@ describe('processQueue', () => {
     vi.stubGlobal('fetch', vi.fn())
 
     await db.linkPreviews.put({
-      url: 'https://anilist.co/anime/333/',
+      url: 'https://example.com/image.jpg',
       status: 'error',
       retryCount: 3,
       nextRetryAt: Date.now() - 1000,
@@ -159,7 +144,7 @@ describe('processQueue', () => {
 
     await processQueue()
 
-    const record = await db.linkPreviews.get('https://anilist.co/anime/333/')
+    const record = await db.linkPreviews.get('https://example.com/image.jpg')
     expect(record!.retryCount).toBe(3)
     expect(fetch).not.toHaveBeenCalled()
   })

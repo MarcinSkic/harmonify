@@ -1,5 +1,4 @@
 import { db } from '@/db'
-import { parseAnilistImageUrl } from '@/lib/anilist'
 
 const MAX_RETRIES = 3
 const BACKOFF_BASE_MS = 5000
@@ -41,18 +40,8 @@ export async function processQueue(): Promise<void> {
     const queue = [...pending, ...retryable]
 
     for (const preview of queue) {
-      const imageUrl = parseAnilistImageUrl(preview.url)
-      if (!imageUrl) {
-        await db.linkPreviews.update(preview.url, {
-          status: 'error' as const,
-          error: 'unsupported host',
-          retryCount: MAX_RETRIES,
-        })
-        continue
-      }
-
       try {
-        const proxyUrl = `/api/linkPreview?url=${encodeURIComponent(imageUrl)}`
+        const proxyUrl = `/api/linkPreview?url=${encodeURIComponent(preview.url)}`
         const response = await fetch(proxyUrl)
         if (!response.ok)
           throw new Error(`HTTP ${response.status}`)

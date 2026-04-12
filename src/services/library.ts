@@ -93,9 +93,9 @@ export async function applyCSVToPlaylist(
     const updateData: Partial<Track> = { tags: row.tags, playbackRange: row.playbackRange }
     if (row.enabled !== undefined)
       updateData.enabled = row.enabled
-    if (row.previewPageUrl !== undefined) {
-      updateData.previewPageUrl = row.previewPageUrl
-      previewUrlSet.add(row.previewPageUrl)
+    if (row.previewImageUrl !== undefined) {
+      updateData.previewImageUrl = row.previewImageUrl
+      previewUrlSet.add(row.previewImageUrl)
     }
     await db.tracks.update(track.id, updateData)
     updated++

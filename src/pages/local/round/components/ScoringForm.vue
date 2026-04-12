@@ -21,7 +21,7 @@ const emit = defineEmits<{
   finish: [scores: Map<string, number>]
 }>()
 
-const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewPageUrl))
+const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 
 const scores = reactive<Record<string, number>>(
   Object.fromEntries(props.teams.map(t => [t.id, 0])),
