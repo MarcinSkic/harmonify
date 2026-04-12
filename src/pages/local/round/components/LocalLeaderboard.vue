@@ -9,12 +9,10 @@ import { useSettingsStore } from '@/stores'
 const props = defineProps<{
   teams: LocalGameTeam[]
   previousTeams: LocalGameTeam[]
-  canAdvanceRound: boolean
 }>()
 
 const emit = defineEmits<{
   continue: []
-  finish: []
 }>()
 
 const settingsStore = useSettingsStore()
@@ -73,22 +71,12 @@ const LocalLeaderboardBar = defineComponent({
       </div>
     </TransitionGroup>
 
-    <div class="flex gap-3">
-      <Button
-        v-if="canAdvanceRound"
-        type="button"
-        @click="emit('continue')"
-      >
-        Next round
-      </Button>
-      <Button
-        type="button"
-        :variant="canAdvanceRound ? 'outline' : 'default'"
-        @click="emit('finish')"
-      >
-        Finish game
-      </Button>
-    </div>
+    <Button
+      type="button"
+      @click="emit('continue')"
+    >
+      Next round
+    </Button>
   </div>
 </template>
 

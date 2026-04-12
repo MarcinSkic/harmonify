@@ -11,13 +11,11 @@ import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 const props = defineProps<{
   track: Track
   teams: LocalGameTeam[]
-  canAdvanceRound: boolean
   category?: { displayName: string, points?: number }
 }>()
 
 const emit = defineEmits<{
   submit: [scores: Map<string, number>]
-  finish: [scores: Map<string, number>]
 }>()
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
@@ -32,10 +30,6 @@ function buildScoresMap(): Map<string, number> {
 
 function handleNextRound() {
   emit('submit', buildScoresMap())
-}
-
-function handleFinishGame() {
-  emit('finish', buildScoresMap())
 }
 </script>
 
@@ -54,27 +48,29 @@ function handleFinishGame() {
           {{ category.points }} pts
         </Badge>
       </div>
-      <div class="flex items-center justify-center gap-3">
-        <img
-          v-if="track.albumImageUrl"
-          :src="track.albumImageUrl"
-          alt="Album cover"
-          width="200"
-          height="200"
-          class="rounded-md"
-        >
+      <div class="flex items-start justify-center gap-4">
+        <div class="grid w-[200px] justify-items-center gap-2">
+          <img
+            v-if="track.albumImageUrl"
+            :src="track.albumImageUrl"
+            alt="Album cover"
+            width="200"
+            height="200"
+            class="rounded-md"
+          >
+          <BaseDisplay
+            :title="track.name"
+            :author="track.artists.join(', ')"
+            :album="track.albumName"
+          />
+        </div>
         <img
           v-if="previewImageUrl"
           :src="previewImageUrl"
           alt="Link preview"
-          class="aspect-1200/630 max-w-md rounded-md object-cover"
+          class="max-h-[400px] max-w-xs rounded-md object-cover"
         >
       </div>
-      <BaseDisplay
-        :title="track.name"
-        :author="track.artists.join(', ')"
-        :album="track.albumName"
-      />
     </div>
 
     <div class="w-full max-w-sm space-y-3">
@@ -97,21 +93,11 @@ function handleFinishGame() {
       </div>
     </div>
 
-    <div class="flex gap-3">
-      <Button
-        v-if="canAdvanceRound"
-        type="button"
-        @click="handleNextRound"
-      >
-        Next round
-      </Button>
-      <Button
-        type="button"
-        :variant="canAdvanceRound ? 'outline' : 'default'"
-        @click="handleFinishGame"
-      >
-        Finish game
-      </Button>
-    </div>
+    <Button
+      type="button"
+      @click="handleNextRound"
+    >
+      Next round
+    </Button>
   </div>
 </template>

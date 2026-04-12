@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
@@ -17,8 +17,6 @@ const localGameStore = useLocalGameStore()
 const musicPlayerStore = useMusicPlayerStore()
 const settingsStore = useSettingsStore()
 
-const pendingFinish = ref(false)
-
 const game = computed(() => localGameStore.game)
 const track = computed(() => localGameStore.currentTrack)
 
@@ -32,6 +30,13 @@ const musicPlayData = computed(() => {
     uri: track.value.audioUrl,
     trackStart_ms: startMs,
   }
+})
+
+const effectiveDuration = computed(() => {
+  const range = track.value?.playbackRange
+  if (range)
+    return (range.endMs - range.startMs) / 1000
+  return game.value?.settings.trackDuration ?? 30
 })
 
 onMounted(async () => {
@@ -65,38 +70,13 @@ async function handleSubmitScores(scores: Map<string, number>) {
     return
   }
 
-  pendingFinish.value = false
-  await localGameStore.showLeaderboard()
-}
-
-async function handleFinishGame(scores: Map<string, number>) {
-  await localGameStore.submitScores(scores)
-
-  if (settingsStore.hideScores) {
-    await localGameStore.finishGame()
-    router.push({ name: 'localResult', params: { id: localGameStore.game!.id } })
-    return
-  }
-
-  pendingFinish.value = true
   await localGameStore.showLeaderboard()
 }
 
 async function handleContinueFromLeaderboard() {
-  if (pendingFinish.value) {
-    await localGameStore.finishGame()
-    router.push({ name: 'localResult', params: { id: localGameStore.game!.id } })
-  }
-  else {
-    await localGameStore.nextRound()
-    if (localGameStore.game?.status === 'finished')
-      router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
-  }
-}
-
-async function handleFinishFromLeaderboard() {
-  await localGameStore.finishGame()
-  router.push({ name: 'localResult', params: { id: localGameStore.game!.id } })
+  await localGameStore.nextRound()
+  if (localGameStore.game?.status === 'finished')
+    router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
 }
 </script>
 
@@ -122,7 +102,7 @@ async function handleFinishFromLeaderboard() {
       <template v-else-if="game.roundPhase === 'playing' && track">
         <LocalPlaybackControls
           v-if="musicPlayData"
-          :track-duration="game.settings.trackDuration"
+          :track-duration="effectiveDuration"
           :music-play-data="musicPlayData"
         />
 
@@ -151,10 +131,8 @@ async function handleFinishFromLeaderboard() {
         <ScoringForm
           :track="track"
           :teams="game.teams"
-          :can-advance-round="localGameStore.canAdvanceRound"
           :category="localGameStore.currentCategoryInfo"
           @submit="handleSubmitScores"
-          @finish="handleFinishGame"
         />
       </template>
 
@@ -163,9 +141,7 @@ async function handleFinishFromLeaderboard() {
         <LocalLeaderboard
           :teams="localGameStore.sortedTeams"
           :previous-teams="localGameStore.previousTeams"
-          :can-advance-round="localGameStore.canAdvanceRound && !pendingFinish"
           @continue="handleContinueFromLeaderboard"
-          @finish="handleFinishFromLeaderboard"
         />
       </template>
     </div>
