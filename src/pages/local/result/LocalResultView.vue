@@ -45,13 +45,28 @@ function handleBackToMenu() {
       md:p-8
     "
   >
-    <h1 class="text-center text-3xl font-bold">
+    <h1
+      class="
+        text-center text-3xl font-bold
+        lg:text-5xl
+      "
+    >
       Game Over
     </h1>
 
     <!-- Team ranking -->
-    <div class="mx-auto w-full max-w-lg">
-      <h2 class="mb-3 text-xl font-semibold">
+    <div
+      class="
+        mx-auto w-full max-w-lg
+        lg:max-w-2xl
+      "
+    >
+      <h2
+        class="
+          mb-3 text-xl font-semibold
+          lg:text-2xl
+        "
+      >
         Results
       </h2>
       <Table>
@@ -81,11 +96,26 @@ function handleBackToMenu() {
     </div>
 
     <!-- Played tracks -->
-    <div v-if="playedTracks.length > 0" class="mx-auto w-full max-w-lg">
-      <h2 class="mb-3 text-xl font-semibold">
+    <div
+      v-if="playedTracks.length > 0" class="
+        mx-auto w-full max-w-lg
+        lg:max-w-2xl
+      "
+    >
+      <h2
+        class="
+          mb-3 text-xl font-semibold
+          lg:text-2xl
+        "
+      >
         Played tracks
       </h2>
-      <ScrollArea class="max-h-60 rounded-lg border p-3">
+      <ScrollArea
+        class="
+          max-h-60 rounded-lg border p-3
+          lg:max-h-96
+        "
+      >
         <div class="space-y-2">
           <div
             v-for="(track, index) in playedTracks" :key="track.id"
@@ -96,7 +126,10 @@ function handleBackToMenu() {
               v-if="track.albumImageUrl"
               :src="track.albumImageUrl"
               alt=""
-              class="size-8 rounded-sm"
+              class="
+                size-8 rounded-sm
+                lg:size-12
+              "
             >
             <BaseDisplay
               :title="track.name"

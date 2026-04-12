@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { LocalGameTeam } from '@/db/schemas'
-import { TransitionPresets, useTimeout, useTransition } from '@vueuse/core'
+import { TransitionPresets, useTimeout, useTransition, useWindowSize } from '@vueuse/core'
 import { computed, defineComponent, h, toRef } from 'vue'
 import { Button } from '@/components/ui/button'
-import { AnimationDuration } from '@/consts'
+import { AnimationDuration, Breakpoint } from '@/consts'
 import { useSettingsStore } from '@/stores'
 
 const props = defineProps<{
@@ -18,7 +18,8 @@ const emit = defineEmits<{
 const settingsStore = useSettingsStore()
 const showCurrentScore = useTimeout(AnimationDuration.D1000)
 
-const maxBarWidth = 200
+const { width: screenWidth } = useWindowSize()
+const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 500 : 200)
 
 const leaderboard = computed(() => {
   const source = showCurrentScore.value || !settingsStore.playAnimations
@@ -30,7 +31,7 @@ const leaderboard = computed(() => {
 
   return sorted.map(team => ({
     ...team,
-    targetWidth: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth,
+    targetWidth: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
   }))
 })
 
@@ -44,7 +45,7 @@ const LocalLeaderboardBar = defineComponent({
       transition: TransitionPresets.linear,
     })
     return () => h('div', {
-      class: 'h-4 rounded-md bg-primary',
+      class: 'h-4 rounded-md bg-primary lg:h-6',
       style: { width: `${width.value}px` },
     })
   },
@@ -53,20 +54,42 @@ const LocalLeaderboardBar = defineComponent({
 
 <template>
   <div class="grid place-items-center gap-6">
-    <h2 class="text-xl font-semibold">
+    <h2
+      class="
+        text-xl font-semibold
+        lg:text-3xl
+      "
+    >
       Leaderboard
     </h2>
 
-    <TransitionGroup name="results" tag="div" class="grid w-full max-w-md gap-3">
+    <TransitionGroup
+      name="results" tag="div" class="
+        grid w-full max-w-md gap-3
+        lg:max-w-2xl lg:gap-4
+        xl:max-w-4xl
+      "
+    >
       <div
         v-for="entry in leaderboard" :key="entry.id" class="
           flex items-center gap-3
+          lg:gap-4
         "
       >
-        <span class="min-w-20 shrink-0 text-base font-medium">{{ entry.name }}</span>
+        <span
+          class="
+            min-w-20 shrink-0 text-base font-medium
+            lg:min-w-28 lg:text-xl
+          "
+        >{{ entry.name }}</span>
         <div class="flex flex-1 items-center gap-2">
           <LocalLeaderboardBar :target-width="entry.targetWidth" />
-          <span class="min-w-10 text-right text-sm tabular-nums">{{ entry.score }}</span>
+          <span
+            class="
+              min-w-10 text-right text-sm tabular-nums
+              lg:text-lg
+            "
+          >{{ entry.score }}</span>
         </div>
       </div>
     </TransitionGroup>

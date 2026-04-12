@@ -29,6 +29,7 @@ const ringColor = computed(() => {
     class="
       ring-bg grid size-16 place-items-center rounded-full border-[6px]
       border-transparent text-2xl font-bold
+      lg:size-24 lg:border-8 lg:text-4xl
     "
   >
     {{ current }}

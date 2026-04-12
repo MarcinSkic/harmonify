@@ -86,9 +86,15 @@ async function handleContinueFromLeaderboard() {
       class="
         grid place-content-center place-items-center gap-y-6 self-start p-4
         md:mt-4 md:place-self-center md:p-0
+        lg:gap-y-8
       "
     >
-      <span class="text-xl">Round: {{ game.currentRound }}</span>
+      <span
+        class="
+          text-xl
+          lg:text-3xl
+        "
+      >Round: {{ game.currentRound }}</span>
 
       <!-- Picking category phase -->
       <template v-if="game.roundPhase === 'pickingCategory'">
