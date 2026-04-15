@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
 import { useLinkPreview } from '@/composables/useLinkPreview'
-import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 
 const props = defineProps<{
   track: Track
@@ -51,88 +50,107 @@ function handleNextRound() {
           {{ category.points }} pts
         </Badge>
       </div>
-      <div class="flex items-stretch justify-center gap-4">
-        <div
-          class="
-            grid h-0 min-h-full grid-rows-[1fr_auto] justify-items-center gap-2
-          "
-        >
-          <img
-            v-if="track.albumImageUrl"
-            :src="track.albumImageUrl"
-            alt="Album cover"
-            class="aspect-square h-full min-h-0 rounded-md object-cover"
-          >
-          <BaseDisplay
-            :title="track.name"
-            :author="track.artists.join(', ')"
-            :album="track.albumName"
-            stacked
-          />
-        </div>
-        <img
-          v-if="previewImageUrl"
-          :src="previewImageUrl"
-          alt="Link preview"
-          class="
-            max-h-100 max-w-xs rounded-md object-cover
-            lg:max-h-170 lg:max-w-300
-          "
-        >
-      </div>
     </div>
 
-    <div class="w-full max-w-lg space-y-3">
-      <div
-        v-for="team in teams" :key="team.id"
-        class="flex items-center gap-3"
+    <div class="flex w-full flex-wrap items-center justify-center gap-6">
+      <img
+        v-if="previewImageUrl"
+        :src="previewImageUrl"
+        alt="Link preview"
+        class="
+          max-h-100 max-w-xs rounded-md object-cover
+          lg:max-h-170 lg:max-w-300
+        "
       >
-        <Label class="min-w-20 shrink-0 text-base">{{ team.name }}</Label>
-        <NumberField
-          v-model:model-value="scores[team.id]"
-          class="flex flex-1 items-stretch gap-0"
-          :min="0"
-        >
-          <NumberFieldContent>
-            <NumberFieldDecrement />
-            <NumberFieldInput :data-testid="`team-score-${team.name}`" />
-            <NumberFieldIncrement />
-          </NumberFieldContent>
-        </NumberField>
-        <div v-if="categoryPoints !== undefined" class="flex shrink-0 gap-1">
-          <Button
-            type="button" variant="outline" size="sm"
-            @click="scores[team.id] = categoryPoints!"
+      <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-wrap justify-center gap-6">
+          <div
+            v-for="team in teams" :key="team.id"
+            class="flex flex-col items-center gap-2"
           >
-            Full
-          </Button>
-          <Button
-            type="button" variant="outline" size="sm"
-            @click="scores[team.id] = halfPoints!"
-          >
-            Half
-          </Button>
-          <Button
-            type="button" variant="outline" size="sm"
-            @click="scores[team.id] += settings.partialPoints"
-          >
-            Artist
-          </Button>
-          <Button
-            type="button" variant="outline" size="sm"
-            @click="scores[team.id] += settings.partialPoints"
-          >
-            Album
-          </Button>
+            <Label class="text-base">{{ team.name }}</Label>
+            <NumberField
+              v-model:model-value="scores[team.id]"
+              class="flex items-stretch gap-0"
+              :min="0"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput :data-testid="`team-score-${team.name}`" />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+            <div
+              v-if="categoryPoints !== undefined" class="
+                flex flex-wrap justify-center gap-1
+              "
+            >
+              <Button
+                type="button" variant="outline" size="sm"
+                @click="scores[team.id] = categoryPoints!"
+              >
+                Full
+              </Button>
+              <Button
+                type="button" variant="outline" size="sm"
+                @click="scores[team.id] = halfPoints!"
+              >
+                Half
+              </Button>
+              <Button
+                type="button" variant="outline" size="sm"
+                @click="scores[team.id] += settings.partialPoints"
+              >
+                Artist
+              </Button>
+              <Button
+                type="button" variant="outline" size="sm"
+                @click="scores[team.id] += settings.partialPoints"
+              >
+                Album
+              </Button>
+            </div>
+          </div>
         </div>
+
+        <Button
+          type="button"
+          @click="handleNextRound"
+        >
+          Next round
+        </Button>
       </div>
     </div>
 
-    <Button
-      type="button"
-      @click="handleNextRound"
-    >
-      Next round
-    </Button>
+    <div class="flex w-full flex-wrap items-center justify-center gap-4">
+      <img
+        v-if="track.albumImageUrl"
+        :src="track.albumImageUrl"
+        alt="Album cover"
+        class="
+          aspect-square max-h-32 rounded-md object-cover
+          lg:max-h-48
+        "
+      >
+      <div
+        class="
+          flex flex-col gap-3
+          lg:gap-5
+        "
+      >
+        <span
+          class="
+            text-3xl font-semibold
+            lg:text-6xl
+          "
+        >{{ track.name }}</span>
+        <span
+          class="
+            text-2xl text-muted-foreground
+            lg:text-4xl
+          "
+        >{{ track.artists.join(', ') }}</span>
+      </div>
+    </div>
   </div>
 </template>
