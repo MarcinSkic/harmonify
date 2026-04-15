@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
 import { useLinkPreview } from '@/composables/useLinkPreview'
+import TrackDisplayWithCover from './TrackDisplayWithCover.vue'
 
 const props = defineProps<{
   track: Track
@@ -52,18 +53,33 @@ function handleNextRound() {
       </div>
     </div>
 
-    <div class="flex w-full flex-wrap items-center justify-center gap-6">
-      <img
-        v-if="previewImageUrl"
-        :src="previewImageUrl"
-        alt="Link preview"
-        class="
-          max-h-100 max-w-xs rounded-md object-cover
-          lg:max-h-170 lg:max-w-300
-        "
-      >
+    <div
+      class="
+        flex flex-wrap items-center justify-center gap-8
+        lg:gap-12
+      "
+    >
       <div class="flex flex-col items-center gap-4">
-        <div class="flex flex-wrap justify-center gap-6">
+        <img
+          v-if="previewImageUrl"
+          :src="previewImageUrl"
+          alt="Link preview"
+          class="
+            max-h-100 max-w-xs rounded-md object-cover
+            lg:max-h-170 lg:max-w-300
+          "
+        >
+        <TrackDisplayWithCover
+          :image-url="track.albumImageUrl"
+          :title="track.name"
+          :artists="track.artists"
+        />
+      </div>
+
+      <div class="flex flex-col items-center gap-4">
+        <div
+          class="flex max-h-[75vh] flex-col flex-wrap content-center gap-6"
+        >
           <div
             v-for="team in teams" :key="team.id"
             class="flex flex-col items-center gap-2"
@@ -119,37 +135,6 @@ function handleNextRound() {
         >
           Next round
         </Button>
-      </div>
-    </div>
-
-    <div class="flex w-full flex-wrap items-center justify-center gap-4">
-      <img
-        v-if="track.albumImageUrl"
-        :src="track.albumImageUrl"
-        alt="Album cover"
-        class="
-          aspect-square max-h-32 rounded-md object-cover
-          lg:max-h-48
-        "
-      >
-      <div
-        class="
-          flex flex-col gap-3
-          lg:gap-5
-        "
-      >
-        <span
-          class="
-            text-3xl font-semibold
-            lg:text-6xl
-          "
-        >{{ track.name }}</span>
-        <span
-          class="
-            text-2xl text-muted-foreground
-            lg:text-4xl
-          "
-        >{{ track.artists.join(', ') }}</span>
       </div>
     </div>
   </div>
