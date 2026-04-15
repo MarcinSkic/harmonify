@@ -81,7 +81,12 @@ async function handleContinueFromLeaderboard() {
 </script>
 
 <template>
-  <div v-if="game" class="grid grid-rows-[1fr_15vh]">
+  <div
+    v-if="game"
+    :class="game.roundPhase === 'playing' ? 'grid grid-rows-[1fr_15vh]' : `
+      grid grid-rows-[1fr]
+    `"
+  >
     <div
       class="
         grid place-content-center place-items-center gap-y-6 self-start p-4
@@ -153,6 +158,6 @@ async function handleContinueFromLeaderboard() {
         />
       </template>
     </div>
-    <AudioVisualizer />
+    <AudioVisualizer v-if="game.roundPhase === 'playing'" />
   </div>
 </template>

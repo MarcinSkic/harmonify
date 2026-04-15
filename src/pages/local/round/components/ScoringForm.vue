@@ -55,18 +55,23 @@ function handleNextRound() {
 
     <div
       class="
-        flex flex-wrap items-center justify-center gap-8
+        flex flex-wrap items-start justify-center gap-8
         lg:gap-12
       "
     >
-      <div class="flex flex-col items-center gap-4">
+      <div
+        class="
+          flex max-w-xs flex-col items-center gap-4
+          lg:max-w-300
+        "
+      >
         <img
           v-if="previewImageUrl"
           :src="previewImageUrl"
           alt="Link preview"
           class="
-            max-h-100 max-w-xs rounded-md object-cover
-            lg:max-h-170 lg:max-w-300
+            max-h-100 max-w-full rounded-md object-cover
+            lg:max-h-170
           "
         >
         <TrackDisplayWithCover
@@ -78,13 +83,16 @@ function handleNextRound() {
 
       <div class="flex flex-col items-center gap-4">
         <div
-          class="flex max-h-[75vh] flex-col flex-wrap content-center gap-6"
+          class="
+            flex max-h-[calc(100dvh-14rem)] flex-col flex-wrap content-start
+            gap-6
+          "
         >
           <div
             v-for="team in teams" :key="team.id"
             class="flex flex-col items-center gap-2"
           >
-            <Label class="text-base">{{ team.name }}</Label>
+            <Label class="max-w-40 truncate text-base">{{ team.name }}</Label>
             <NumberField
               v-model:model-value="scores[team.id]"
               class="flex items-stretch gap-0"
