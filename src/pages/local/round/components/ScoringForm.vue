@@ -67,6 +67,7 @@ function handleNextRound() {
             :title="track.name"
             :author="track.artists.join(', ')"
             :album="track.albumName"
+            stacked
           />
         </div>
         <img
