@@ -13,6 +13,7 @@ export type SpotifyPlayedTrack = z.infer<typeof spotifyPlayedTrackSchema>
 
 export interface MusicPlayer {
   _turnOn: () => Promise<void>
+  _preload: (track: MusicPlayData) => Promise<void>
   _play: (track: MusicPlayData) => Promise<void>
   _seek: (time_ms: number) => Promise<void>
   _resume: () => Promise<void>
