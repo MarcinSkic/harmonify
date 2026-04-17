@@ -54,15 +54,6 @@ const LocalLeaderboardBar = defineComponent({
 
 <template>
   <div class="grid place-items-center gap-6">
-    <h2
-      class="
-        text-xl font-semibold
-        lg:text-3xl
-      "
-    >
-      Leaderboard
-    </h2>
-
     <TransitionGroup
       name="results" tag="div" class="
         grid w-full max-w-md gap-3
