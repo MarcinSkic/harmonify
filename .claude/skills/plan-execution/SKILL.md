@@ -7,15 +7,16 @@ description: "Standard workflow when executing a plan. TRIGGER when: user asks t
 
 ## 1. Ensure a detailed plan exists
 
-- Plans are located in `.claude/.plans/`
+- Plans are located in `.claude/.plans/` (repo-relative). **Never** use `~/.claude/plans/` or the plan-mode default path — always save plans in the repo.
 - **Do not write any code without a detailed implementation plan.** A plan must specify:
   - Concrete phases/steps with clear scope
   - Which files to create, modify, or delete
   - Key implementation details (data structures, APIs, component interfaces)
   - Dependencies between phases
-- If the user provides a plan — read it fully and verify it has enough detail. If anything is ambiguous or under-specified, **ask the user to clarify before proceeding**.
-- If no plan exists — **write one first**, save it in `.claude/.plans/`, and present it to the user for review. Do not start coding until the user approves the plan.
+- If the user provides a plan file — read it fully and verify it has enough detail. If anything is ambiguous or under-specified, **ask the user to clarify before proceeding**.
+- If no plan exists — **write one first** in `.claude/.plans/`, and present it to the user for review. Do not start coding until the user approves the plan.
 - If the plan is high-level/vague (only goals, no implementation details) — expand it into a detailed implementation plan, ask the user to confirm, and only then proceed.
+- **Where to save the expanded plan**: write the detailed plan back into the **same starter file** the user pointed at (e.g. `.claude/.plans/20-display-teams.md`), replacing or augmenting its content. Preserve the original brief at the top of the file as context. Do **not** save the expanded plan to a different location — even if plan mode suggests one.
 
 ## 2. Branch check
 
