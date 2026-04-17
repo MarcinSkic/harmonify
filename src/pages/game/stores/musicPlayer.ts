@@ -25,6 +25,9 @@ export const useMusicPlayerStore = defineStore('musicPlayer', {
     async turnOn() {
       await this.player?._turnOn()
     },
+    async preload(track: MusicPlayData) {
+      await this.player?._preload(track)
+    },
     async play(track: MusicPlayData) {
       await this.player?._play(track)
     },

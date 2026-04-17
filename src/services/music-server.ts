@@ -10,6 +10,16 @@ function authHeaders(): HeadersInit {
   }
 }
 
+export function needsAuth(url: string): boolean {
+  return baseUrl !== '' && url.startsWith(baseUrl)
+}
+
+export async function fetchAudioBlobUrl(url: string): Promise<string> {
+  const response = await fetch(url, { headers: authHeaders() })
+  const blob = await response.blob()
+  return URL.createObjectURL(blob)
+}
+
 const serverPlaylistSchema = z.object({
   name: z.string(),
   trackCount: z.number(),

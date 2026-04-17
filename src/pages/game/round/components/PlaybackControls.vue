@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Pause, Play } from '@lucide/vue'
 import { useAnimate, watchOnce } from '@vueuse/core'
-import { onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useGameDataStore, useSettingsStore } from '@/stores'
@@ -99,6 +99,10 @@ watch(isPlaying, (isPlaying) => {
 
     stopPlaying()
   }
+})
+
+onMounted(() => {
+  musicPlayerStore.preload(gameDataStore.musicPlayData)
 })
 
 onUnmounted(() => {
