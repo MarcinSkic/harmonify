@@ -93,6 +93,7 @@ export const localGameTeamSchema = z.object({
   name: z.string(),
   score: z.number(),
   roundScores: z.array(z.number()),
+  disabled: z.boolean().default(false),
 })
 export type LocalGameTeam = z.infer<typeof localGameTeamSchema>
 
@@ -126,6 +127,7 @@ export const localGameSchema = z.object({
   selectedPlaylistIds: z.array(z.string()),
   currentTrackId: z.string().optional(),
   currentCategory: z.string().optional(),
+  currentTeamId: z.string().optional(),
   roundPhase: localGameRoundPhaseSchema,
 })
 export type LocalGame = z.infer<typeof localGameSchema>

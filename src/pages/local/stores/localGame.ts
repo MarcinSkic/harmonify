@@ -65,6 +65,25 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return { displayName: category.displayName, points: category.points }
   })
 
+  const currentTeam = computed(() => {
+    const id = game.value?.currentTeamId
+    if (!id)
+      return undefined
+    return game.value?.teams.find(t => t.id === id)
+  })
+
+  function getNextEnabledTeamId(fromId: string | undefined): string | undefined {
+    if (!game.value)
+      return undefined
+    const enabled = game.value.teams.filter(t => !t.disabled)
+    if (enabled.length === 0)
+      return undefined
+    const idx = fromId ? enabled.findIndex(t => t.id === fromId) : -1
+    if (idx === -1)
+      return enabled[0].id
+    return enabled[(idx + 1) % enabled.length].id
+  }
+
   async function _persist() {
     if (!game.value)
       return
@@ -96,21 +115,25 @@ export const useLocalGameStore = defineStore('localGame', () => {
 
     const id = crypto.randomUUID()
 
+    const createdTeams = teams.map(t => ({
+      id: crypto.randomUUID(),
+      name: t.name,
+      score: 0,
+      roundScores: [],
+      disabled: false,
+    }))
+
     game.value = {
       id,
       createdAt: Date.now(),
       status: 'playing',
-      teams: teams.map(t => ({
-        id: crypto.randomUUID(),
-        name: t.name,
-        score: 0,
-        roundScores: [],
-      })),
+      teams: createdTeams,
       settings,
       currentRound: 0,
       trackPoolState,
       categoryPoolState,
       selectedPlaylistIds,
+      currentTeamId: createdTeams[0]?.id,
       roundPhase: 'playing',
     }
 
@@ -273,7 +296,31 @@ export const useLocalGameStore = defineStore('localGame', () => {
       return
     }
 
+    game.value.currentTeamId = getNextEnabledTeamId(game.value.currentTeamId)
+
     await startRound()
+  }
+
+  async function setCurrentTeam(teamId: string) {
+    if (!game.value)
+      return
+    const team = game.value.teams.find(t => t.id === teamId)
+    if (!team || team.disabled)
+      return
+    game.value.currentTeamId = teamId
+    await _persist()
+  }
+
+  async function toggleTeamDisabled(teamId: string) {
+    if (!game.value)
+      return
+    const team = game.value.teams.find(t => t.id === teamId)
+    if (!team)
+      return
+    team.disabled = !team.disabled
+    if (team.disabled && game.value.currentTeamId === teamId)
+      game.value.currentTeamId = getNextEnabledTeamId(teamId)
+    await _persist()
   }
 
   async function finishGame() {
@@ -303,6 +350,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     canAdvanceRound,
     allCategories,
     currentCategoryInfo,
+    currentTeam,
     createGame,
     resumeGame,
     findUnfinishedGame,
@@ -314,6 +362,8 @@ export const useLocalGameStore = defineStore('localGame', () => {
     submitScores,
     showLeaderboard,
     nextRound,
+    setCurrentTeam,
+    toggleTeamDisabled,
     finishGame,
     deleteGame,
   }

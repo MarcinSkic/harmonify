@@ -60,6 +60,14 @@ async function handlePickCategory(categoryId: string) {
   await localGameStore.pickCategory(categoryId)
 }
 
+async function handleSelectTeam(teamId: string) {
+  await localGameStore.setCurrentTeam(teamId)
+}
+
+async function handleToggleTeamDisabled(teamId: string) {
+  await localGameStore.toggleTeamDisabled(teamId)
+}
+
 async function handleSubmitScores(scores: Map<string, number>) {
   await localGameStore.submitScores(scores)
 
@@ -105,7 +113,11 @@ async function handleContinueFromLeaderboard() {
       <template v-if="game.roundPhase === 'pickingCategory'">
         <CategoryPicker
           :categories="localGameStore.allCategories"
+          :teams="game.teams"
+          :current-team-id="game.currentTeamId"
           @pick="handlePickCategory"
+          @select-team="handleSelectTeam"
+          @toggle-team-disabled="handleToggleTeamDisabled"
         />
       </template>
 
@@ -143,6 +155,7 @@ async function handleContinueFromLeaderboard() {
         <ScoringForm
           :track="track"
           :teams="game.teams"
+          :current-team-id="game.currentTeamId"
           :category="localGameStore.currentCategoryInfo"
           :settings="game.settings"
           @submit="handleSubmitScores"

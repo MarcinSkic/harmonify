@@ -1,17 +1,27 @@
 <script setup lang="ts">
-import type { Category } from '@/db/schemas'
+import type { Category, LocalGameTeam } from '@/db/schemas'
+import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import CategoryProgressRing from './CategoryProgressRing.vue'
 import CheatInput from './CheatInput.vue'
+import TeamTurnBar from './TeamTurnBar.vue'
 
-defineProps<{
+const props = defineProps<{
   categories: Array<{ category: Category, count: number, initialCount: number }>
+  teams: LocalGameTeam[]
+  currentTeamId: string | undefined
 }>()
 
 const emit = defineEmits<{
   pick: [categoryId: string]
+  selectTeam: [teamId: string]
+  toggleTeamDisabled: [teamId: string]
 }>()
+
+const currentTeam = computed(() =>
+  props.teams.find(t => t.id === props.currentTeamId),
+)
 
 function handleClick(categoryId: string, count: number) {
   if (count > 0)
@@ -27,13 +37,30 @@ function handleClick(categoryId: string, count: number) {
       xl:max-w-7xl
     "
   >
+    <TeamTurnBar
+      v-if="teams.length > 0"
+      :teams="teams"
+      :current-team-id="currentTeamId"
+      show-disable-control
+      @select="(id) => emit('selectTeam', id)"
+      @toggle-disabled="(id: string) => emit('toggleTeamDisabled', id)"
+    />
+
     <h2
       class="
-        text-center text-2xl font-bold
+        text-center text-2xl font-bold wrap-break-word
         lg:text-4xl
       "
     >
-      Pick a category
+      <template v-if="currentTeam">
+        <span
+          class="inline-block max-w-full truncate align-bottom text-primary"
+        >{{ currentTeam.name }}</span>
+        picks a category
+      </template>
+      <template v-else>
+        Pick a category
+      </template>
     </h2>
     <div
       v-if="categories.length === 0"

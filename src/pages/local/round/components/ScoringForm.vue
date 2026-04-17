@@ -11,6 +11,7 @@ import TrackDisplayWithCover from './TrackDisplayWithCover.vue'
 const props = defineProps<{
   track: Track
   teams: LocalGameTeam[]
+  currentTeamId: string | undefined
   category?: { displayName: string, points?: number }
   settings: LocalGameSettings
 }>()
@@ -90,7 +91,11 @@ function handleNextRound() {
         >
           <div
             v-for="team in teams" :key="team.id"
-            class="flex flex-col items-center gap-2"
+            class="flex flex-col items-center gap-2 rounded-md p-2 transition"
+            :class="[
+              team.id === currentTeamId ? 'ring-2 ring-primary' : '',
+              team.disabled ? 'opacity-50' : '',
+            ]"
           >
             <Label class="max-w-40 truncate text-base">{{ team.name }}</Label>
             <NumberField
