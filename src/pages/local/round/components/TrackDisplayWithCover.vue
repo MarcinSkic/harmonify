@@ -8,8 +8,7 @@ defineProps<{
 
 <template>
   <div
-    class="flex w-full items-center gap-4"
-    style="container-type: inline-size;"
+    class="@container flex w-full items-center gap-4"
   >
     <img
       v-if="imageUrl"
