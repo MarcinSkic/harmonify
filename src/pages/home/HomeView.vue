@@ -14,6 +14,7 @@ const libraryStore = useLibraryStore()
 
 const unfinishedGame = ref<LocalGame | null>(null)
 const showPlayMenu = ref(false)
+const isMultiplayerEnabled = !!import.meta.env.VITE_WEB_SOCKET_URL
 
 onMounted(async () => {
   unfinishedGame.value = await localGameStore.findUnfinishedGame()
@@ -122,25 +123,27 @@ onMounted(async () => {
             <Monitor class="size-7" />
           </RouterLink>
 
-          <div
-            class="
-              flex flex-1 flex-col items-center justify-center gap-3 rounded-xl
-              border bg-card px-4 py-5 shadow-sm
-            "
-          >
-            <span class="text-base font-semibold">Join room</span>
-            <JoinRoom />
-          </div>
+          <template v-if="isMultiplayerEnabled">
+            <div
+              class="
+                flex flex-1 flex-col items-center justify-center gap-3
+                rounded-xl border bg-card px-4 py-5 shadow-sm
+              "
+            >
+              <span class="text-base font-semibold">Join room</span>
+              <JoinRoom />
+            </div>
 
-          <div
-            class="
-              flex flex-1 flex-col items-center justify-center gap-3 rounded-xl
-              border bg-card px-4 py-5 shadow-sm
-            "
-          >
-            <span class="text-base font-semibold">Create room</span>
-            <CreateRoom />
-          </div>
+            <div
+              class="
+                flex flex-1 flex-col items-center justify-center gap-3
+                rounded-xl border bg-card px-4 py-5 shadow-sm
+              "
+            >
+              <span class="text-base font-semibold">Create room</span>
+              <CreateRoom />
+            </div>
+          </template>
         </div>
       </Transition>
     </div>
