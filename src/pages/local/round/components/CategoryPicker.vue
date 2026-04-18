@@ -59,7 +59,10 @@ function handleClick(categoryId: string, count: number) {
     >
       <template v-if="currentTeam">
         <span
-          class="inline-block max-w-full truncate align-bottom text-primary"
+          class="
+            inline-block max-w-xs truncate align-bottom text-primary
+            lg:max-w-md
+          "
         >{{ currentTeam.name }}</span>
         picks a category
       </template>

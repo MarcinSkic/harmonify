@@ -71,8 +71,8 @@ const LocalLeaderboardBar = defineComponent({
       >
         <span
           class="
-            min-w-20 shrink-0 text-base font-medium
-            lg:min-w-28 lg:text-xl
+            w-32 shrink-0 truncate text-right text-base font-medium
+            lg:w-48 lg:text-xl
           "
         >{{ entry.name }}</span>
         <div class="flex flex-1 items-center gap-2">
