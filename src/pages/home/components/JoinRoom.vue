@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-
 import { PinInput, PinInputGroup, PinInputInput } from '@/components/ui/pin-input'
 import { useConnectionStore, useGameDataStore } from '@/stores'
 
@@ -32,26 +31,25 @@ function joinRoom() {
 </script>
 
 <template>
-  <form class="grid justify-items-center gap-5" @submit.prevent="joinRoom">
-    <p
-      v-if="isJoinRoomError" class="
-        -mb-3 text-base font-normal text-destructive
-      "
-    >
+  <form class="flex flex-col items-center gap-2" @submit.prevent="joinRoom">
+    <p v-if="isJoinRoomError" class="text-sm text-destructive">
       No room with such id
     </p>
-    <PinInput
-      id="room-id"
-      v-model="roomId"
-      placeholder="○"
-      @update:model-value="isJoinRoomError = false"
-      @complete="joinRoom"
-    >
-      <PinInputGroup>
-        <PinInputInput v-for="(id, index) in 4" :key="id" :index="index" required />
-      </PinInputGroup>
-    </PinInput>
-
-    <Button>Join room</Button>
+    <div class="flex items-center gap-2">
+      <PinInput
+        id="room-id"
+        v-model="roomId"
+        placeholder="○"
+        @update:model-value="isJoinRoomError = false"
+        @complete="joinRoom"
+      >
+        <PinInputGroup>
+          <PinInputInput v-for="(id, index) in 4" :key="id" :index="index" required />
+        </PinInputGroup>
+      </PinInput>
+      <Button size="sm" type="submit">
+        Join
+      </Button>
+    </div>
   </form>
 </template>

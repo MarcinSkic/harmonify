@@ -66,13 +66,5 @@ const libraryStore = useLibraryStore()
         <span class="flex-1 truncate text-left">{{ playlist.name }}</span>
       </Button>
     </div>
-
-    <div
-      v-if="libraryStore.selectedPlaylistId !== null" class="mt-4 border-t pt-3"
-    >
-      <p class="text-sm text-muted-foreground">
-        {{ libraryStore.enabledTracks.length }} tracks selected
-      </p>
-    </div>
   </ScrollArea>
 </template>
