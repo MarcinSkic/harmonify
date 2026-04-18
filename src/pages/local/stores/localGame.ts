@@ -333,6 +333,24 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
+  async function addTeam(name: string) {
+    if (!game.value)
+      return
+
+    const existingRoundCount = game.value.teams[0]?.roundScores.length ?? 0
+
+    const newTeam = {
+      id: crypto.randomUUID(),
+      name: name.trim() || `Team ${game.value.teams.length + 1}`,
+      score: 0,
+      roundScores: Array.from<number>({ length: existingRoundCount }).fill(0),
+      disabled: false,
+    }
+
+    game.value.teams.push(newTeam)
+    await _persist()
+  }
+
   async function deleteGame(id: string) {
     await db.localGames.delete(id)
     if (game.value?.id === id) {
@@ -364,6 +382,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     nextRound,
     setCurrentTeam,
     toggleTeamDisabled,
+    addTeam,
     finishGame,
     deleteGame,
   }

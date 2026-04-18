@@ -3,6 +3,7 @@ import type { Category, LocalGameTeam } from '@/db/schemas'
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import AddTeamInline from './AddTeamInline.vue'
 import CategoryProgressRing from './CategoryProgressRing.vue'
 import CheatInput from './CheatInput.vue'
 import TeamTurnBar from './TeamTurnBar.vue'
@@ -17,6 +18,7 @@ const emit = defineEmits<{
   pick: [categoryId: string]
   selectTeam: [teamId: string]
   toggleTeamDisabled: [teamId: string]
+  addTeam: [name: string]
 }>()
 
 const currentTeam = computed(() =>
@@ -37,14 +39,17 @@ function handleClick(categoryId: string, count: number) {
       xl:max-w-7xl
     "
   >
-    <TeamTurnBar
-      v-if="teams.length > 0"
-      :teams="teams"
-      :current-team-id="currentTeamId"
-      show-disable-control
-      @select="(id) => emit('selectTeam', id)"
-      @toggle-disabled="(id: string) => emit('toggleTeamDisabled', id)"
-    />
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <TeamTurnBar
+        v-if="teams.length > 0"
+        :teams="teams"
+        :current-team-id="currentTeamId"
+        show-disable-control
+        @select="(id) => emit('selectTeam', id)"
+        @toggle-disabled="(id: string) => emit('toggleTeamDisabled', id)"
+      />
+      <AddTeamInline @add="emit('addTeam', $event)" />
+    </div>
 
     <h2
       class="

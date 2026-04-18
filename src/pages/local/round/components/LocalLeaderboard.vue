@@ -5,6 +5,7 @@ import { computed, defineComponent, h, toRef } from 'vue'
 import { Button } from '@/components/ui/button'
 import { AnimationDuration, Breakpoint } from '@/consts'
 import { useSettingsStore } from '@/stores'
+import AddTeamInline from './AddTeamInline.vue'
 
 const props = defineProps<{
   teams: LocalGameTeam[]
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   continue: []
+  addTeam: [name: string]
 }>()
 
 const settingsStore = useSettingsStore()
@@ -84,6 +86,8 @@ const LocalLeaderboardBar = defineComponent({
         </div>
       </div>
     </TransitionGroup>
+
+    <AddTeamInline @add="emit('addTeam', $event)" />
 
     <Button
       type="button"
