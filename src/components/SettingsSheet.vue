@@ -60,7 +60,7 @@ const settingsStore = useSettingsStore()
         <div
           class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
         >
-          <Label class="text-nowrap">Hide scores</Label>
+          <Label class="text-nowrap">Hide leaderboard</Label>
           <Switch v-model:model-value="settingsStore.hideScores" />
         </div>
       </div>
