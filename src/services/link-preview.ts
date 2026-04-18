@@ -45,6 +45,9 @@ export async function processQueue(): Promise<void> {
         const response = await fetch(proxyUrl)
         if (!response.ok)
           throw new Error(`HTTP ${response.status}`)
+        const contentType = response.headers.get('content-type') ?? ''
+        if (!contentType.startsWith('image/'))
+          throw new Error(`Unexpected content type: ${contentType}`)
         const blob = await response.blob()
         await db.linkPreviews.update(preview.url, {
           imageBlob: blob,
