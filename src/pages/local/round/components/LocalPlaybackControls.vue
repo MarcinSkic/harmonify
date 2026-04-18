@@ -69,7 +69,7 @@ onUnmounted(() => {
       ref="playButton"
       class="
         h-20 w-32 rounded-xl
-        bg-[linear-gradient(0.25turn,#1b3162_49%,50%,transparent)]
+        bg-[linear-gradient(0.25turn,#1b3162_49%,#1b316200_51%)]
         bg-size-[200%_200%] bg-position-[100%_0]
       "
       type="button"
