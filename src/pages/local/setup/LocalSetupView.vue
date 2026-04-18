@@ -26,10 +26,10 @@ const isLoading = ref(false)
 
 const teams = ref([{ name: '' }])
 const settings = reactive<LocalGameSettings>({
-  trackDuration: 10,
-  gameMode: 'random',
+  trackDuration: 20,
+  gameMode: 'category',
   hostSeesAnswer: false,
-  maxRounds: 10,
+  maxRounds: null,
   partialPoints: 2,
 })
 
@@ -94,38 +94,45 @@ async function handleGameStart() {
 <template>
   <form
     class="
-      grid h-[80vh] max-h-[80vh] w-[80vw] place-self-center
-      lg:w-auto lg:grid-cols-[minmax(auto,600px)_270px] lg:grid-rows-[1fr_50px]
-      lg:items-start lg:gap-5
+      grid h-[85vh] max-h-[85vh] w-[90vw] grid-rows-[1fr_auto] place-self-center
+      lg:h-[80vh] lg:max-h-[80vh] lg:w-auto
+      lg:grid-cols-[minmax(200px,400px)_minmax(200px,400px)_minmax(200px,300px)]
+      lg:grid-rows-[1fr_50px] lg:items-start lg:gap-5
     "
     @submit.prevent="handleGameStart"
   >
-    <Tabs v-if="!isDesktop" default-value="tracks">
-      <TabsList class="w-full">
-        <TabsTrigger value="tracks" class="flex-1">
+    <Tabs v-if="!isDesktop" class="flex h-full flex-col overflow-hidden" default-value="library">
+      <TabsList class="w-full shrink-0">
+        <TabsTrigger value="library" class="flex-1">
           Library
+        </TabsTrigger>
+        <TabsTrigger value="teams" class="flex-1">
+          Teams
         </TabsTrigger>
         <TabsTrigger value="settings" class="flex-1">
           Settings
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="tracks" class="h-[60vh]">
+      <TabsContent value="library" class="min-h-0 flex-1">
         <LibraryTrackPicker />
       </TabsContent>
-      <TabsContent value="settings" class="h-[60vh] space-y-4 overflow-y-auto">
+      <TabsContent value="teams" class="min-h-0 flex-1">
         <TeamManager v-model="teams" />
+      </TabsContent>
+      <TabsContent value="settings" class="min-h-0 flex-1 overflow-y-auto">
         <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
       </TabsContent>
     </Tabs>
     <template v-else>
       <LibraryTrackPicker />
-      <div class="space-y-4">
-        <TeamManager v-model="teams" />
-        <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
-      </div>
+      <TeamManager v-model="teams" />
+      <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
     </template>
     <Button
-      class="min-w-32 place-self-center"
+      class="
+        min-w-32 place-self-center
+        lg:col-span-3
+      "
       :disabled="
         !musicPlayerStore.ready
           || !hasTracksSelected
