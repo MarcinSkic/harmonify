@@ -80,10 +80,6 @@ api/
 - **WebSocket messages**: validated with `messageSchema` discriminated union on `$type` field (`src/types/message.ts`)
 - **Audio playback**: abstracted via `MusicPlayer` interface — two implementations (Spotify SDK, HTML audio)
 
-## Skills
-
-- When asked to execute/implement a plan (e.g. "zrealizuj plan", "execute plan"), **always invoke the `plan-execution` skill first** before doing anything else.
-
 ## Additional Documentation
 
 Check these files for deeper context when working in related areas:
