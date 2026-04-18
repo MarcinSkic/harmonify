@@ -5,6 +5,7 @@ import { computed, defineComponent, h, toRef } from 'vue'
 import { Button } from '@/components/ui/button'
 import { AnimationDuration, Breakpoint } from '@/consts'
 import { useSettingsStore } from '@/stores'
+import AddTeamInline from './AddTeamInline.vue'
 
 const props = defineProps<{
   teams: LocalGameTeam[]
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   continue: []
+  addTeam: [name: string]
 }>()
 
 const settingsStore = useSettingsStore()
@@ -69,8 +71,8 @@ const LocalLeaderboardBar = defineComponent({
       >
         <span
           class="
-            min-w-20 shrink-0 text-base font-medium
-            lg:min-w-28 lg:text-xl
+            w-32 shrink-0 truncate text-right text-base font-medium
+            lg:w-48 lg:text-xl
           "
         >{{ entry.name }}</span>
         <div class="flex flex-1 items-center gap-2">
@@ -84,6 +86,8 @@ const LocalLeaderboardBar = defineComponent({
         </div>
       </div>
     </TransitionGroup>
+
+    <AddTeamInline @add="emit('addTeam', $event)" />
 
     <Button
       type="button"

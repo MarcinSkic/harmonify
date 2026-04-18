@@ -81,6 +81,10 @@ async function handleSubmitScores(scores: Map<string, number>) {
   await localGameStore.showLeaderboard()
 }
 
+async function handleAddTeam(name: string) {
+  await localGameStore.addTeam(name)
+}
+
 async function handleContinueFromLeaderboard() {
   await localGameStore.nextRound()
   if (localGameStore.game?.status === 'finished')
@@ -118,6 +122,7 @@ async function handleContinueFromLeaderboard() {
           @pick="handlePickCategory"
           @select-team="handleSelectTeam"
           @toggle-team-disabled="handleToggleTeamDisabled"
+          @add-team="handleAddTeam"
         />
       </template>
 
@@ -168,6 +173,7 @@ async function handleContinueFromLeaderboard() {
           :teams="localGameStore.sortedTeams"
           :previous-teams="localGameStore.previousTeams"
           @continue="handleContinueFromLeaderboard"
+          @add-team="handleAddTeam"
         />
       </template>
     </div>
