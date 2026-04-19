@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { LocalGame } from '@/db/schemas'
-import { BookOpen, Calendar, History, Library, Monitor, Play, Settings, Trash2, Trophy, Users } from '@lucide/vue'
+import { BookOpen, History, Library, Monitor, Play, Settings } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SettingsSheet from '@/components/SettingsSheet.vue'
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -13,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import GameListItem from '@/pages/local/components/GameListItem.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
 import { useLibraryStore } from '@/stores'
 import CreateRoom from './components/CreateRoom.vue'
@@ -30,16 +30,6 @@ const isMultiplayerEnabled = !!import.meta.env.VITE_WEB_SOCKET_URL
 onMounted(async () => {
   savedGames.value = await localGameStore.findAllUnfinishedGames()
 })
-
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function resumeGame(game: LocalGame) {
   showSavedGamesDialog.value = false
@@ -206,41 +196,15 @@ async function deleteGame(game: LocalGame) {
           No saved games
         </div>
         <div v-else class="space-y-2 pr-3">
-          <div
+          <GameListItem
             v-for="game in savedGames"
             :key="game.id"
-            class="
-              flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2
-              transition-colors
-              hover:bg-accent hover:text-accent-foreground
-            "
+            :date="game.createdAt"
+            :teams="game.teams.length"
+            :info="`Round ${game.currentRound}`"
             @click="resumeGame(game)"
-          >
-            <div class="min-w-0 flex-1 space-y-1">
-              <p class="flex items-center gap-1.5 text-sm font-medium">
-                <Calendar class="size-3.5 shrink-0 text-muted-foreground" />
-                {{ formatDate(game.createdAt) }}
-              </p>
-              <p class="flex items-center gap-3 text-xs text-muted-foreground">
-                <span class="flex items-center gap-1">
-                  <Users class="size-3.5 shrink-0" />
-                  {{ game.teams.length }} {{ game.teams.length === 1 ? 'team' : 'teams' }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <Trophy class="size-3.5 shrink-0" />
-                  Round {{ game.currentRound }}
-                </span>
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="shrink-0"
-              @click.stop="deleteGame(game)"
-            >
-              <Trash2 class="size-4" />
-            </Button>
-          </div>
+            @delete="deleteGame(game)"
+          />
         </div>
       </ScrollArea>
     </DialogContent>
