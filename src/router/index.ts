@@ -63,6 +63,11 @@ const router = createRouter({
       ],
     },
     {
+      path: '/results',
+      name: 'results',
+      component: () => import('@/pages/results/GameResultsView.vue'),
+    },
+    {
       path: '/library',
       name: 'library',
       component: () => import('@/pages/library/LibraryView.vue'),

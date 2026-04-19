@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LocalGame } from '@/db/schemas'
-import { Calendar, History, Library, Monitor, Play, Settings, Trash2, Trophy, Users } from '@lucide/vue'
+import { BookOpen, Calendar, History, Library, Monitor, Play, Settings, Trash2, Trophy, Users } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SettingsSheet from '@/components/SettingsSheet.vue'
@@ -69,8 +69,8 @@ async function deleteGame(game: LocalGame) {
 
     <!-- tiles row + absolutely-positioned submenu -->
     <div class="relative w-full max-w-4xl">
-      <!-- 3 main tiles -->
-      <div class="mx-auto grid max-w-2xl grid-cols-3 gap-4">
+      <!-- 4 main tiles -->
+      <div class="mx-auto grid max-w-3xl grid-cols-4 gap-4">
         <RouterLink
           to="/library"
           class="
@@ -121,6 +121,18 @@ async function deleteGame(game: LocalGame) {
             <span class="text-xl font-semibold">Settings</span>
           </button>
         </SettingsSheet>
+
+        <RouterLink
+          to="/results"
+          class="
+            flex flex-col items-center gap-3 rounded-xl border bg-card p-8
+            shadow-sm transition-colors
+            hover:bg-accent hover:text-accent-foreground
+          "
+        >
+          <BookOpen class="size-10" />
+          <span class="text-xl font-semibold">History</span>
+        </RouterLink>
       </div>
 
       <!-- Play sub-menu: absolutely positioned below tiles -->

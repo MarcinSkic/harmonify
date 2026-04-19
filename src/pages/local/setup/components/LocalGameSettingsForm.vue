@@ -177,6 +177,9 @@ function toggleUnlimitedRounds() {
 
       <Label class="text-base">Host sees answer</Label>
       <Switch v-model:model-value="settings.hostSeesAnswer" class="mb-2" />
+
+      <Label class="text-base">Save game results</Label>
+      <Switch v-model:model-value="settings.saveGame" class="mb-2" />
     </div>
   </div>
 </template>

@@ -10,7 +10,7 @@ import { Breakpoint } from '@/consts'
 import LibraryTrackPicker from '@/pages/game/setup/components/LibraryTrackPicker.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
-import { useCategoriesStore, useLibraryStore } from '@/stores'
+import { useCategoriesStore, useLibraryStore, useSettingsStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
 import TeamManager from './components/TeamManager.vue'
 
@@ -19,6 +19,7 @@ const localGameStore = useLocalGameStore()
 const libraryStore = useLibraryStore()
 const categoriesStore = useCategoriesStore()
 const musicPlayerStore = useMusicPlayerStore()
+const settingsStore = useSettingsStore()
 const { width: screenWidth } = useWindowSize()
 
 const isDesktop = computed(() => screenWidth.value >= Breakpoint.LG)
@@ -32,6 +33,7 @@ const settings = reactive<LocalGameSettings>({
   maxRounds: null,
   partialPoints: 2,
   breakDurationBetweenRounds: 3,
+  saveGame: settingsStore.defaultSaveGame,
 })
 
 const hasTracksSelected = computed(() => libraryStore.enabledTracks.length > 0)
