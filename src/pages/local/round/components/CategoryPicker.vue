@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { Category, LocalGameTeam } from '@/db/schemas'
+import { useBreakpoints } from '@vueuse/core'
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { Breakpoint } from '@/consts'
 import AddTeamInline from './AddTeamInline.vue'
 import CategoryProgressRing from './CategoryProgressRing.vue'
 import CheatInput from './CheatInput.vue'
@@ -20,6 +22,31 @@ const emit = defineEmits<{
   toggleTeamDisabled: [teamId: string]
   addTeam: [name: string]
 }>()
+const MAX_ROWS = 4
+
+const breakpoints = useBreakpoints({ sm: Breakpoint.SM, md: Breakpoint.MD, lg: Breakpoint.LG, xl: Breakpoint.XL })
+
+const baseCols = computed(() => {
+  if (breakpoints.greaterOrEqual('md').value)
+    return 4
+  if (breakpoints.greaterOrEqual('sm').value)
+    return 3
+  return 2
+})
+
+const cols = computed(() =>
+  Math.max(baseCols.value, Math.ceil(props.categories.length / MAX_ROWS)),
+)
+
+const columnWidth = computed(() => {
+  if (breakpoints.greaterOrEqual('xl').value)
+    return 320
+  if (breakpoints.greaterOrEqual('lg').value)
+    return 256
+  return 192
+})
+
+const containerMaxWidth = computed(() => `${cols.value * columnWidth.value}px`)
 
 const currentTeam = computed(() =>
   props.teams.find(t => t.id === props.currentTeamId),
@@ -33,11 +60,8 @@ function handleClick(categoryId: string, count: number) {
 
 <template>
   <div
-    class="
-      grid w-full max-w-3xl gap-4
-      lg:max-w-5xl
-      xl:max-w-7xl
-    "
+    class="grid w-full gap-4"
+    :style="{ maxWidth: containerMaxWidth }"
   >
     <div class="flex flex-wrap items-center justify-center gap-3">
       <TeamTurnBar
@@ -79,11 +103,10 @@ function handleClick(categoryId: string, count: number) {
     <div
       v-else
       class="
-        grid grid-cols-2 gap-3
-        sm:grid-cols-3
-        md:grid-cols-4
+        grid gap-3
         lg:gap-4
       "
+      :style="{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }"
     >
       <Card
         v-for="{ category, count, initialCount } in categories"
