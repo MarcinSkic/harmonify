@@ -29,20 +29,29 @@ const hasAnyImage = computed(() => !!(props.track.albumImageUrl || previewImageU
       <div class="flex items-center gap-3">
         <HoverCard v-if="hasAnyImage" :open-delay="300" :close-delay="100">
           <HoverCardTrigger as-child>
-            <img
-              v-if="track.albumImageUrl"
-              :src="track.albumImageUrl"
-              :alt="track.albumName"
-              class="size-10 cursor-default rounded-sm object-cover"
-            >
-            <img
-              v-else-if="previewImageUrl"
-              :src="previewImageUrl"
-              :alt="track.name"
-              class="
-                aspect-1200/630 h-10 cursor-default rounded-sm object-cover
-              "
-            >
+            <div class="relative size-10">
+              <img
+                v-if="previewImageUrl && track.albumImageUrl"
+                :src="previewImageUrl"
+                :alt="track.name"
+                class="
+                  absolute inset-0 size-10 translate-x-[15%] translate-y-[15%]
+                  rounded-sm object-cover object-bottom-right
+                "
+              >
+              <img
+                v-if="track.albumImageUrl"
+                :src="track.albumImageUrl"
+                :alt="track.albumName"
+                class="absolute inset-0 z-10 size-10 rounded-sm object-cover"
+              >
+              <img
+                v-else-if="previewImageUrl"
+                :src="previewImageUrl"
+                :alt="track.name"
+                class="absolute inset-0 size-10 rounded-sm object-cover"
+              >
+            </div>
           </HoverCardTrigger>
           <HoverCardContent class="w-auto overflow-hidden p-0" side="right" align="start">
             <div class="flex">
