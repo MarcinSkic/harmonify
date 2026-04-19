@@ -4,6 +4,7 @@ import { Music, Trash2 } from '@lucide/vue'
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Switch } from '@/components/ui/switch'
 import {
   TableCell,
@@ -18,24 +19,57 @@ const props = defineProps<{
 
 const libraryStore = useLibraryStore()
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
+
+const hasAnyImage = computed(() => !!(props.track.albumImageUrl || previewImageUrl.value))
 </script>
 
 <template>
   <TableRow :class="{ 'opacity-50': track.enabled === false }">
     <TableCell>
       <div class="flex items-center gap-3">
-        <img
-          v-if="previewImageUrl"
-          :src="previewImageUrl"
-          :alt="track.name"
-          class="aspect-1200/630 h-10 rounded-sm object-cover"
-        >
-        <img
-          v-else-if="track.albumImageUrl"
-          :src="track.albumImageUrl"
-          :alt="track.albumName"
-          class="size-10 rounded-sm object-cover"
-        >
+        <HoverCard v-if="hasAnyImage" :open-delay="300" :close-delay="100">
+          <HoverCardTrigger as-child>
+            <div class="relative size-10">
+              <img
+                v-if="previewImageUrl && track.albumImageUrl"
+                :src="previewImageUrl"
+                :alt="track.name"
+                class="
+                  absolute inset-0 size-10 translate-x-[15%] translate-y-[15%]
+                  rounded-sm object-cover object-bottom-right
+                "
+              >
+              <img
+                v-if="track.albumImageUrl"
+                :src="track.albumImageUrl"
+                :alt="track.albumName"
+                class="absolute inset-0 z-10 size-10 rounded-sm object-cover"
+              >
+              <img
+                v-else-if="previewImageUrl"
+                :src="previewImageUrl"
+                :alt="track.name"
+                class="absolute inset-0 size-10 rounded-sm object-cover"
+              >
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent class="w-auto overflow-hidden p-0" side="right" align="start">
+            <div class="flex">
+              <img
+                v-if="track.albumImageUrl"
+                :src="track.albumImageUrl"
+                :alt="track.albumName"
+                class="size-56 object-cover"
+              >
+              <img
+                v-if="previewImageUrl"
+                :src="previewImageUrl"
+                :alt="track.name"
+                class="h-56 w-auto object-cover"
+              >
+            </div>
+          </HoverCardContent>
+        </HoverCard>
         <div
           v-else
           class="flex size-10 items-center justify-center rounded-sm bg-muted"
