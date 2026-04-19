@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCategoriesStore, useLibraryStore } from '@/stores'
 import CategoryCard from './components/CategoryCard.vue'
+import CategoryCsvExportButton from './components/CategoryCsvExportButton.vue'
+import CategoryCsvImportButton from './components/CategoryCsvImportButton.vue'
 import CategoryEditDialog from './components/CategoryEditDialog.vue'
 
 const categoriesStore = useCategoriesStore()
@@ -85,6 +87,8 @@ async function handleToggleEnabled(id: string) {
         </p>
       </div>
 
+      <CategoryCsvImportButton />
+      <CategoryCsvExportButton />
       <Button class="gap-2" @click="openCreate">
         <Plus class="size-4" />
         Add category

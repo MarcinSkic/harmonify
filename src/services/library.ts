@@ -1,4 +1,5 @@
 import type { Category, Playlist, Track, TrackAnnotation } from '@/db/schemas'
+import type { CsvCategoryRow } from '@/lib/csv'
 import { db } from '@/db'
 
 type NewPlaylist = Omit<Playlist, 'id' | 'createdAt'>
@@ -187,4 +188,35 @@ export async function countTracksMatchingTagFilter(
       matchedIds.add(track.id)
   }
   return matchedIds.size
+}
+
+export async function importCategories(rows: CsvCategoryRow[]): Promise<{ created: number, updated: number }> {
+  let created = 0
+  let updated = 0
+  await db.transaction('rw', db.categories, async () => {
+    const existing = await db.categories.toArray()
+    const byName = new Map(existing.map(c => [c.displayName, c]))
+    for (const row of rows) {
+      const match = byName.get(row.displayName)
+      if (match) {
+        await db.categories.update(match.id, {
+          description: row.description,
+          tagFilter: row.tagFilter,
+          points: row.points,
+          enabled: row.enabled,
+          order: row.order,
+        })
+        updated++
+      }
+      else {
+        await db.categories.add({
+          ...row,
+          id: crypto.randomUUID(),
+          createdAt: Date.now(),
+        })
+        created++
+      }
+    }
+  })
+  return { created, updated }
 }
