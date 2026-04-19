@@ -23,7 +23,8 @@ function toggleUnlimitedRounds() {
 <template>
   <div
     class="
-      grid h-full auto-rows-min items-start gap-2 rounded-lg border px-5 py-4
+      grid h-full auto-rows-min items-start gap-2 overflow-y-auto rounded-lg
+      border px-5 py-4
     "
   >
     <h2
@@ -146,6 +147,32 @@ function toggleUnlimitedRounds() {
           <NumberFieldInput />
           <NumberFieldIncrement />
         </NumberFieldContent>
+      </NumberField>
+
+      <Label for="breakDurationBetweenRounds" class="text-base">Leaderboard duration</Label>
+      <NumberField
+        id="breakDurationBetweenRounds"
+        v-model:model-value="settings.breakDurationBetweenRounds"
+        class="
+          mb-2 flex w-full items-stretch gap-0 justify-self-end
+          sm:w-40
+          lg:w-full
+        "
+        :min="1"
+      >
+        <NumberFieldContent>
+          <NumberFieldDecrement />
+          <NumberFieldInput class="rounded-r-none" />
+          <NumberFieldIncrement />
+        </NumberFieldContent>
+        <div
+          class="
+            flex w-max items-center rounded-r-md border border-l-0 bg-muted px-3
+            text-muted-foreground
+          "
+        >
+          <span>s</span>
+        </div>
       </NumberField>
 
       <Label class="text-base">Host sees answer</Label>

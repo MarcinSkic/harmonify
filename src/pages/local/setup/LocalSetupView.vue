@@ -31,6 +31,7 @@ const settings = reactive<LocalGameSettings>({
   hostSeesAnswer: false,
   maxRounds: null,
   partialPoints: 2,
+  breakDurationBetweenRounds: 3,
 })
 
 const hasTracksSelected = computed(() => libraryStore.enabledTracks.length > 0)

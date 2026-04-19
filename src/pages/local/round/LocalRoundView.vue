@@ -172,6 +172,7 @@ async function handleContinueFromLeaderboard() {
         <LocalLeaderboard
           :teams="localGameStore.sortedTeams"
           :previous-teams="localGameStore.previousTeams"
+          :duration="game.settings.breakDurationBetweenRounds"
           @continue="handleContinueFromLeaderboard"
           @add-team="handleAddTeam"
         />
