@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LocalGameTeam } from '@/db/schemas'
-import { TransitionPresets, useTimeout, useTransition, useWindowSize } from '@vueuse/core'
-import { computed, defineComponent, h, toRef } from 'vue'
+import { TransitionPresets, useTimeout, useTimeoutFn, useTransition, useWindowSize } from '@vueuse/core'
+import { computed, defineComponent, h, ref, toRef } from 'vue'
 import { Button } from '@/components/ui/button'
 import { AnimationDuration, Breakpoint } from '@/consts'
 import { useSettingsStore } from '@/stores'
@@ -10,12 +10,27 @@ import AddTeamInline from './AddTeamInline.vue'
 const props = defineProps<{
   teams: LocalGameTeam[]
   previousTeams: LocalGameTeam[]
+  duration: number
 }>()
 
 const emit = defineEmits<{
   continue: []
   addTeam: [name: string]
 }>()
+
+const isAutoAdvancing = ref(true)
+const waitTime = computed(() => `${props.duration}s`)
+
+const { stop } = useTimeoutFn(() => {
+  emit('continue')
+}, () => props.duration * 1000)
+
+function stopAutoAdvance() {
+  if (!isAutoAdvancing.value)
+    return
+  stop()
+  isAutoAdvancing.value = false
+}
 
 const settingsStore = useSettingsStore()
 const showCurrentScore = useTimeout(AnimationDuration.D1000)
@@ -55,6 +70,18 @@ const LocalLeaderboardBar = defineComponent({
 </script>
 
 <template>
+  <div
+    v-if="isAutoAdvancing"
+    class="
+      loading-indicator fixed top-0 left-0 h-1 w-screen origin-left bg-primary
+      md:h-2
+    "
+  />
+  <div
+    v-if="isAutoAdvancing"
+    class="fixed inset-0 z-10 cursor-pointer"
+    @click="stopAutoAdvance"
+  />
   <div class="grid place-items-center gap-6">
     <TransitionGroup
       name="results" tag="div" class="
@@ -90,6 +117,7 @@ const LocalLeaderboardBar = defineComponent({
     <AddTeamInline @add="emit('addTeam', $event)" />
 
     <Button
+      v-if="!isAutoAdvancing"
       type="button"
       @click="emit('continue')"
     >
@@ -99,6 +127,19 @@ const LocalLeaderboardBar = defineComponent({
 </template>
 
 <style scoped>
+.loading-indicator {
+  animation: grow-x v-bind(waitTime) linear;
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .results-move,
 .results-enter-active,
 .results-leave-active {
