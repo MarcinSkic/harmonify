@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LocalGame } from '@/db/schemas'
-import { History, Library, Monitor, Play, Settings, Trash2 } from '@lucide/vue'
+import { Calendar, History, Library, Monitor, Play, Settings, Trash2, Trophy, Users } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SettingsSheet from '@/components/SettingsSheet.vue'
@@ -204,12 +204,20 @@ async function deleteGame(game: LocalGame) {
             "
             @click="resumeGame(game)"
           >
-            <div class="min-w-0 flex-1 space-y-0.5">
-              <p class="text-sm font-medium">
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="flex items-center gap-1.5 text-sm font-medium">
+                <Calendar class="size-3.5 shrink-0 text-muted-foreground" />
                 {{ formatDate(game.createdAt) }}
               </p>
-              <p class="text-xs text-muted-foreground">
-                {{ game.teams.length }} {{ game.teams.length === 1 ? 'team' : 'teams' }} · Round {{ game.currentRound }}
+              <p class="flex items-center gap-3 text-xs text-muted-foreground">
+                <span class="flex items-center gap-1">
+                  <Users class="size-3.5 shrink-0" />
+                  {{ game.teams.length }} {{ game.teams.length === 1 ? 'team' : 'teams' }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <Trophy class="size-3.5 shrink-0" />
+                  Round {{ game.currentRound }}
+                </span>
               </p>
             </div>
             <Button
