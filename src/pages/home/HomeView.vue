@@ -1,24 +1,55 @@
 <script setup lang="ts">
 import type { LocalGame } from '@/db/schemas'
-import { History, Library, Monitor, Play, Settings } from '@lucide/vue'
+import { History, Library, Monitor, Play, Settings, Trash2 } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import SettingsSheet from '@/components/SettingsSheet.vue'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLocalGameStore } from '@/pages/local/stores'
 import { useLibraryStore } from '@/stores'
 import CreateRoom from './components/CreateRoom.vue'
 import JoinRoom from './components/JoinRoom.vue'
 
+const router = useRouter()
 const localGameStore = useLocalGameStore()
 const libraryStore = useLibraryStore()
 
-const unfinishedGame = ref<LocalGame | null>(null)
+const savedGames = ref<LocalGame[]>([])
 const showPlayMenu = ref(false)
+const showSavedGamesDialog = ref(false)
 const isMultiplayerEnabled = !!import.meta.env.VITE_WEB_SOCKET_URL
 
 onMounted(async () => {
-  unfinishedGame.value = await localGameStore.findUnfinishedGame()
+  savedGames.value = await localGameStore.findAllUnfinishedGames()
 })
+
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function resumeGame(game: LocalGame) {
+  showSavedGamesDialog.value = false
+  router.push(`/local/${game.id}/round`)
+}
+
+async function deleteGame(game: LocalGame) {
+  await localGameStore.deleteGame(game.id)
+  savedGames.value = savedGames.value.filter(g => g.id !== game.id)
+}
 </script>
 
 <template>
@@ -98,18 +129,18 @@ onMounted(async () => {
           v-if="showPlayMenu"
           class="absolute inset-x-0 top-full mt-3 flex gap-3"
         >
-          <RouterLink
-            v-if="unfinishedGame"
-            :to="`/local/${unfinishedGame.id}/round`"
+          <button
+            v-if="savedGames.length > 0"
             class="
               flex flex-1 flex-col items-center justify-center gap-2 rounded-xl
               border bg-card px-4 py-5 shadow-sm transition-colors
               hover:bg-accent hover:text-accent-foreground
             "
+            @click="showSavedGamesDialog = true"
           >
             <span class="text-base font-semibold">Continue local</span>
             <History class="size-7" />
-          </RouterLink>
+          </button>
 
           <RouterLink
             to="/local/setup"
@@ -148,6 +179,52 @@ onMounted(async () => {
       </Transition>
     </div>
   </div>
+
+  <Dialog v-model:open="showSavedGamesDialog">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Saved Games</DialogTitle>
+      </DialogHeader>
+      <ScrollArea class="max-h-80">
+        <div
+          v-if="savedGames.length === 0" class="
+            py-6 text-center text-sm text-muted-foreground
+          "
+        >
+          No saved games
+        </div>
+        <div v-else class="space-y-2 pr-3">
+          <div
+            v-for="game in savedGames"
+            :key="game.id"
+            class="
+              flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2
+              transition-colors
+              hover:bg-accent hover:text-accent-foreground
+            "
+            @click="resumeGame(game)"
+          >
+            <div class="min-w-0 flex-1 space-y-0.5">
+              <p class="text-sm font-medium">
+                {{ formatDate(game.createdAt) }}
+              </p>
+              <p class="text-xs text-muted-foreground">
+                {{ game.teams.length }} {{ game.teams.length === 1 ? 'team' : 'teams' }} · Round {{ game.currentRound }}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="shrink-0"
+              @click.stop="deleteGame(game)"
+            >
+              <Trash2 class="size-4" />
+            </Button>
+          </div>
+        </div>
+      </ScrollArea>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <style scoped>

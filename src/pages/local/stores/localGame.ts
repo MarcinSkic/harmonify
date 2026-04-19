@@ -163,6 +163,14 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return games.length > 0 ? games.at(-1) ?? null : null
   }
 
+  async function findAllUnfinishedGames(): Promise<LocalGame[]> {
+    const games = await db.localGames
+      .where('status')
+      .equals('playing')
+      .sortBy('createdAt')
+    return games.reverse()
+  }
+
   async function startRound() {
     if (!game.value)
       return
@@ -351,12 +359,15 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
+  function clearGame() {
+    game.value = null
+    currentTrack.value = null
+  }
+
   async function deleteGame(id: string) {
     await db.localGames.delete(id)
-    if (game.value?.id === id) {
-      game.value = null
-      currentTrack.value = null
-    }
+    if (game.value?.id === id)
+      clearGame()
   }
 
   return {
@@ -372,6 +383,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     createGame,
     resumeGame,
     findUnfinishedGame,
+    findAllUnfinishedGames,
     startRound,
     pickCategory,
     checkSourceId,
@@ -384,6 +396,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     toggleTeamDisabled,
     addTeam,
     finishGame,
+    clearGame,
     deleteGame,
   }
 })
