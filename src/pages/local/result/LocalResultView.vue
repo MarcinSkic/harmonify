@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { Check, Minus } from '@lucide/vue'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import RoundBreakdown from '@/pages/local/components/RoundBreakdown.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
 
 const router = useRouter()
@@ -15,9 +14,8 @@ onMounted(async () => {
   if (!localGameStore.game) {
     const gameId = router.currentRoute.value.params.id as string
     const restored = await localGameStore.resumeGame(gameId)
-    if (!restored) {
+    if (!restored)
       router.push({ name: 'localSetup' })
-    }
   }
 })
 
@@ -34,7 +32,7 @@ function handleBackToMenu() {
   <div
     v-if="localGameStore.game"
     class="
-      grid place-content-center gap-8 p-4
+      grid h-full grid-rows-[auto_1fr_auto] gap-4 p-4
       md:p-8
     "
   >
@@ -47,13 +45,7 @@ function handleBackToMenu() {
       Game Over
     </h1>
 
-    <Tabs
-      default-value="results"
-      class="
-        mx-auto w-full max-w-lg
-        lg:max-w-2xl
-      "
-    >
+    <Tabs default-value="results" class="grid min-h-0 grid-rows-[auto_1fr]">
       <TabsList class="w-full">
         <TabsTrigger value="results" class="flex-1">
           Results
@@ -67,9 +59,8 @@ function handleBackToMenu() {
         </TabsTrigger>
       </TabsList>
 
-      <!-- Team results table -->
-      <TabsContent value="results">
-        <Table>
+      <TabsContent value="results" class="mt-4 overflow-auto">
+        <Table class="mx-auto max-w-2xl">
           <TableHeader>
             <TableRow>
               <TableHead class="w-12">
@@ -95,53 +86,11 @@ function handleBackToMenu() {
         </Table>
       </TabsContent>
 
-      <!-- Round breakdown -->
-      <TabsContent value="rounds">
-        <ScrollArea class="max-h-96">
-          <div class="space-y-2 pr-3">
-            <div
-              v-for="round in localGameStore.game.rounds"
-              :key="round.roundNumber"
-              class="rounded-lg border p-3"
-            >
-              <div class="mb-1.5 flex items-baseline gap-2">
-                <span class="text-xs font-semibold text-muted-foreground">Round {{ round.roundNumber }}</span>
-                <span class="truncate text-sm font-medium">{{ round.trackName }}</span>
-                <span class="shrink-0 text-xs text-muted-foreground">· {{ round.trackArtists.join(', ') }}</span>
-                <span
-                  v-if="round.categoryName"
-                  class="
-                    ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs
-                  "
-                >
-                  {{ round.categoryName }}{{ round.categoryPoints ? ` · ${round.categoryPoints}pts` : '' }}
-                </span>
-              </div>
-              <div class="flex flex-wrap gap-x-4 gap-y-1">
-                <div
-                  v-for="ts in round.teamScores"
-                  :key="ts.teamId"
-                  class="flex items-center gap-1 text-xs"
-                >
-                  <Check
-                    v-if="ts.result === 'guessed'" class="size-3 text-green-500"
-                  />
-                  <Minus
-                    v-else-if="ts.result === 'partial'" class="
-                      size-3 text-yellow-500
-                    "
-                  />
-                  <span class="font-medium">{{ ts.teamName }}</span>
-                  <span class="text-muted-foreground">{{ ts.points }} pts</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollArea>
+      <TabsContent value="rounds" class="mt-4 min-h-0">
+        <RoundBreakdown :rounds="localGameStore.game.rounds" />
       </TabsContent>
     </Tabs>
 
-    <!-- Actions -->
     <div class="flex justify-center gap-3">
       <Button @click="handleNewGame">
         New game
