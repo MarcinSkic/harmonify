@@ -89,6 +89,14 @@ async function handleSubmit() {
     return
   }
 
+  const duplicate = categoriesStore.categories.find(
+    c => c.displayName === payload.displayName && c.id !== props.category?.id,
+  )
+  if (duplicate) {
+    toast.error(`A category named "${payload.displayName}" already exists`)
+    return
+  }
+
   const validation = categorySchema
     .omit({ id: true, createdAt: true, order: true })
     .safeParse(payload)

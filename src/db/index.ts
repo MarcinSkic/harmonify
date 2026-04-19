@@ -17,3 +17,27 @@ db.version(1).stores({
   categories: 'id, order, enabled, *tagFilter',
   linkPreviews: 'url, status, nextRetryAt',
 })
+
+db.version(2)
+  .stores({
+    categories: 'id, &displayName, order, enabled, *tagFilter',
+  })
+  .upgrade(async (tx) => {
+    const all = await tx.table('categories').toArray()
+    const byName = new Map<string, typeof all>()
+    for (const cat of all) {
+      if (!byName.has(cat.displayName))
+        byName.set(cat.displayName, [])
+      byName.get(cat.displayName)!.push(cat)
+    }
+    const toDelete: string[] = []
+    for (const [, group] of byName) {
+      if (group.length <= 1)
+        continue
+      group.sort((a: { order: number, createdAt: number }, b: { order: number, createdAt: number }) =>
+        a.order - b.order || a.createdAt - b.createdAt)
+      toDelete.push(...group.slice(1).map((c: { id: string }) => c.id))
+    }
+    if (toDelete.length > 0)
+      await tx.table('categories').bulkDelete(toDelete)
+  })
