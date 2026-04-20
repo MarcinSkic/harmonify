@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import RoundBreakdown from '@/pages/local/components/RoundBreakdown.vue'
+import GameResultTabs from '@/pages/local/components/GameResultTabs.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
+
+const teams = computed(() =>
+  localGameStore.sortedTeams.map(t => ({ id: t.id, name: t.name, score: t.score })),
+)
 
 onMounted(async () => {
   if (!localGameStore.game) {
@@ -18,14 +20,6 @@ onMounted(async () => {
       router.push({ name: 'localSetup' })
   }
 })
-
-function handleNewGame() {
-  router.push({ name: 'localSetup' })
-}
-
-function handleBackToMenu() {
-  router.push({ name: 'home' })
-}
 </script>
 
 <template>
@@ -45,57 +39,13 @@ function handleBackToMenu() {
       Game Over
     </h1>
 
-    <Tabs default-value="results" class="grid min-h-0 grid-rows-[auto_1fr]">
-      <TabsList class="w-full">
-        <TabsTrigger value="results" class="flex-1">
-          Results
-        </TabsTrigger>
-        <TabsTrigger
-          value="rounds"
-          class="flex-1"
-          :disabled="localGameStore.game.rounds.length === 0"
-        >
-          Rounds
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="results" class="mt-4 overflow-auto">
-        <Table class="mx-auto max-w-2xl">
-          <TableHeader>
-            <TableRow>
-              <TableHead class="w-12">
-                #
-              </TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead class="text-right">
-                Score
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="(team, index) in localGameStore.sortedTeams" :key="team.id">
-              <TableCell class="font-medium">
-                {{ index + 1 }}
-              </TableCell>
-              <TableCell>{{ team.name }}</TableCell>
-              <TableCell class="text-right font-semibold">
-                {{ team.score }}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TabsContent>
-
-      <TabsContent value="rounds" class="mt-4 min-h-0">
-        <RoundBreakdown :rounds="localGameStore.game.rounds" />
-      </TabsContent>
-    </Tabs>
+    <GameResultTabs :teams="teams" :rounds="localGameStore.game.rounds" />
 
     <div class="flex justify-center gap-3">
-      <Button @click="handleNewGame">
+      <Button @click="router.push({ name: 'localSetup' })">
         New game
       </Button>
-      <Button variant="outline" @click="handleBackToMenu">
+      <Button variant="outline" @click="router.push({ name: 'home' })">
         Back to menu
       </Button>
     </div>

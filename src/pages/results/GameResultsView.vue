@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GameResult } from '@/db/schemas'
-import { Download, Upload } from '@lucide/vue'
+import { ArrowLeft, Download, Upload } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -52,7 +52,10 @@ function handleExportAll() {
     "
   >
     <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold">
+      <Button variant="ghost" size="icon" @click="router.push({ name: 'home' })">
+        <ArrowLeft class="size-5" />
+      </Button>
+      <h1 class="text-2xl font-bold whitespace-nowrap">
         Game History
       </h1>
       <div class="ml-auto flex gap-2">

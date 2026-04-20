@@ -94,6 +94,7 @@ export const roundResultSchema = z.object({
   trackArtists: z.array(z.string()),
   albumName: z.string(),
   albumImageUrl: z.string().optional(),
+  previewImageUrl: z.string().optional(),
   categoryId: z.string().optional(),
   categoryName: z.string().optional(),
   categoryPoints: z.number().optional(),

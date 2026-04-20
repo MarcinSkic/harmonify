@@ -310,6 +310,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
         trackArtists: [...currentTrack.value.artists],
         albumName: currentTrack.value.albumName,
         albumImageUrl: currentTrack.value.albumImageUrl,
+        previewImageUrl: currentTrack.value.previewImageUrl,
         categoryId: g.currentCategory,
         categoryName: currentCategoryInfo.value?.displayName,
         categoryPoints: currentCategoryInfo.value?.points,

@@ -1,28 +1,22 @@
 <script setup lang="ts">
 import type { GameResult } from '@/db/schemas'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import RoundBreakdown from '@/pages/local/components/RoundBreakdown.vue'
+import GameResultTabs from '@/pages/local/components/GameResultTabs.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
 const result = ref<GameResult | null>(null)
 
-onMounted(async () => {
-  const id = router.currentRoute.value.params.id as string
-  const all = await localGameStore.findAllGameResults()
-  result.value = all.find(r => r.id === id) ?? null
-  if (!result.value)
-    router.push({ name: 'results' })
-})
-
-function sortedTeams() {
-  return result.value ? [...result.value.teams].sort((a, b) => b.totalScore - a.totalScore) : []
-}
+const teams = computed(() =>
+  result.value
+    ? [...result.value.teams]
+        .sort((a, b) => b.totalScore - a.totalScore)
+        .map(t => ({ id: t.id, name: t.name, score: t.totalScore }))
+    : [],
+)
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleString(undefined, {
@@ -33,6 +27,14 @@ function formatDate(timestamp: number): string {
     minute: '2-digit',
   })
 }
+
+onMounted(async () => {
+  const id = router.currentRoute.value.params.id as string
+  const all = await localGameStore.findAllGameResults()
+  result.value = all.find(r => r.id === id) ?? null
+  if (!result.value)
+    router.push({ name: 'results' })
+})
 </script>
 
 <template>
@@ -60,51 +62,7 @@ function formatDate(timestamp: number): string {
       </span>
     </div>
 
-    <Tabs default-value="results" class="grid min-h-0 grid-rows-[auto_1fr]">
-      <TabsList class="w-full">
-        <TabsTrigger value="results" class="flex-1">
-          Results
-        </TabsTrigger>
-        <TabsTrigger
-          value="rounds"
-          class="flex-1"
-          :disabled="result.rounds.length === 0"
-        >
-          Rounds
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="results" class="mt-4 overflow-auto">
-        <Table class="mx-auto max-w-2xl">
-          <TableHeader>
-            <TableRow>
-              <TableHead class="w-12">
-                #
-              </TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead class="text-right">
-                Score
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="(team, index) in sortedTeams()" :key="team.id">
-              <TableCell class="font-medium">
-                {{ index + 1 }}
-              </TableCell>
-              <TableCell>{{ team.name }}</TableCell>
-              <TableCell class="text-right font-semibold">
-                {{ team.totalScore }}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </TabsContent>
-
-      <TabsContent value="rounds" class="mt-4 min-h-0">
-        <RoundBreakdown :rounds="result.rounds" />
-      </TabsContent>
-    </Tabs>
+    <GameResultTabs :teams="teams" :rounds="result.rounds" />
 
     <div class="flex justify-center gap-3">
       <Button variant="outline" @click="localGameStore.exportGameResult(result!)">
