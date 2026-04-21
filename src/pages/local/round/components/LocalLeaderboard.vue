@@ -109,6 +109,7 @@ const leaderboard = computed(() => {
         :width="entry.targetWidth"
         :guess-level="entry.guessLevel"
         :display-guess-level="entry.displayGuessLevel"
+        :highlighted="entry.id === currentTeamId"
         :large="true"
         :multiple-users="true"
       />

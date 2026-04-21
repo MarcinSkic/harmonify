@@ -24,7 +24,7 @@ const isSelf = computed(() => props.playerResult.guid === gameDataStore.selfPlay
     :width="playerResult.width"
     :guess-level="guessLevel"
     :display-guess-level="displayGuessLevel"
-    :is-self="isSelf"
+    :highlighted="isSelf"
     :animation="animation"
   >
     <div

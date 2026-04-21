@@ -12,7 +12,7 @@ const props = defineProps<{
   width: number
   guessLevel?: GuessLevel
   displayGuessLevel?: boolean
-  isSelf?: boolean
+  highlighted?: boolean
   large?: boolean
   multipleUsers?: boolean
   animation?: false | { duration: string }
@@ -37,7 +37,7 @@ const animatedWidth = useTransition(() => props.width, {
         :is="multipleUsers ? UsersRound : CircleUserRound"
         :class="cn(
           large ? 'min-h-10 min-w-10' : 'min-h-8 min-w-8',
-          isSelf && 'text-primary',
+          highlighted && 'text-primary',
         )"
       />
       <div class="grid grid-rows-2">
