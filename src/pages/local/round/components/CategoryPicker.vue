@@ -144,7 +144,12 @@ function handleClick(categoryId: string, count: number) {
           >
             {{ category.description }}
           </span>
-          <Badge v-if="category.points !== undefined" variant="secondary">
+          <Badge
+            v-if="category.points !== undefined" variant="secondary" class="
+              text-base
+              lg:text-xl
+            "
+          >
             {{ category.points }} pts
           </Badge>
         </CardContent>

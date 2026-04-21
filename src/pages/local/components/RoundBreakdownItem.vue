@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RoundResult } from '@/db/schemas'
+import { Trophy } from '@lucide/vue'
 import { computed } from 'vue'
 import { GuessLevelIcon } from '@/components/guessLevelIcon'
 import { Badge } from '@/components/ui/badge'
@@ -19,11 +20,11 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
     <div class="flex items-stretch">
       <!-- Left: badges + track + teams -->
       <div class="flex min-w-0 flex-1 flex-col p-4">
-        <div class="mb-2 flex flex-wrap items-center gap-2">
-          <span class="text-sm font-semibold text-muted-foreground">Round {{ round.roundNumber }}</span>
+        <div class="mb-2 flex flex-wrap items-center gap-3">
+          <span class="text-xl font-semibold text-muted-foreground">Round {{ round.roundNumber }}</span>
           <Badge
             v-if="round.categoryName" variant="secondary" class="
-              px-3 py-1 text-sm
+              px-4 py-1.5 text-xl
             "
           >
             {{ round.categoryName }}{{ round.categoryPoints ? ` · ${round.categoryPoints}pts` : '' }}
@@ -40,29 +41,32 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
           "
         >
           <div
-            v-for="ts in round.teamScores"
+            v-for="ts in round.teamScores.filter(ts => ts.teamId === round.currentTeamId || ts.points > 0)"
             :key="ts.teamId"
             class="flex min-w-0 items-center gap-2"
           >
             <GuessLevelIcon
               v-if="ts.result !== 'none' || ts.teamId === round.currentTeamId"
               :guess-level="ts.result"
-              class="size-10 shrink-0"
+              class="size-14 shrink-0"
             />
-            <span v-else class="size-10 shrink-0" />
+            <span v-else class="size-14 shrink-0" />
             <span
-              class="truncate text-4xl font-medium"
+              class="truncate text-5xl font-medium"
               :class="ts.teamId === round.currentTeamId ? 'text-foreground' : `
                 text-muted-foreground
               `"
             >{{ ts.teamName }}</span>
             <span
-              v-if="ts.points > 0 || ts.teamId === round.currentTeamId"
-              class="shrink-0 text-4xl"
-              :class="ts.points > 0 ? 'text-foreground' : `
+              v-if="ts.points > 0"
+              class="
+                ml-2 flex shrink-0 items-center gap-1 text-5xl
                 text-muted-foreground
-              `"
-            >{{ ts.points }} pts</span>
+              "
+            >
+              {{ ts.points }}
+              <Trophy class="size-10" />
+            </span>
           </div>
         </div>
       </div>

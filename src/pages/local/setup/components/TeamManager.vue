@@ -48,16 +48,16 @@ function removeTeam(index: number) {
           <X class="size-4" />
         </Button>
       </div>
+      <Button
+        variant="outline"
+        size="sm"
+        type="button"
+        class="h-9 gap-1"
+        @click="addTeam"
+      >
+        <Plus class="size-4" />
+        Add team
+      </Button>
     </div>
-    <Button
-      variant="outline"
-      size="sm"
-      type="button"
-      class="mt-auto w-full gap-1"
-      @click="addTeam"
-    >
-      <Plus class="size-4" />
-      Add team
-    </Button>
   </div>
 </template>

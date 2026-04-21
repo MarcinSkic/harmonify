@@ -21,6 +21,7 @@ const emit = defineEmits<{
 }>()
 const categoryPoints = computed(() => props.category?.points)
 const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.round(categoryPoints.value / 2) : undefined)
+const fullPlusArtistPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 
@@ -43,11 +44,13 @@ function handleNextRound() {
       <div
         v-if="category" class="flex flex-wrap items-center justify-center gap-2"
       >
-        <Badge variant="secondary" class="text-sm">
+        <Badge variant="secondary" class="text-base">
           {{ category.displayName }}
         </Badge>
         <Badge
-          v-if="category.points !== undefined" variant="outline" class="text-sm"
+          v-if="category.points !== undefined" variant="outline" class="
+            text-base
+          "
         >
           {{ category.points }} pts
         </Badge>
@@ -115,28 +118,35 @@ function handleNextRound() {
               "
             >
               <Button
+                v-if="team.id === currentTeamId"
                 type="button" variant="outline" size="sm"
+                class="text-green-500"
                 @click="scores[team.id] = categoryPoints!"
               >
                 Full
               </Button>
               <Button
+                v-if="team.id === currentTeamId"
                 type="button" variant="outline" size="sm"
+                class="text-green-600"
+                @click="scores[team.id] = fullPlusArtistPoints!"
+              >
+                Full+Artist
+              </Button>
+              <Button
+                v-if="team.id !== currentTeamId"
+                type="button" variant="outline" size="sm"
+                class="text-amber-400"
                 @click="scores[team.id] = halfPoints!"
               >
                 Half
               </Button>
               <Button
                 type="button" variant="outline" size="sm"
-                @click="scores[team.id] += settings.partialPoints"
+                class="text-yellow-500"
+                @click="scores[team.id] = settings.partialPoints"
               >
                 Artist
-              </Button>
-              <Button
-                type="button" variant="outline" size="sm"
-                @click="scores[team.id] += settings.partialPoints"
-              >
-                Album
               </Button>
             </div>
           </div>
