@@ -25,7 +25,7 @@ const [icon, color, message] = toRefs(computed(() => {
     case 'disconnected':
       return [Unplug, 'text-gray-500', 'Player not connected']
     case 'takeover':
-      return [Zap, 'text-amber-400', 'Stolen']
+      return [Zap, 'text-amber-400', 'Takeover']
     default:
       return [ShieldQuestion, 'text-purple-500', 'Unknown status']
   }
