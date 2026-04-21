@@ -5,6 +5,7 @@ export const LOCAL_STORAGE = {
   PLAY_ANIMATIONS: 'play_animations',
   DISPLAY_VISUALIZER: 'display_visualizer',
   HIDE_SCORES: 'hide_scores',
+  DEFAULT_SAVE_GAME: 'default_save_game',
   SAVED_COVERS: 'saved_covers',
 } as const
 

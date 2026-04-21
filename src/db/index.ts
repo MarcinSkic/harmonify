@@ -1,5 +1,5 @@
 import type { EntityTable } from 'dexie'
-import type { Category, LinkPreview, LocalGame, Playlist, Track } from './schemas'
+import type { Category, GameResult, LinkPreview, LocalGame, Playlist, Track } from './schemas'
 import Dexie from 'dexie'
 
 export const db = new Dexie('harmonifyLibrary') as Dexie & {
@@ -8,6 +8,7 @@ export const db = new Dexie('harmonifyLibrary') as Dexie & {
   localGames: EntityTable<LocalGame, 'id'>
   categories: EntityTable<Category, 'id'>
   linkPreviews: EntityTable<LinkPreview, 'url'>
+  gameResults: EntityTable<GameResult, 'id'>
 }
 
 db.version(1).stores({
@@ -41,3 +42,7 @@ db.version(2)
     if (toDelete.length > 0)
       await tx.table('categories').bulkDelete(toDelete)
   })
+
+db.version(3).stores({
+  gameResults: 'id, finishedAt',
+})

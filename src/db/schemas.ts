@@ -73,6 +73,52 @@ export const linkPreviewSchema = z.object({
 })
 export type LinkPreview = z.infer<typeof linkPreviewSchema>
 
+// Game result schemas
+
+export const roundGuessResultSchema = z.enum(['guessed', 'partial', 'missed'])
+export type RoundGuessResult = z.infer<typeof roundGuessResultSchema>
+
+export const teamRoundScoreSchema = z.object({
+  teamId: z.string(),
+  teamName: z.string(),
+  points: z.number(),
+  result: roundGuessResultSchema,
+})
+export type TeamRoundScore = z.infer<typeof teamRoundScoreSchema>
+
+export const roundResultSchema = z.object({
+  roundNumber: z.number(),
+  trackId: z.string(),
+  trackSourceId: z.string(),
+  trackName: z.string(),
+  trackArtists: z.array(z.string()),
+  albumName: z.string(),
+  albumImageUrl: z.string().optional(),
+  previewImageUrl: z.string().optional(),
+  categoryId: z.string().optional(),
+  categoryName: z.string().optional(),
+  categoryPoints: z.number().optional(),
+  currentTeamId: z.string().optional(),
+  currentTeamName: z.string().optional(),
+  teamScores: z.array(teamRoundScoreSchema),
+})
+export type RoundResult = z.infer<typeof roundResultSchema>
+
+export const gameResultSchema = z.object({
+  id: z.uuid(),
+  createdAt: z.number(),
+  finishedAt: z.number(),
+  gameMode: z.enum(['random', 'category']),
+  teams: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    totalScore: z.number(),
+  })),
+  rounds: z.array(roundResultSchema),
+  selectedPlaylistIds: z.array(z.string()),
+})
+export type GameResult = z.infer<typeof gameResultSchema>
+
 // Local game schemas
 
 export const trackPoolStateSchema = z.object({
@@ -107,6 +153,7 @@ export const localGameSettingsSchema = z.object({
   maxRounds: z.number().nullable(),
   partialPoints: z.number().default(2),
   breakDurationBetweenRounds: z.number().default(3),
+  saveGame: z.boolean().default(true),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 
@@ -130,5 +177,6 @@ export const localGameSchema = z.object({
   currentCategory: z.string().optional(),
   currentTeamId: z.string().optional(),
   roundPhase: localGameRoundPhaseSchema,
+  rounds: z.array(roundResultSchema).default([]),
 })
 export type LocalGame = z.infer<typeof localGameSchema>

@@ -1,4 +1,4 @@
-import type { Category, LocalGame, LocalGameSettings, Track } from '@/db/schemas'
+import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundGuessResult, RoundResult, Track } from '@/db/schemas'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
@@ -10,6 +10,20 @@ import {
 } from '@/pages/local/engine/categoryPool'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
 import { useCategoriesStore } from '@/stores'
+
+function computeResult(
+  points: number,
+  gameMode: LocalGameGameMode,
+  categoryPoints?: number,
+): RoundGuessResult {
+  if (points === 0)
+    return 'missed'
+  if (gameMode === 'random')
+    return 'guessed'
+  if (categoryPoints !== undefined && points >= categoryPoints)
+    return 'guessed'
+  return 'partial'
+}
 
 export const useLocalGameStore = defineStore('localGame', () => {
   const categoriesStore = useCategoriesStore()
@@ -135,6 +149,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
       selectedPlaylistIds,
       currentTeamId: createdTeams[0]?.id,
       roundPhase: 'playing',
+      rounds: [],
     }
 
     await _persist()
@@ -276,12 +291,43 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!game.value)
       return
 
-    previousTeams.value = JSON.parse(JSON.stringify(game.value.teams)) as LocalGame['teams']
+    const g = game.value
 
-    for (const team of game.value.teams) {
+    previousTeams.value = JSON.parse(JSON.stringify(g.teams)) as LocalGame['teams']
+
+    for (const team of g.teams) {
       const roundScore = scores.get(team.id) ?? 0
       team.score += roundScore
       team.roundScores.push(roundScore)
+    }
+
+    if (currentTrack.value) {
+      const round: RoundResult = {
+        roundNumber: g.currentRound,
+        trackId: currentTrack.value.id,
+        trackSourceId: currentTrack.value.sourceId,
+        trackName: currentTrack.value.name,
+        trackArtists: [...currentTrack.value.artists],
+        albumName: currentTrack.value.albumName,
+        albumImageUrl: currentTrack.value.albumImageUrl,
+        previewImageUrl: currentTrack.value.previewImageUrl,
+        categoryId: g.currentCategory,
+        categoryName: currentCategoryInfo.value?.displayName,
+        categoryPoints: currentCategoryInfo.value?.points,
+        currentTeamId: g.currentTeamId,
+        currentTeamName: g.teams.find(t => t.id === g.currentTeamId)?.name,
+        teamScores: g.teams.map(team => ({
+          teamId: team.id,
+          teamName: team.name,
+          points: scores.get(team.id) ?? 0,
+          result: computeResult(
+            scores.get(team.id) ?? 0,
+            g.settings.gameMode,
+            currentCategoryInfo.value?.points,
+          ),
+        })),
+      }
+      g.rounds.push(round)
     }
 
     await _persist()
@@ -339,6 +385,23 @@ export const useLocalGameStore = defineStore('localGame', () => {
     game.value.currentTrackId = undefined
     currentTrack.value = null
     await _persist()
+
+    if (game.value.settings.saveGame) {
+      const gameResult: GameResult = {
+        id: game.value.id,
+        createdAt: game.value.createdAt,
+        finishedAt: Date.now(),
+        gameMode: game.value.settings.gameMode,
+        teams: game.value.teams.map(t => ({
+          id: t.id,
+          name: t.name,
+          totalScore: t.score,
+        })),
+        rounds: JSON.parse(JSON.stringify(game.value.rounds)) as RoundResult[],
+        selectedPlaylistIds: [...game.value.selectedPlaylistIds],
+      }
+      await db.gameResults.put(gameResult)
+    }
   }
 
   async function addTeam(name: string) {
@@ -370,6 +433,33 @@ export const useLocalGameStore = defineStore('localGame', () => {
       clearGame()
   }
 
+  async function findAllGameResults(): Promise<GameResult[]> {
+    return db.gameResults.orderBy('finishedAt').reverse().toArray()
+  }
+
+  async function deleteGameResult(id: string): Promise<void> {
+    await db.gameResults.delete(id)
+  }
+
+  function exportGameResult(result: GameResult): void {
+    const json = JSON.stringify(result, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `harmonify-result-${result.finishedAt}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function importGameResult(file: File): Promise<void> {
+    const text = await file.text()
+    const json = JSON.parse(text)
+    const { gameResultSchema } = await import('@/db/schemas')
+    const result = gameResultSchema.parse(json)
+    await db.gameResults.put(result)
+  }
+
   return {
     game,
     currentTrack,
@@ -398,5 +488,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     finishGame,
     clearGame,
     deleteGame,
+    findAllGameResults,
+    deleteGameResult,
+    exportGameResult,
+    importGameResult,
   }
 })

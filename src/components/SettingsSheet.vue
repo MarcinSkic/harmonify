@@ -63,6 +63,12 @@ const settingsStore = useSettingsStore()
           <Label class="text-nowrap">Hide leaderboard</Label>
           <Switch v-model:model-value="settingsStore.hideScores" />
         </div>
+        <div
+          class="grid grid-cols-[min-content_minmax(0,1fr)] items-center gap-4"
+        >
+          <Label class="text-nowrap">Save game results</Label>
+          <Switch v-model:model-value="settingsStore.defaultSaveGame" />
+        </div>
       </div>
     </SheetContent>
   </Sheet>
