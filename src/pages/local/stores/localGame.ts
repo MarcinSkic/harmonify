@@ -1,5 +1,4 @@
 import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
-import type { GuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
