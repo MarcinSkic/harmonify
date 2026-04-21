@@ -41,10 +41,10 @@ const cols = computed(() =>
 
 const columnWidth = computed(() => {
   if (breakpoints.greaterOrEqual('xl').value)
-    return 320
+    return 420
   if (breakpoints.greaterOrEqual('lg').value)
-    return 256
-  return 192
+    return 340
+  return 240
 })
 
 const containerMaxWidth = computed(() => `${cols.value * columnWidth.value}px`)
@@ -147,11 +147,11 @@ function handleClick(categoryId: string, count: number) {
           </span>
           <Badge
             v-if="category.points !== undefined" variant="secondary" class="
-              text-base
-              lg:text-xl
+              px-3 py-1 text-xl
+              lg:px-3 lg:py-1 lg:text-2xl
             "
           >
-            <PointsDisplay :points="category.points" icon-class="size-4 lg:size-5" />
+            <PointsDisplay :points="category.points" icon-class="size-5 lg:size-6" />
           </Badge>
         </CardContent>
       </Card>
