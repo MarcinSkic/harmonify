@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Award, Star, Trophy } from '@lucide/vue'
+import { Star } from '@lucide/vue'
 
 defineProps<{
   points: number
