@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { RoundResult } from '@/db/schemas'
-import { Trophy } from '@lucide/vue'
 import { computed } from 'vue'
 import { GuessLevelIcon } from '@/components/guessLevelIcon'
+import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 import { useLinkPreview } from '@/composables/useLinkPreview'
 import TrackDisplayWithCover from '@/pages/local/round/components/TrackDisplayWithCover.vue'
@@ -27,7 +27,10 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
               px-4 py-1.5 text-xl
             "
           >
-            {{ round.categoryName }}{{ round.categoryPoints ? ` · ${round.categoryPoints}pts` : '' }}
+            {{ round.categoryName }}
+            <template v-if="round.categoryPoints">
+              · <PointsDisplay :points="round.categoryPoints" icon-class="size-5" />
+            </template>
           </Badge>
         </div>
         <TrackDisplayWithCover
@@ -59,13 +62,9 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
             >{{ ts.teamName }}</span>
             <span
               v-if="ts.points > 0"
-              class="
-                ml-2 flex shrink-0 items-center gap-1 text-5xl
-                text-muted-foreground
-              "
+              class="ml-2 shrink-0 text-5xl text-muted-foreground"
             >
-              {{ ts.points }}
-              <Trophy class="size-10" />
+              <PointsDisplay :points="ts.points" icon-class="size-10" />
             </span>
           </div>
         </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LocalGameSettings, LocalGameTeam, Track } from '@/db/schemas'
 import { computed, reactive } from 'vue'
+import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -52,7 +53,7 @@ function handleNextRound() {
             text-base
           "
         >
-          {{ category.points }} pts
+          <PointsDisplay :points="category.points" />
         </Badge>
       </div>
     </div>

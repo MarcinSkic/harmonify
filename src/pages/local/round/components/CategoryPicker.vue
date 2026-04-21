@@ -2,6 +2,7 @@
 import type { Category, LocalGameTeam } from '@/db/schemas'
 import { useBreakpoints } from '@vueuse/core'
 import { computed } from 'vue'
+import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Breakpoint } from '@/consts'
@@ -150,7 +151,7 @@ function handleClick(categoryId: string, count: number) {
               lg:text-xl
             "
           >
-            {{ category.points }} pts
+            <PointsDisplay :points="category.points" icon-class="size-4 lg:size-5" />
           </Badge>
         </CardContent>
       </Card>
