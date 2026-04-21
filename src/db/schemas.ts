@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { guessLevelSchema } from '@/types'
 
 export const metadataSourceSchema = z.enum(['spotify', 'server', 'manual', 'csv'])
 export type MetadataSource = z.infer<typeof metadataSourceSchema>
@@ -75,14 +76,11 @@ export type LinkPreview = z.infer<typeof linkPreviewSchema>
 
 // Game result schemas
 
-export const roundGuessResultSchema = z.enum(['guessed', 'partial', 'missed', 'stolen'])
-export type RoundGuessResult = z.infer<typeof roundGuessResultSchema>
-
 export const teamRoundScoreSchema = z.object({
   teamId: z.string(),
   teamName: z.string(),
   points: z.number(),
-  result: roundGuessResultSchema,
+  result: guessLevelSchema.extract(['full', 'artist', 'none', 'stolen']),
 })
 export type TeamRoundScore = z.infer<typeof teamRoundScoreSchema>
 

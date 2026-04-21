@@ -1,4 +1,5 @@
-import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundGuessResult, RoundResult, Track } from '@/db/schemas'
+import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
+import type { GuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
@@ -15,14 +16,14 @@ function computeResult(
   points: number,
   gameMode: LocalGameGameMode,
   categoryPoints?: number,
-): RoundGuessResult {
+): 'full' | 'artist' | 'none' {
   if (points === 0)
-    return 'missed'
+    return 'none'
   if (gameMode === 'random')
-    return 'guessed'
+    return 'full'
   if (categoryPoints !== undefined && points >= categoryPoints)
-    return 'guessed'
-  return 'partial'
+    return 'full'
+  return 'artist'
 }
 
 export const useLocalGameStore = defineStore('localGame', () => {

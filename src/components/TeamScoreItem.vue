@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { RoundGuessResult } from '@/db/schemas'
 import type { GuessLevel } from '@/types'
 import { CircleUserRound, UsersRound } from '@lucide/vue'
 import { TransitionPresets, useTransition } from '@vueuse/core'
@@ -11,7 +10,7 @@ const props = defineProps<{
   name: string
   score: number
   width: number
-  guessLevel?: GuessLevel | RoundGuessResult
+  guessLevel?: GuessLevel
   displayGuessLevel?: boolean
   highlighted?: boolean
   large?: boolean

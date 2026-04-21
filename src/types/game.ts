@@ -5,7 +5,7 @@ import { spotifyTrackSchema } from './spotify'
  * Guess levels
  */
 
-export const guessLevelSchema = z.enum(['full', 'album', 'artist', 'none', 'disconnected'])
+export const guessLevelSchema = z.enum(['full', 'album', 'artist', 'none', 'disconnected', 'stolen'])
 export type GuessLevel = z.infer<typeof guessLevelSchema>
 
 /**

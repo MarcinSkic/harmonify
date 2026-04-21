@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import type { RoundGuessResult } from '@/db/schemas'
 import type { GuessLevel } from '@/types'
 import { CircleCheck, CircleMinus, CircleX, ShieldQuestion, Unplug, Zap } from '@lucide/vue'
 import { toRefs } from '@vueuse/core'
@@ -9,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
-  guessLevel: GuessLevel | RoundGuessResult
+  guessLevel: GuessLevel
   class?: HTMLAttributes['class']
 }>()
 
@@ -22,7 +21,6 @@ const [icon, color, message] = toRefs(computed(() => {
     case 'artist':
       return [CircleMinus, 'text-yellow-500', 'Guessed artist']
     case 'none':
-    case 'missed':
       return [CircleX, 'text-red-500', 'Incorrect guess']
     case 'disconnected':
       return [Unplug, 'text-gray-500', 'Player not connected']

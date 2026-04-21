@@ -45,11 +45,11 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
             class="flex min-w-0 items-center gap-2"
           >
             <Check
-              v-if="ts.result === 'guessed'"
+              v-if="ts.result === 'full'"
               class="size-10 shrink-0 text-green-500"
             />
             <Minus
-              v-else-if="ts.result === 'partial'"
+              v-else-if="ts.result === 'artist'"
               class="size-10 shrink-0 text-yellow-500"
             />
             <Zap
