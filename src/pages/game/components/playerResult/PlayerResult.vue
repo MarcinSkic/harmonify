@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import type { PlayerScoreDto } from '@/types'
-import { CircleUserRound } from '@lucide/vue'
-import { TransitionPresets, useTransition } from '@vueuse/core'
 import { computed } from 'vue'
-import { AnimationDuration } from '@/consts'
-import { cn } from '@/lib/utils'
-import { GuessLevelIcon } from '@/pages/game/components/guessLevelIcon'
+import TeamScoreItem from '@/components/TeamScoreItem.vue'
 import { GuessDisplay } from '@/pages/game/components/trackDisplay'
 import { useGameDataStore } from '@/stores'
 
@@ -16,38 +12,21 @@ const props = defineProps<{
 }>()
 
 const gameDataStore = useGameDataStore()
-const width = useTransition(() => props.playerResult.width, {
-  duration: AnimationDuration.D1000,
-  transition: TransitionPresets.linear,
-})
 const guess = computed(() => props.playerResult.roundResults.at(-1)!.guess)
 const guessLevel = computed(() => props.playerResult.roundResults.at(-1)!.guessLevel)
 const isSelf = computed(() => props.playerResult.guid === gameDataStore.selfPlayer.guid)
 </script>
 
 <template>
-  <div class="grid">
-    <div class="relative flex items-center gap-2">
-      <GuessLevelIcon
-        v-if="displayGuessLevel" :guess-level="guessLevel" class="
-          relative -bottom-2 -mr-2 self-end
-        "
-      />
-      <div v-else class="relative -bottom-2 -mr-2 min-h-4 min-w-4 self-end" />
-      <CircleUserRound :class="cn('min-h-8 min-w-8', isSelf && 'text-primary')" />
-      <div class="grid grid-rows-2">
-        <div class="mr-3 text-sm">
-          {{ props.playerResult.nickname }}
-        </div>
-        <div
-          :class="cn(`
-            h-3/4 origin-left rounded-md bg-primary text-right
-            text-primary-foreground
-          `, animation && `animated`)" :style="{ width: `${width}px` }"
-        />
-      </div>
-      <div>{{ playerResult.score }}</div>
-    </div>
+  <TeamScoreItem
+    :name="playerResult.nickname"
+    :score="playerResult.score"
+    :width="playerResult.width"
+    :guess-level="guessLevel"
+    :display-guess-level="displayGuessLevel"
+    :highlighted="isSelf"
+    :animation="animation"
+  >
     <div
       v-if="displayGuessLevel && guessLevel !== 'full' && guess !== ''" class="
         text-sm text-nowrap
@@ -56,13 +35,5 @@ const isSelf = computed(() => props.playerResult.guid === gameDataStore.selfPlay
       <span>Guess: </span>
       <GuessDisplay :guess="guess" />
     </div>
-  </div>
+  </TeamScoreItem>
 </template>
-
-<style scoped>
-.animated {
-  transform: scaleX(0);
-  animation: grow-x v-bind('animation && animation.duration') ease-in-out 0.2s;
-  animation-fill-mode: forwards;
-}
-</style>

@@ -59,6 +59,7 @@ describe('processQueue', () => {
     const fakeBlob = new Blob(['fake-image'], { type: 'image/jpeg' })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
+      headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
       blob: () => Promise.resolve(fakeBlob),
     }))
 
@@ -116,6 +117,7 @@ describe('processQueue', () => {
     const fakeBlob = new Blob(['img'], { type: 'image/jpeg' })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
+      headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
       blob: () => Promise.resolve(fakeBlob),
     }))
 

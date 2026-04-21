@@ -1,4 +1,5 @@
-import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundGuessResult, RoundResult, Track } from '@/db/schemas'
+import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
+import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
@@ -14,15 +15,18 @@ import { useCategoriesStore } from '@/stores'
 function computeResult(
   points: number,
   gameMode: LocalGameGameMode,
+  isCurrentTeam: boolean,
   categoryPoints?: number,
-): RoundGuessResult {
+): LocalGuessLevel {
   if (points === 0)
-    return 'missed'
+    return 'none'
   if (gameMode === 'random')
-    return 'guessed'
+    return 'full'
   if (categoryPoints !== undefined && points >= categoryPoints)
-    return 'guessed'
-  return 'partial'
+    return 'full'
+  if (!isCurrentTeam && categoryPoints !== undefined && points >= categoryPoints / 2)
+    return 'takeover'
+  return 'artist'
 }
 
 export const useLocalGameStore = defineStore('localGame', () => {
@@ -84,6 +88,11 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!id)
       return undefined
     return game.value?.teams.find(t => t.id === id)
+  })
+
+  const lastRoundTeamScores = computed(() => {
+    const rounds = game.value?.rounds
+    return rounds?.[rounds.length - 1]?.teamScores ?? []
   })
 
   function getNextEnabledTeamId(fromId: string | undefined): string | undefined {
@@ -323,6 +332,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
           result: computeResult(
             scores.get(team.id) ?? 0,
             g.settings.gameMode,
+            team.id === g.currentTeamId,
             currentCategoryInfo.value?.points,
           ),
         })),
@@ -470,6 +480,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     allCategories,
     currentCategoryInfo,
     currentTeam,
+    lastRoundTeamScores,
     createGame,
     resumeGame,
     findUnfinishedGame,

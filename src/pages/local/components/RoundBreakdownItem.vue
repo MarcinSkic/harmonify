@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RoundResult } from '@/db/schemas'
-import { Check, Minus, X } from '@lucide/vue'
 import { computed } from 'vue'
+import { GuessLevelIcon } from '@/components/guessLevelIcon'
 import { Badge } from '@/components/ui/badge'
 import { useLinkPreview } from '@/composables/useLinkPreview'
 import TrackDisplayWithCover from '@/pages/local/round/components/TrackDisplayWithCover.vue'
@@ -44,17 +44,10 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
             :key="ts.teamId"
             class="flex min-w-0 items-center gap-2"
           >
-            <Check
-              v-if="ts.result === 'guessed'"
-              class="size-10 shrink-0 text-green-500"
-            />
-            <Minus
-              v-else-if="ts.result === 'partial'"
-              class="size-10 shrink-0 text-yellow-500"
-            />
-            <X
-              v-else-if="ts.teamId === round.currentTeamId"
-              class="size-10 shrink-0 text-red-500"
+            <GuessLevelIcon
+              v-if="ts.result !== 'none' || ts.teamId === round.currentTeamId"
+              :guess-level="ts.result"
+              class="size-10 shrink-0"
             />
             <span v-else class="size-10 shrink-0" />
             <span

@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import type { RoundResult } from '@/db/schemas'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useWindowSize } from '@vueuse/core'
+import { computed } from 'vue'
+import TeamScoreItem from '@/components/TeamScoreItem.vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Breakpoint } from '@/consts'
 import RoundBreakdown from './RoundBreakdown.vue'
 
-defineProps<{
+const props = defineProps<{
   teams: { id: string, name: string, score: number }[]
   rounds: RoundResult[]
 }>()
+
+const { width: screenWidth } = useWindowSize()
+const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 500 : 200)
+
+const teamsWithWidth = computed(() => {
+  const bestScore = props.teams[0]?.score ?? 0
+  return props.teams.map(team => ({
+    ...team,
+    width: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
+  }))
+})
 </script>
 
 <template>
@@ -26,30 +40,23 @@ defineProps<{
     </TabsList>
 
     <TabsContent value="results" class="mt-4 overflow-auto">
-      <Table class="mx-auto max-w-2xl">
-        <TableHeader>
-          <TableRow>
-            <TableHead class="w-12">
-              #
-            </TableHead>
-            <TableHead>Team</TableHead>
-            <TableHead class="text-right">
-              Score
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="(team, index) in teams" :key="team.id">
-            <TableCell class="font-medium">
-              {{ index + 1 }}
-            </TableCell>
-            <TableCell>{{ team.name }}</TableCell>
-            <TableCell class="text-right font-semibold">
-              {{ team.score }}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      <div
+        class="
+          mx-auto grid w-full max-w-md justify-center gap-3
+          lg:max-w-2xl lg:gap-4
+          xl:max-w-4xl
+        "
+      >
+        <TeamScoreItem
+          v-for="team in teamsWithWidth"
+          :key="team.id"
+          :name="team.name"
+          :score="team.score"
+          :width="team.width"
+          :large="true"
+          :multiple-users="true"
+        />
+      </div>
     </TabsContent>
 
     <TabsContent

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import type { GuessLevel } from '@/types'
-import { CircleCheck, CircleMinus, CircleX, ShieldQuestion, Unplug } from '@lucide/vue'
+import { CircleCheck, CircleMinus, CircleX, ShieldQuestion, Unplug, Zap } from '@lucide/vue'
 import { toRefs } from '@vueuse/core'
 import { computed } from 'vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -24,6 +24,8 @@ const [icon, color, message] = toRefs(computed(() => {
       return [CircleX, 'text-red-500', 'Incorrect guess']
     case 'disconnected':
       return [Unplug, 'text-gray-500', 'Player not connected']
+    case 'takeover':
+      return [Zap, 'text-amber-400', 'Takeover']
     default:
       return [ShieldQuestion, 'text-purple-500', 'Unknown status']
   }
