@@ -24,7 +24,7 @@ const [icon, color, message] = toRefs(computed(() => {
       return [CircleX, 'text-red-500', 'Incorrect guess']
     case 'disconnected':
       return [Unplug, 'text-gray-500', 'Player not connected']
-    case 'stolen':
+    case 'takeover':
       return [Zap, 'text-amber-400', 'Stolen']
     default:
       return [ShieldQuestion, 'text-purple-500', 'Unknown status']

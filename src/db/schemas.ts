@@ -80,7 +80,7 @@ export const teamRoundScoreSchema = z.object({
   teamId: z.string(),
   teamName: z.string(),
   points: z.number(),
-  result: guessLevelSchema.extract(['full', 'artist', 'none', 'stolen']),
+  result: guessLevelSchema.extract(['full', 'artist', 'none', 'takeover']),
 })
 export type TeamRoundScore = z.infer<typeof teamRoundScoreSchema>
 

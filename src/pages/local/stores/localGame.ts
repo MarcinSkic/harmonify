@@ -16,7 +16,7 @@ function computeResult(
   gameMode: LocalGameGameMode,
   isCurrentTeam: boolean,
   categoryPoints?: number,
-): 'full' | 'artist' | 'none' | 'stolen' {
+): 'full' | 'artist' | 'none' | 'takeover' {
   if (points === 0)
     return 'none'
   if (gameMode === 'random')
@@ -24,7 +24,7 @@ function computeResult(
   if (categoryPoints !== undefined && points >= categoryPoints)
     return 'full'
   if (!isCurrentTeam && categoryPoints !== undefined && points >= categoryPoints / 2)
-    return 'stolen'
+    return 'takeover'
   return 'artist'
 }
 
@@ -331,7 +331,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
           result: computeResult(
             scores.get(team.id) ?? 0,
             g.settings.gameMode,
-            team.id !== g.currentTeamId,
+            team.id === g.currentTeamId,
             currentCategoryInfo.value?.points,
           ),
         })),
