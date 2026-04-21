@@ -8,6 +8,9 @@ import { spotifyTrackSchema } from './spotify'
 export const guessLevelSchema = z.enum(['full', 'album', 'artist', 'none', 'disconnected', 'takeover'])
 export type GuessLevel = z.infer<typeof guessLevelSchema>
 
+export const localGuessLevelSchema = guessLevelSchema.extract(['full', 'artist', 'none', 'takeover'])
+export type LocalGuessLevel = z.infer<typeof localGuessLevelSchema>
+
 /**
  * Harmonify API
  */

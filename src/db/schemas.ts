@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { guessLevelSchema } from '@/types'
+import { localGuessLevelSchema } from '@/types'
 
 export const metadataSourceSchema = z.enum(['spotify', 'server', 'manual', 'csv'])
 export type MetadataSource = z.infer<typeof metadataSourceSchema>
@@ -80,7 +80,7 @@ export const teamRoundScoreSchema = z.object({
   teamId: z.string(),
   teamName: z.string(),
   points: z.number(),
-  result: guessLevelSchema.extract(['full', 'artist', 'none', 'takeover']),
+  result: localGuessLevelSchema,
 })
 export type TeamRoundScore = z.infer<typeof teamRoundScoreSchema>
 

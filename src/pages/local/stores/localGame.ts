@@ -1,4 +1,5 @@
 import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
+import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
@@ -16,7 +17,7 @@ function computeResult(
   gameMode: LocalGameGameMode,
   isCurrentTeam: boolean,
   categoryPoints?: number,
-): 'full' | 'artist' | 'none' | 'takeover' {
+): LocalGuessLevel {
   if (points === 0)
     return 'none'
   if (gameMode === 'random')
