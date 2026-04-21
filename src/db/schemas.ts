@@ -75,7 +75,7 @@ export type LinkPreview = z.infer<typeof linkPreviewSchema>
 
 // Game result schemas
 
-export const roundGuessResultSchema = z.enum(['guessed', 'partial', 'missed'])
+export const roundGuessResultSchema = z.enum(['guessed', 'partial', 'missed', 'stolen'])
 export type RoundGuessResult = z.infer<typeof roundGuessResultSchema>
 
 export const teamRoundScoreSchema = z.object({

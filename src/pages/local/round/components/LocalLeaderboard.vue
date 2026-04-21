@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { LocalGameTeam } from '@/db/schemas'
-import type { GuessLevel } from '@/types'
 import { useTimeout, useTimeoutFn, useWindowSize } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import TeamScoreItem from '@/components/TeamScoreItem.vue'
@@ -48,14 +47,6 @@ const teamRoundResults = computed(() =>
   new Map(localGameStore.lastRoundTeamScores.map(s => [s.teamId, s])),
 )
 
-function toGuessLevel(result: 'guessed' | 'partial' | 'missed'): GuessLevel {
-  if (result === 'guessed')
-    return 'full'
-  if (result === 'partial')
-    return 'album'
-  return 'none'
-}
-
 const leaderboard = computed(() => {
   const source = showCurrentScore.value || !settingsStore.playAnimations
     ? props.teams
@@ -73,7 +64,7 @@ const leaderboard = computed(() => {
     return {
       ...team,
       targetWidth: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
-      guessLevel: roundScore ? toGuessLevel(roundScore.result) : undefined,
+      guessLevel: roundScore?.result,
       displayGuessLevel: canReveal && (hasPoints || isCurrentTeam),
     }
   })

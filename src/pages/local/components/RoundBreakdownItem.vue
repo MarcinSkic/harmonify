@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RoundResult } from '@/db/schemas'
-import { Check, Minus, X } from '@lucide/vue'
+import { Check, Minus, X, Zap } from '@lucide/vue'
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { useLinkPreview } from '@/composables/useLinkPreview'
@@ -51,6 +51,10 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
             <Minus
               v-else-if="ts.result === 'partial'"
               class="size-10 shrink-0 text-yellow-500"
+            />
+            <Zap
+              v-else-if="ts.result === 'stolen'"
+              class="size-10 shrink-0 text-amber-400"
             />
             <X
               v-else-if="ts.teamId === round.currentTeamId"
