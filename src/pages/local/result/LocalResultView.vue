@@ -26,7 +26,7 @@ onMounted(async () => {
   <div
     v-if="localGameStore.game"
     class="
-      grid h-full grid-rows-[auto_1fr_auto] gap-4 p-4
+      grid h-full grid-rows-[auto_1fr_auto] gap-8 p-4
       md:p-8
     "
   >
@@ -36,7 +36,7 @@ onMounted(async () => {
         lg:text-5xl
       "
     >
-      Game Over
+      Game Finished
     </h1>
 
     <GameResultTabs :teams="teams" :rounds="localGameStore.game.rounds" />
