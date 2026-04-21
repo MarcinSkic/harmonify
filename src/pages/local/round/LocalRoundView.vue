@@ -106,13 +106,6 @@ async function handleContinueFromLeaderboard() {
         lg:gap-y-8
       "
     >
-      <span
-        class="
-          text-xl
-          lg:text-3xl
-        "
-      >Round: {{ game.currentRound }}</span>
-
       <!-- Picking category phase -->
       <template v-if="game.roundPhase === 'pickingCategory'">
         <CategoryPicker

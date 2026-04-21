@@ -2,6 +2,7 @@
 import type { Category, LocalGameTeam } from '@/db/schemas'
 import { useBreakpoints } from '@vueuse/core'
 import { computed } from 'vue'
+import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Breakpoint } from '@/consts'
@@ -40,10 +41,10 @@ const cols = computed(() =>
 
 const columnWidth = computed(() => {
   if (breakpoints.greaterOrEqual('xl').value)
-    return 320
+    return 420
   if (breakpoints.greaterOrEqual('lg').value)
-    return 256
-  return 192
+    return 340
+  return 240
 })
 
 const containerMaxWidth = computed(() => `${cols.value * columnWidth.value}px`)
@@ -144,8 +145,13 @@ function handleClick(categoryId: string, count: number) {
           >
             {{ category.description }}
           </span>
-          <Badge v-if="category.points !== undefined" variant="secondary">
-            {{ category.points }} pts
+          <Badge
+            v-if="category.points !== undefined" variant="secondary" class="
+              px-3 py-1 text-xl
+              lg:px-3 lg:py-1 lg:text-2xl
+            "
+          >
+            <PointsDisplay :points="category.points" icon-class="size-5 lg:size-6" />
           </Badge>
         </CardContent>
       </Card>

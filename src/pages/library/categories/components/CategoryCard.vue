@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Category } from '@/db/schemas'
 import { ArrowDown, ArrowUp, Pencil, Trash2 } from '@lucide/vue'
+import PointsDisplay from '@/components/PointsDisplay.vue'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,7 +67,7 @@ const emit = defineEmits<{
               {{ category.displayName }}
             </h3>
             <Badge v-if="category.points !== undefined" variant="secondary">
-              {{ category.points }} pts
+              <PointsDisplay :points="category.points" />
             </Badge>
           </div>
           <p
