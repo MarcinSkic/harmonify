@@ -14,14 +14,17 @@ import { useCategoriesStore } from '@/stores'
 function computeResult(
   points: number,
   gameMode: LocalGameGameMode,
+  isCurrentTeam: boolean,
   categoryPoints?: number,
-): 'full' | 'artist' | 'none' {
+): 'full' | 'artist' | 'none' | 'stolen' {
   if (points === 0)
     return 'none'
   if (gameMode === 'random')
     return 'full'
   if (categoryPoints !== undefined && points >= categoryPoints)
     return 'full'
+  if (!isCurrentTeam && categoryPoints !== undefined && points >= categoryPoints / 2)
+    return 'stolen'
   return 'artist'
 }
 
@@ -328,6 +331,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
           result: computeResult(
             scores.get(team.id) ?? 0,
             g.settings.gameMode,
+            team.id !== g.currentTeamId,
             currentCategoryInfo.value?.points,
           ),
         })),
