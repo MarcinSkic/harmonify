@@ -1,1 +1,1 @@
-export { default as GuessLevelIcon } from './GuessLevelIcon.vue'
+export { GuessLevelIcon } from '@/components/guessLevelIcon'

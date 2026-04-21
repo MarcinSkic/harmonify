@@ -86,6 +86,11 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return game.value?.teams.find(t => t.id === id)
   })
 
+  const lastRoundTeamScores = computed(() => {
+    const rounds = game.value?.rounds
+    return rounds?.[rounds.length - 1]?.teamScores ?? []
+  })
+
   function getNextEnabledTeamId(fromId: string | undefined): string | undefined {
     if (!game.value)
       return undefined
@@ -470,6 +475,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     allCategories,
     currentCategoryInfo,
     currentTeam,
+    lastRoundTeamScores,
     createGame,
     resumeGame,
     findUnfinishedGame,

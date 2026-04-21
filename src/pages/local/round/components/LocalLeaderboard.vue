@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { LocalGameTeam } from '@/db/schemas'
-import { TransitionPresets, useTimeout, useTimeoutFn, useTransition, useWindowSize } from '@vueuse/core'
-import { computed, defineComponent, h, ref, toRef } from 'vue'
+import type { GuessLevel } from '@/types'
+import { useTimeout, useTimeoutFn, useWindowSize } from '@vueuse/core'
+import { computed, ref } from 'vue'
+import TeamScoreItem from '@/components/TeamScoreItem.vue'
 import { Button } from '@/components/ui/button'
 import { AnimationDuration, Breakpoint } from '@/consts'
+import { useLocalGameStore } from '@/pages/local/stores/localGame'
 import { useSettingsStore } from '@/stores'
 import AddTeamInline from './AddTeamInline.vue'
 
@@ -33,10 +36,25 @@ function stopAutoAdvance() {
 }
 
 const settingsStore = useSettingsStore()
+const localGameStore = useLocalGameStore()
 const showCurrentScore = useTimeout(AnimationDuration.D1000)
 
 const { width: screenWidth } = useWindowSize()
 const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 500 : 200)
+
+const currentTeamId = computed(() => localGameStore.currentTeam?.id)
+
+const teamRoundResults = computed(() =>
+  new Map(localGameStore.lastRoundTeamScores.map(s => [s.teamId, s])),
+)
+
+function toGuessLevel(result: 'guessed' | 'partial' | 'missed'): GuessLevel {
+  if (result === 'guessed')
+    return 'full'
+  if (result === 'partial')
+    return 'album'
+  return 'none'
+}
 
 const leaderboard = computed(() => {
   const source = showCurrentScore.value || !settingsStore.playAnimations
@@ -45,27 +63,20 @@ const leaderboard = computed(() => {
 
   const sorted = [...source].sort((a, b) => b.score - a.score)
   const bestScore = sorted[0]?.score ?? 0
+  const canReveal = showCurrentScore.value || !settingsStore.playAnimations
 
-  return sorted.map(team => ({
-    ...team,
-    targetWidth: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
-  }))
-})
+  return sorted.map((team) => {
+    const roundScore = teamRoundResults.value.get(team.id)
+    const hasPoints = (roundScore?.points ?? 0) > 0
+    const isCurrentTeam = team.id === currentTeamId.value
 
-const LocalLeaderboardBar = defineComponent({
-  props: {
-    targetWidth: { type: Number, required: true },
-  },
-  setup(barProps) {
-    const width = useTransition(toRef(barProps, 'targetWidth'), {
-      duration: AnimationDuration.D1000,
-      transition: TransitionPresets.linear,
-    })
-    return () => h('div', {
-      class: 'h-4 rounded-md bg-primary lg:h-6',
-      style: { width: `${width.value}px` },
-    })
-  },
+    return {
+      ...team,
+      targetWidth: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
+      guessLevel: roundScore ? toGuessLevel(roundScore.result) : undefined,
+      displayGuessLevel: canReveal && (hasPoints || isCurrentTeam),
+    }
+  })
 })
 </script>
 
@@ -90,28 +101,17 @@ const LocalLeaderboardBar = defineComponent({
         xl:max-w-4xl
       "
     >
-      <div
-        v-for="entry in leaderboard" :key="entry.id" class="
-          flex items-center gap-3
-          lg:gap-4
-        "
-      >
-        <span
-          class="
-            w-32 shrink-0 truncate text-right text-base font-medium
-            lg:w-48 lg:text-xl
-          "
-        >{{ entry.name }}</span>
-        <div class="flex flex-1 items-center gap-2">
-          <LocalLeaderboardBar :target-width="entry.targetWidth" />
-          <span
-            class="
-              min-w-10 text-right text-sm tabular-nums
-              lg:text-lg
-            "
-          >{{ entry.score }}</span>
-        </div>
-      </div>
+      <TeamScoreItem
+        v-for="entry in leaderboard"
+        :key="entry.id"
+        :name="entry.name"
+        :score="entry.score"
+        :width="entry.targetWidth"
+        :guess-level="entry.guessLevel"
+        :display-guess-level="entry.displayGuessLevel"
+        :large="true"
+        :multiple-users="true"
+      />
     </TransitionGroup>
 
     <AddTeamInline @add="emit('addTeam', $event)" />
