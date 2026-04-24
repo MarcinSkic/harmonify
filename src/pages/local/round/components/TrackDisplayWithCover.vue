@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Skeleton } from '@/components/ui/skeleton'
+
 defineProps<{
   imageUrl?: string | null
   title: string
@@ -19,6 +21,13 @@ defineProps<{
         lg:max-h-48
       "
     >
+    <Skeleton
+      v-else
+      class="
+        aspect-square max-h-32 shrink-0 rounded-md
+        lg:max-h-48
+      "
+    />
     <div
       class="
         flex min-w-0 flex-1 flex-col gap-3

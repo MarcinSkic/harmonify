@@ -23,8 +23,10 @@ const emit = defineEmits<{
 const categoryPoints = computed(() => props.category?.points)
 const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.round(categoryPoints.value / 2) : undefined)
 const fullPlusArtistPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
+const halfPlusArtistPoints = computed(() => halfPoints.value !== undefined ? halfPoints.value + props.settings.partialPoints : undefined)
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
+const showAlbumAsBig = computed(() => !previewImageUrl.value && !!props.track.albumImageUrl)
 
 const scores = reactive<Record<string, number>>(
   Object.fromEntries(props.teams.map(t => [t.id, 0])),
@@ -79,8 +81,17 @@ function handleNextRound() {
             lg:max-h-170
           "
         >
+        <img
+          v-else-if="showAlbumAsBig"
+          :src="track.albumImageUrl"
+          alt="Album cover"
+          class="
+            max-h-100 max-w-full rounded-md object-cover
+            lg:max-h-170
+          "
+        >
         <TrackDisplayWithCover
-          :image-url="track.albumImageUrl"
+          :image-url="showAlbumAsBig ? null : track.albumImageUrl"
           :title="track.name"
           :artists="track.artists"
         />
@@ -141,6 +152,14 @@ function handleNextRound() {
                 @click="scores[team.id] = halfPoints!"
               >
                 Half
+              </Button>
+              <Button
+                v-if="team.id !== currentTeamId"
+                type="button" variant="outline" size="sm"
+                class="text-amber-500"
+                @click="scores[team.id] = halfPlusArtistPoints!"
+              >
+                Half+Artist
               </Button>
               <Button
                 type="button" variant="outline" size="sm"

@@ -28,9 +28,9 @@ export type ServerPlaylist = z.infer<typeof serverPlaylistSchema>
 
 const serverTrackSchema = z.object({
   id: z.coerce.string(),
-  title: z.string(),
-  artist: z.string(),
-  album: z.string(),
+  title: z.string().nullable(),
+  artist: z.string().nullable(),
+  album: z.string().nullable(),
   durationMs: z.number(),
   hasCoverArt: z.boolean(),
 })

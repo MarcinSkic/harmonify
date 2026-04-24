@@ -35,10 +35,10 @@ async function handleImport() {
 
       const tracks = serverTracks.map(t => ({
         sourceId: t.id,
-        name: t.title,
-        artists: [t.artist],
+        name: t.title ?? '',
+        artists: t.artist ? t.artist.split(', ') : [],
         durationMs: t.durationMs,
-        albumName: t.album,
+        albumName: t.album ?? '',
         albumImageUrl: t.hasCoverArt
           ? MusicServerService.getCoverUrl(playlist.name, t.id)
           : undefined,
