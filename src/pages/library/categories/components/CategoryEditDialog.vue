@@ -20,7 +20,6 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from '@/components/ui/number-field'
-import { Switch } from '@/components/ui/switch'
 import { categorySchema } from '@/db/schemas'
 import { LibraryService } from '@/services'
 import { useCategoriesStore, useLibraryStore } from '@/stores'
@@ -40,7 +39,6 @@ const isEditMode = computed(() => props.category !== null)
 const displayName = ref('')
 const description = ref('')
 const points = ref<number | null>(null)
-const enabled = ref(true)
 const tagFilter = ref<string[]>([])
 const matchCount = ref(0)
 
@@ -53,14 +51,12 @@ watch(
       displayName.value = category.displayName
       description.value = category.description ?? ''
       points.value = category.points ?? null
-      enabled.value = category.enabled
       tagFilter.value = [...category.tagFilter]
     }
     else {
       displayName.value = ''
       description.value = ''
       points.value = null
-      enabled.value = true
       tagFilter.value = []
     }
   },
@@ -80,7 +76,6 @@ async function handleSubmit() {
     displayName: displayName.value.trim(),
     description: description.value.trim() || undefined,
     points: points.value ?? undefined,
-    enabled: enabled.value,
     tagFilter: tagFilter.value,
   }
 
@@ -98,7 +93,7 @@ async function handleSubmit() {
   }
 
   const validation = categorySchema
-    .omit({ id: true, createdAt: true, order: true })
+    .omit({ id: true, createdAt: true })
     .safeParse(payload)
 
   if (!validation.success) {
@@ -161,9 +156,7 @@ async function handleSubmit() {
           </p>
         </div>
 
-        <div
-          class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3"
-        >
+        <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3">
           <Label for="category-points">Points</Label>
           <NumberField
             id="category-points"
@@ -177,9 +170,6 @@ async function handleSubmit() {
               <NumberFieldIncrement />
             </NumberFieldContent>
           </NumberField>
-
-          <Label for="category-enabled">Enabled</Label>
-          <Switch id="category-enabled" v-model:model-value="enabled" />
         </div>
       </form>
 

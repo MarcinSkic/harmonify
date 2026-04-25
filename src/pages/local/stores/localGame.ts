@@ -1,4 +1,6 @@
-import type { Category, CategoryLimit, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
+import type { Category, CategoryLimit, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
+import { gameResultSchema } from '@/db/schemas'
+import type { EngineCategory } from '@/pages/local/engine/categoryPool'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -60,17 +62,35 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return true
   })
 
-  const allCategories = computed<Array<{ category: Category, count: number, initialCount: number }>>(() => {
+  const ephemeralCategoryMap = computed<Map<string, PlaylistBasedCategory>>(() => {
+    const map = new Map<string, PlaylistBasedCategory>()
+    for (const e of game.value?.ephemeralCategories ?? [])
+      map.set(e.id, e)
+    return map
+  })
+
+  const allCategories = computed<Array<{ category: Category | PlaylistBasedCategory, count: number, initialCount: number }>>(() => {
     if (!game.value?.categoryPoolState)
       return []
     const counts = getCategoryCounts(game.value.categoryPoolState)
     const initials = game.value.categoryPoolState.initialCounts
-    const result: Array<{ category: Category, count: number, initialCount: number }> = []
-    for (const category of categoriesStore.categories) {
-      if (category.id in counts)
-        result.push({ category, count: counts[category.id], initialCount: initials[category.id] ?? counts[category.id] })
+    const result: Array<{ category: Category | PlaylistBasedCategory, count: number, initialCount: number }> = []
+
+    for (const id of Object.keys(counts)) {
+      const tagCategory = categoriesStore.categories.find(c => c.id === id)
+      const ephemeral = ephemeralCategoryMap.value.get(id)
+      const category = tagCategory ?? ephemeral
+      if (category)
+        result.push({ category, count: counts[id], initialCount: initials[id] ?? counts[id] })
     }
-    return result.sort((a, b) => a.category.order - b.category.order)
+
+    return result.sort((a, b) => {
+      const aIsEphemeral = 'type' in a.category
+      const bIsEphemeral = 'type' in b.category
+      if (aIsEphemeral !== bIsEphemeral)
+        return aIsEphemeral ? 1 : -1
+      return a.category.displayName.localeCompare(b.category.displayName)
+    })
   })
 
   const disabledCategoryIdsForCurrentTeam = computed((): Set<string> => {
@@ -100,10 +120,13 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const categoryId = game.value?.currentCategory
     if (!categoryId)
       return undefined
-    const category = categoriesStore.categories.find(c => c.id === categoryId)
-    if (!category)
-      return { displayName: categoryId }
-    return { displayName: category.displayName, points: category.points }
+    const tagCategory = categoriesStore.categories.find(c => c.id === categoryId)
+    if (tagCategory)
+      return { displayName: tagCategory.displayName, points: tagCategory.points }
+    const ephemeral = ephemeralCategoryMap.value.get(categoryId)
+    if (ephemeral)
+      return { displayName: ephemeral.displayName, points: ephemeral.points }
+    return { displayName: categoryId }
   })
 
   const currentTeam = computed(() => {
@@ -155,9 +178,29 @@ export const useLocalGameStore = defineStore('localGame', () => {
 
     const isCategory = settings.gameMode === 'category'
     const trackPoolState = createPool(isCategory ? [] : playableTracks.map(t => t.id))
-    const categoryPoolState = isCategory
-      ? createCategoryPool(playableTracks, enabledCategories)
-      : undefined
+
+    let ephemeralCategories: PlaylistBasedCategory[] | undefined
+    let categoryPoolState
+
+    if (isCategory) {
+      const allEngineCategories: EngineCategory[] = [...enabledCategories]
+
+      if (settings.generatePlaylistCategories && selectedPlaylistIds.length > 0) {
+        const playlists = await db.playlists.bulkGet(selectedPlaylistIds)
+        ephemeralCategories = playlists
+          .filter((p): p is NonNullable<typeof p> => p != null)
+          .map(p => ({
+            id: `playlist-${p.id}`,
+            type: 'playlist-based' as const,
+            displayName: p.name,
+            playlistId: p.id,
+            points: settings.generatedCategoryPoints,
+          }))
+        allEngineCategories.push(...ephemeralCategories)
+      }
+
+      categoryPoolState = createCategoryPool(playableTracks, allEngineCategories)
+    }
 
     const id = crypto.randomUUID()
 
@@ -182,6 +225,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
       currentTeamId: createdTeams[0]?.id,
       roundPhase: 'playing',
       rounds: [],
+      ephemeralCategories,
     }
 
     await _persist()
@@ -504,7 +548,6 @@ export const useLocalGameStore = defineStore('localGame', () => {
   async function importGameResult(file: File): Promise<void> {
     const text = await file.text()
     const json = JSON.parse(text)
-    const { gameResultSchema } = await import('@/db/schemas')
     const result = gameResultSchema.parse(json)
     await db.gameResults.put(result)
   }

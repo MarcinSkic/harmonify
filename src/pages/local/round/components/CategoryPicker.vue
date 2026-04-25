@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, LocalGameTeam } from '@/db/schemas'
+import type { Category, LocalGameTeam, PlaylistBasedCategory } from '@/db/schemas'
 import { useBreakpoints } from '@vueuse/core'
 import { computed } from 'vue'
 import PointsDisplay from '@/components/PointsDisplay.vue'
@@ -12,7 +12,7 @@ import CheatInput from './CheatInput.vue'
 import TeamTurnBar from './TeamTurnBar.vue'
 
 const props = defineProps<{
-  categories: Array<{ category: Category, count: number, initialCount: number }>
+  categories: Array<{ category: Category | PlaylistBasedCategory, count: number, initialCount: number }>
   teams: LocalGameTeam[]
   currentTeamId: string | undefined
   disabledCategoryIds?: Set<string>
@@ -142,13 +142,13 @@ function handleClick(categoryId: string, count: number) {
             "
           >{{ category.displayName }}</span>
           <span
-            v-if="category.description"
+            v-if="'description' in category && category.description"
             class="
               text-xs text-muted-foreground
               lg:text-sm
             "
           >
-            {{ category.description }}
+            {{ (category as { description?: string }).description }}
           </span>
           <Badge
             v-if="category.points !== undefined" variant="secondary" class="

@@ -1,23 +1,24 @@
 <script setup lang="ts">
-import type { LocalGameSettings } from '@/db/schemas'
+import type { Category, LocalGameSettings, Track } from '@/db/schemas'
 import { useWindowSize } from '@vueuse/core'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLiveQuery } from '@/composables/useLiveQuery'
 import { Breakpoint } from '@/consts'
+import { db } from '@/db'
 import LibraryTrackPicker from '@/pages/game/setup/components/LibraryTrackPicker.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
-import { useCategoriesStore, useLibraryStore, useSettingsStore } from '@/stores'
+import { LibraryService } from '@/services'
+import { useSettingsStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
 import TeamManager from './components/TeamManager.vue'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
-const libraryStore = useLibraryStore()
-const categoriesStore = useCategoriesStore()
 const musicPlayerStore = useMusicPlayerStore()
 const settingsStore = useSettingsStore()
 const { width: screenWidth } = useWindowSize()
@@ -35,15 +36,38 @@ const settings = reactive<LocalGameSettings>({
   breakDurationBetweenRounds: 3,
   saveGame: settingsStore.defaultSaveGame,
   categoryLimit: 'none',
+  generatePlaylistCategories: false,
+  generatedCategoryPoints: 10,
 })
 
-const hasTracksSelected = computed(() => libraryStore.enabledTracks.length > 0)
+const selectedPlaylistIds = ref<string[]>([])
+
+const gameEnabledTracks = useLiveQuery(
+  async () => {
+    if (selectedPlaylistIds.value.length === 0)
+      return [] as Track[]
+    const tracks = await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds.value).toArray()
+    return tracks.filter(t => t.enabled !== false && !!t.audioUrl)
+  },
+  [] as Track[],
+  [selectedPlaylistIds],
+)
+
+const gameCategories = useLiveQuery(
+  async () => {
+    if (selectedPlaylistIds.value.length === 0)
+      return [] as Category[]
+    return LibraryService.getCategoriesForPlaylists(selectedPlaylistIds.value)
+  },
+  [] as Category[],
+  [selectedPlaylistIds],
+)
+
+const hasTracksSelected = computed(() => gameEnabledTracks.value.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
 )
-const hasEnabledCategories = computed(() =>
-  categoriesStore.enabledCategories.length > 0,
-)
+const hasCategories = computed(() => gameCategories.value.length > 0)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)
@@ -52,8 +76,8 @@ const startButtonText = computed(() => {
     return 'Select a playlist'
   if (!hasValidTeams.value)
     return 'Fill in team names'
-  if (settings.gameMode === 'category' && !hasEnabledCategories.value)
-    return 'Create a category first'
+  if (settings.gameMode === 'category' && !hasCategories.value)
+    return 'Link a category set to selected playlists'
   if (isLoading.value)
     return 'Loading...'
   return 'Play!'
@@ -63,8 +87,8 @@ async function handleGameStart() {
   if (!hasValidTeams.value || !hasTracksSelected.value)
     return
 
-  if (settings.gameMode === 'category' && !hasEnabledCategories.value) {
-    toast.error('Create an enabled category in the library first')
+  if (settings.gameMode === 'category' && !hasCategories.value) {
+    toast.error('Link a category set to selected playlists first')
     return
   }
 
@@ -73,15 +97,11 @@ async function handleGameStart() {
   try {
     await musicPlayerStore.turnOn()
 
-    const selectedPlaylistIds = libraryStore.selectedPlaylistId
-      ? [libraryStore.selectedPlaylistId]
-      : libraryStore.playlists.map(p => p.id)
-
     const id = await localGameStore.createGame(
       teams.value.map(t => ({ name: t.name.trim() })),
       settings,
-      selectedPlaylistIds,
-      categoriesStore.enabledCategories,
+      selectedPlaylistIds.value,
+      gameCategories.value,
     )
 
     await localGameStore.startRound()
@@ -118,19 +138,25 @@ async function handleGameStart() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="library" class="min-h-0 flex-1">
-        <LibraryTrackPicker />
+        <LibraryTrackPicker
+          :selected-playlist-ids="selectedPlaylistIds"
+          @update:selected-playlist-ids="selectedPlaylistIds = $event"
+        />
       </TabsContent>
       <TabsContent value="teams" class="min-h-0 flex-1">
         <TeamManager v-model="teams" />
       </TabsContent>
       <TabsContent value="settings" class="min-h-0 flex-1 overflow-y-auto">
-        <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
+        <LocalGameSettingsForm v-model="settings" :total-tracks="gameEnabledTracks.length" />
       </TabsContent>
     </Tabs>
     <template v-else>
-      <LibraryTrackPicker />
+      <LibraryTrackPicker
+        :selected-playlist-ids="selectedPlaylistIds"
+        @update:selected-playlist-ids="selectedPlaylistIds = $event"
+      />
       <TeamManager v-model="teams" />
-      <LocalGameSettingsForm v-model="settings" :total-tracks="libraryStore.enabledTracks.length" />
+      <LocalGameSettingsForm v-model="settings" :total-tracks="gameEnabledTracks.length" />
     </template>
     <Button
       class="
@@ -141,7 +167,7 @@ async function handleGameStart() {
         !musicPlayerStore.ready
           || !hasTracksSelected
           || !hasValidTeams
-          || (settings.gameMode === 'category' && !hasEnabledCategories)
+          || (settings.gameMode === 'category' && !hasCategories)
           || isLoading
       "
       type="submit"

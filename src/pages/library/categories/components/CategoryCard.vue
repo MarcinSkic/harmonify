@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Category } from '@/db/schemas'
-import { ArrowDown, ArrowUp, Pencil, Trash2 } from '@lucide/vue'
+import { Pencil, Trash2 } from '@lucide/vue'
 import PointsDisplay from '@/components/PointsDisplay.vue'
 import {
   AlertDialog,
@@ -16,51 +16,22 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
 
 defineProps<{
   category: Category
   trackCount: number
-  isFirst: boolean
-  isLast: boolean
 }>()
 
 const emit = defineEmits<{
   edit: []
   delete: []
-  moveUp: []
-  moveDown: []
-  toggleEnabled: []
 }>()
 </script>
 
 <template>
-  <Card :class="{ 'opacity-60': !category.enabled }">
+  <Card>
     <CardContent class="flex flex-col gap-3 p-4">
       <div class="flex items-start gap-3">
-        <div class="flex flex-col gap-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            class="size-7"
-            :disabled="isFirst"
-            @click="emit('moveUp')"
-          >
-            <ArrowUp class="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            class="size-7"
-            :disabled="isLast"
-            @click="emit('moveDown')"
-          >
-            <ArrowDown class="size-4" />
-          </Button>
-        </div>
-
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <h3 class="truncate text-lg font-semibold">
@@ -82,10 +53,6 @@ const emit = defineEmits<{
         </div>
 
         <div class="flex items-center gap-2">
-          <Switch
-            :model-value="category.enabled"
-            @update:model-value="emit('toggleEnabled')"
-          />
           <Button
             type="button"
             variant="ghost"

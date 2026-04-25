@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Category } from '@/db/schemas'
-import { ArrowLeft, Plus, Search } from '@lucide/vue'
+import { ArrowLeft, Layers, Plus, Search } from '@lucide/vue'
 import { computed, ref, shallowRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -54,18 +54,6 @@ function openEdit(category: Category) {
 async function handleDelete(id: string) {
   await categoriesStore.remove(id)
 }
-
-async function handleMoveUp(id: string) {
-  await categoriesStore.moveUp(id)
-}
-
-async function handleMoveDown(id: string) {
-  await categoriesStore.moveDown(id)
-}
-
-async function handleToggleEnabled(id: string) {
-  await categoriesStore.toggleEnabled(id)
-}
 </script>
 
 <template>
@@ -87,6 +75,17 @@ async function handleToggleEnabled(id: string) {
         </p>
       </div>
 
+      <RouterLink :to="{ name: 'categorySets' }">
+        <Button variant="outline" class="gap-2">
+          <Layers class="size-4" />
+          <span
+            class="
+              hidden
+              sm:inline
+            "
+          >Manage Sets</span>
+        </Button>
+      </RouterLink>
       <CategoryCsvImportButton />
       <CategoryCsvExportButton />
       <Button class="gap-2" @click="openCreate">
@@ -140,17 +139,12 @@ async function handleToggleEnabled(id: string) {
         </div>
 
         <CategoryCard
-          v-for="(category, index) in filteredCategories"
+          v-for="category in filteredCategories"
           :key="category.id"
           :category="category"
           :track-count="trackCounts.get(category.id) ?? 0"
-          :is-first="index === 0"
-          :is-last="index === filteredCategories.length - 1"
           @edit="openEdit(category)"
           @delete="handleDelete(category.id)"
-          @move-up="handleMoveUp(category.id)"
-          @move-down="handleMoveDown(category.id)"
-          @toggle-enabled="handleToggleEnabled(category.id)"
         />
       </div>
     </div>

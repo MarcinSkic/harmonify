@@ -83,6 +83,11 @@ const router = createRouter({
       component: () => import('@/pages/library/categories/CategoriesView.vue'),
     },
     {
+      path: '/library/category-sets',
+      name: 'categorySets',
+      component: () => import('@/pages/library/categories/CategorySetsView.vue'),
+    },
+    {
       path: '/cover',
       name: 'cover',
       component: () => import(`@/pages/cover/CoverCreatorView.vue`),
