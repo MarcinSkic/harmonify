@@ -94,7 +94,7 @@ async function handleDelete(id: string) {
       </Button>
     </header>
 
-    <div class="flex-1 overflow-auto p-4">
+    <div class="min-h-0 flex-1 overflow-auto p-4">
       <div class="flex flex-col gap-4">
         <div class="relative">
           <Search

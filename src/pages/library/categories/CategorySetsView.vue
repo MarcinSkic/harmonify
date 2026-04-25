@@ -57,7 +57,7 @@ async function handleDelete(id: string) {
       </Button>
     </header>
 
-    <div class="flex-1 overflow-auto p-4">
+    <div class="min-h-0 flex-1 overflow-auto p-4">
       <div class="mx-auto flex max-w-3xl flex-col gap-4">
         <div
           v-if="categorySetsStore.categorySets.length === 0"

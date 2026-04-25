@@ -66,7 +66,7 @@ function handleClick(categoryId: string, count: number) {
 
 <template>
   <div
-    class="grid w-full gap-4"
+    class="flex w-full flex-col gap-4"
     :style="{ maxWidth: containerMaxWidth }"
   >
     <div class="flex flex-wrap items-center justify-center gap-3">
@@ -109,7 +109,7 @@ function handleClick(categoryId: string, count: number) {
     <div
       v-else
       class="
-        grid gap-3
+        grid min-h-0 flex-1 gap-3 overflow-y-auto
         lg:gap-4
       "
       :style="{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }"

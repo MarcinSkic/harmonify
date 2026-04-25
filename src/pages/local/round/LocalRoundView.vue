@@ -95,33 +95,42 @@ async function handleContinueFromLeaderboard() {
 <template>
   <div
     v-if="game"
+    class="h-full"
     :class="game.roundPhase === 'playing' ? 'grid grid-rows-[1fr_15vh]' : `
       grid grid-rows-[1fr]
     `"
   >
+    <!-- Picking category phase — fills row height so CategoryPicker can scroll internally -->
     <div
+      v-if="game.roundPhase === 'pickingCategory'"
+      class="
+        flex min-h-0 flex-col items-center overflow-hidden p-4
+        lg:p-6
+      "
+    >
+      <CategoryPicker
+        class="min-h-0 flex-1"
+        :categories="localGameStore.allCategories"
+        :teams="game.teams"
+        :current-team-id="game.currentTeamId"
+        :disabled-category-ids="localGameStore.disabledCategoryIdsForCurrentTeam"
+        @pick="handlePickCategory"
+        @select-team="handleSelectTeam"
+        @toggle-team-disabled="handleToggleTeamDisabled"
+        @add-team="handleAddTeam"
+      />
+    </div>
+
+    <div
+      v-else
       class="
         grid place-content-center place-items-center gap-y-6 self-start p-4
         md:mt-4 md:place-self-center md:p-0
         lg:gap-y-8
       "
     >
-      <!-- Picking category phase -->
-      <template v-if="game.roundPhase === 'pickingCategory'">
-        <CategoryPicker
-          :categories="localGameStore.allCategories"
-          :teams="game.teams"
-          :current-team-id="game.currentTeamId"
-          :disabled-category-ids="localGameStore.disabledCategoryIdsForCurrentTeam"
-          @pick="handlePickCategory"
-          @select-team="handleSelectTeam"
-          @toggle-team-disabled="handleToggleTeamDisabled"
-          @add-team="handleAddTeam"
-        />
-      </template>
-
       <!-- Playing phase -->
-      <template v-else-if="game.roundPhase === 'playing' && track">
+      <template v-if="game.roundPhase === 'playing' && track">
         <LocalPlaybackControls
           v-if="musicPlayData"
           :track-duration="effectiveDuration"
