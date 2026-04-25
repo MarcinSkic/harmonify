@@ -79,6 +79,7 @@ api/
 - **Path alias**: `@/` maps to `src/`
 - **WebSocket messages**: validated with `messageSchema` discriminated union on `$type` field (`src/types/message.ts`)
 - **Audio playback**: abstracted via `MusicPlayer` interface — two implementations (Spotify SDK, HTML audio)
+- **UI components**: always prefer existing shadcn-vue components from `src/components/ui/` — check what's available there before building custom elements; install missing shadcn components with `pnpm dlx shadcn-vue@latest add <component>` rather than writing from scratch
 
 ## Additional Documentation
 

@@ -112,6 +112,7 @@ async function handleContinueFromLeaderboard() {
           :categories="localGameStore.allCategories"
           :teams="game.teams"
           :current-team-id="game.currentTeamId"
+          :disabled-category-ids="localGameStore.disabledCategoryIdsForCurrentTeam"
           @pick="handlePickCategory"
           @select-team="handleSelectTeam"
           @toggle-team-disabled="handleToggleTeamDisabled"
