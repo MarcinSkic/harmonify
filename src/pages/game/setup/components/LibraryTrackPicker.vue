@@ -36,11 +36,6 @@ async function loadTrackCounts(playlists: Playlist[]) {
 
 watch(() => libraryStore.playlists, playlists => loadTrackCounts(playlists), { immediate: true })
 
-watch(() => libraryStore.playlists, (playlists) => {
-  if (props.selectedPlaylistIds.length === 0 && playlists.length > 0)
-    emit('update:selectedPlaylistIds', playlists.map(p => p.id))
-}, { immediate: true })
-
 const allSelected = computed(
   () => libraryStore.playlists.every(p => props.selectedPlaylistIds.includes(p.id)),
 )
