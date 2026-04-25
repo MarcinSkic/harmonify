@@ -1,4 +1,4 @@
-import type { Category, PlaybackRange, TrackAnnotation } from '@/db/schemas'
+import type { Category, CategorySet, PlaybackRange, TrackAnnotation } from '@/db/schemas'
 import Papa from 'papaparse'
 import z from 'zod'
 
@@ -18,8 +18,6 @@ const csvCategoryRowSchema = z.object({
   description: z.string().optional(),
   tagfilter: z.string().min(1).transform(s => s.split(',').map(t => t.trim()).filter(Boolean)),
   points: z.string().transform(s => s === '' ? undefined : Number(s)).pipe(z.number().positive().optional()),
-  enabled: z.stringbool(),
-  order: z.string().transform(s => Number(s)).pipe(z.number().int()),
 })
 
 export interface CsvCategoryRow {
@@ -27,22 +25,18 @@ export interface CsvCategoryRow {
   description?: string
   tagFilter: string[]
   points?: number
-  enabled: boolean
-  order: number
 }
 
 export function serializeCategoriesCSV(categories: Category[]): string {
-  const sorted = [...categories].sort((a, b) => a.order - b.order)
+  const sorted = [...categories].sort((a, b) => a.displayName.localeCompare(b.displayName))
   return Papa.unparse(
     sorted.map(c => ({
       displayName: c.displayName,
       description: c.description ?? '',
       tagFilter: c.tagFilter.join(', '),
       points: c.points != null ? String(c.points) : '',
-      enabled: String(c.enabled),
-      order: String(c.order),
     })),
-    { columns: ['displayName', 'description', 'tagFilter', 'points', 'enabled', 'order'] },
+    { columns: ['displayName', 'description', 'tagFilter', 'points'] },
   )
 }
 
@@ -77,12 +71,81 @@ export function parseCategoriesCSV(text: string): { rows: CsvCategoryRow[], erro
       description: d.description,
       tagFilter: d.tagfilter,
       points: d.points,
-      enabled: d.enabled,
-      order: d.order,
     })
   })
 
   return { rows, errors }
+}
+
+// Category Set CSV
+
+const csvSetRowSchema = z.object({
+  setname: z.string().min(1),
+  categoryname: z.string().min(1),
+  order: z.string().transform(s => Number(s)).pipe(z.number().int()),
+})
+
+export interface CsvSetRow {
+  setName: string
+  categoryName: string
+  order: number
+}
+
+export function parseCategorySetCSV(text: string): { rows: CsvSetRow[], errors: { rowIndex: number, message: string }[] } {
+  const { data, errors: parseErrors } = Papa.parse<Record<string, string>>(text, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: h => h.trim().toLowerCase(),
+  })
+
+  if (parseErrors.length > 0 && data.length === 0)
+    throw new Error(`CSV parse error: ${parseErrors[0].message}`)
+
+  if (!data[0] || !('setname' in data[0]))
+    throw new Error('CSV missing required "setName" column')
+
+  if (!('categoryname' in data[0]))
+    throw new Error('CSV missing required "categoryName" column')
+
+  const rows: CsvSetRow[] = []
+  const errors: { rowIndex: number, message: string }[] = []
+
+  data.forEach((raw, i) => {
+    const result = csvSetRowSchema.safeParse(raw)
+    if (!result.success) {
+      errors.push({ rowIndex: i + 1, message: result.error.issues[0]?.message ?? 'Invalid row' })
+      return
+    }
+    const d = result.data
+    rows.push({ setName: d.setname, categoryName: d.categoryname, order: d.order })
+  })
+
+  return { rows, errors }
+}
+
+export function serializeCategorySetCSV(setName: string, members: Array<{ category: Category, order: number }>): string {
+  const sorted = [...members].sort((a, b) => a.order - b.order)
+  return Papa.unparse(
+    sorted.map(m => ({
+      setName,
+      categoryName: m.category.displayName,
+      order: String(m.order),
+    })),
+    { columns: ['setName', 'categoryName', 'order'] },
+  )
+}
+
+export function serializeAllCategorySetsCSV(sets: Array<{ set: CategorySet, members: Array<{ category: Category, order: number }> }>): string {
+  const rows = sets.flatMap(({ set, members }) =>
+    [...members]
+      .sort((a, b) => a.order - b.order)
+      .map(m => ({
+        setName: set.name,
+        categoryName: m.category.displayName,
+        order: String(m.order),
+      })),
+  )
+  return Papa.unparse(rows, { columns: ['setName', 'categoryName', 'order'] })
 }
 
 export function parseCSV(text: string): TrackAnnotation[] {

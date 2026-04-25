@@ -8,8 +8,9 @@ const serverLibraryStore = useServerLibraryStore()
 </script>
 
 <template>
-  <!-- TODO: This scroll does not work -->
-  <ScrollArea class="flex-1 rounded-lg border p-4">
+  <ScrollArea
+    class="flex max-h-full flex-col justify-start rounded-lg border p-4"
+  >
     <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3">
       <template v-if="!serverLibraryStore.isLoading">
         <CheckableCard

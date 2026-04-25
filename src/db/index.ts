@@ -1,5 +1,5 @@
 import type { EntityTable } from 'dexie'
-import type { Category, GameResult, LinkPreview, LocalGame, Playlist, Track } from './schemas'
+import type { Category, CategorySet, CategorySetMember, GameResult, LinkPreview, LocalGame, Playlist, Track } from './schemas'
 import Dexie from 'dexie'
 
 export const db = new Dexie('harmonifyLibrary') as Dexie & {
@@ -9,6 +9,8 @@ export const db = new Dexie('harmonifyLibrary') as Dexie & {
   categories: EntityTable<Category, 'id'>
   linkPreviews: EntityTable<LinkPreview, 'url'>
   gameResults: EntityTable<GameResult, 'id'>
+  categorySets: EntityTable<CategorySet, 'id'>
+  categorySetMembers: EntityTable<CategorySetMember, 'id'>
 }
 
 db.version(1).stores({
@@ -46,3 +48,18 @@ db.version(2)
 db.version(3).stores({
   gameResults: 'id, finishedAt',
 })
+
+db.version(4)
+  .stores({
+    categorySets: 'id, name, createdAt',
+    categorySetMembers: 'id, categorySetId, categoryId',
+    categories: 'id, &displayName, *tagFilter',
+    playlists: 'id, name, source, categorySetId, createdAt',
+  })
+  .upgrade(async (tx) => {
+    const cats = await tx.table('categories').toArray()
+    for (const cat of cats) {
+      const { enabled: _e, order: _o, ...rest } = cat
+      await tx.table('categories').put(rest)
+    }
+  })

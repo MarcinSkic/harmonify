@@ -1,14 +1,32 @@
 <script setup lang="ts">
+import type { Playlist } from '@/db/schemas'
 import { Library, ListMusic, Plus, Trash2 } from '@lucide/vue'
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useLibraryStore } from '@/stores'
+import { useCategorySetsStore, useLibraryStore } from '@/stores'
+import PlaylistSetPicker from './PlaylistSetPicker.vue'
 
 defineEmits<{
   createPlaylist: []
 }>()
 
 const libraryStore = useLibraryStore()
+const categorySetsStore = useCategorySetsStore()
+
+const setPickerOpen = ref(false)
+const setPickerPlaylist = ref<Playlist | null>(null)
+
+function openSetPicker(playlist: Playlist) {
+  setPickerPlaylist.value = playlist
+  setPickerOpen.value = true
+}
+
+function getSetName(playlist: Playlist): string | null {
+  if (!playlist.categorySetId)
+    return null
+  return categorySetsStore.categorySets.find(s => s.id === playlist.categorySetId)?.name ?? null
+}
 </script>
 
 <template>
@@ -37,33 +55,46 @@ const libraryStore = useLibraryStore()
       <div
         v-for="playlist in libraryStore.playlists"
         :key="playlist.id"
-        class="group flex items-center"
+        class="group flex flex-col"
       >
-        <Button
-          variant="ghost"
-          class="flex-1 justify-start gap-2 truncate"
-          :class="{ 'bg-accent text-accent-foreground': libraryStore.selectedPlaylistId === playlist.id }"
-          @click="libraryStore.selectPlaylist(playlist.id)"
-        >
-          <ListMusic class="size-4 shrink-0" />
-          <span class="truncate">{{ playlist.name }}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="
-            size-8 shrink-0 opacity-0 transition-opacity
-            group-hover:opacity-100
-          "
-          @click="libraryStore.removePlaylist(playlist.id)"
-        >
-          <Trash2
+        <div class="flex items-center">
+          <Button
+            variant="ghost"
+            class="flex-1 justify-start gap-2 truncate"
+            :class="{ 'bg-accent text-accent-foreground': libraryStore.selectedPlaylistId === playlist.id }"
+            @click="libraryStore.selectPlaylist(playlist.id)"
+          >
+            <ListMusic class="size-4 shrink-0" />
+            <span class="truncate">{{ playlist.name }}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             class="
-              size-4 text-muted-foreground
-              hover:text-destructive
+              size-8 shrink-0 opacity-0 transition-opacity
+              group-hover:opacity-100
             "
-          />
-        </Button>
+            @click="libraryStore.removePlaylist(playlist.id)"
+          >
+            <Trash2
+              class="
+                size-4 text-muted-foreground
+                hover:text-destructive
+              "
+            />
+          </Button>
+        </div>
+        <button
+          type="button"
+          class="
+            mb-0.5 ml-8 text-left text-xs text-muted-foreground/70
+            transition-colors
+            hover:text-muted-foreground
+          "
+          @click="openSetPicker(playlist)"
+        >
+          Set: {{ getSetName(playlist) ?? 'None' }}
+        </button>
       </div>
 
       <p
@@ -73,5 +104,11 @@ const libraryStore = useLibraryStore()
         No playlists yet
       </p>
     </ScrollArea>
+
+    <PlaylistSetPicker
+      v-if="setPickerPlaylist"
+      v-model:open="setPickerOpen"
+      :playlist="setPickerPlaylist"
+    />
   </div>
 </template>

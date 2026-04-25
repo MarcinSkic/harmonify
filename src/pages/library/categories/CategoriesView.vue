@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Category } from '@/db/schemas'
-import { ArrowLeft, Plus, Search } from '@lucide/vue'
+import { ArrowLeft, Layers, Plus, Search } from '@lucide/vue'
 import { computed, ref, shallowRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -18,15 +18,6 @@ const search = ref('')
 const editOpen = ref(false)
 const editing = shallowRef<Category | null>(null)
 
-const filteredCategories = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q)
-    return categoriesStore.categories
-  return categoriesStore.categories.filter(c =>
-    c.displayName.toLowerCase().includes(q),
-  )
-})
-
 const trackCounts = computed(() => {
   const map = new Map<string, number>()
   for (const category of categoriesStore.categories) {
@@ -41,6 +32,23 @@ const trackCounts = computed(() => {
   return map
 })
 
+const filteredCategories = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  const cats = q
+    ? categoriesStore.categories.filter(c => c.displayName.toLowerCase().includes(q))
+    : categoriesStore.categories
+  return [...cats].sort((a, b) => {
+    const aHasPoints = a.points !== undefined
+    const bHasPoints = b.points !== undefined
+    if (aHasPoints !== bHasPoints) return aHasPoints ? -1 : 1
+    const pointsDiff = aHasPoints ? (a.points! - b.points!) : 0
+    if (pointsDiff !== 0) return pointsDiff
+    const tracksDiff = (trackCounts.value.get(b.id) ?? 0) - (trackCounts.value.get(a.id) ?? 0)
+    if (tracksDiff !== 0) return tracksDiff
+    return a.displayName.localeCompare(b.displayName)
+  })
+})
+
 function openCreate() {
   editing.value = null
   editOpen.value = true
@@ -53,18 +61,6 @@ function openEdit(category: Category) {
 
 async function handleDelete(id: string) {
   await categoriesStore.remove(id)
-}
-
-async function handleMoveUp(id: string) {
-  await categoriesStore.moveUp(id)
-}
-
-async function handleMoveDown(id: string) {
-  await categoriesStore.moveDown(id)
-}
-
-async function handleToggleEnabled(id: string) {
-  await categoriesStore.toggleEnabled(id)
 }
 </script>
 
@@ -87,6 +83,17 @@ async function handleToggleEnabled(id: string) {
         </p>
       </div>
 
+      <RouterLink :to="{ name: 'categorySets' }">
+        <Button variant="outline" class="gap-2">
+          <Layers class="size-4" />
+          <span
+            class="
+              hidden
+              sm:inline
+            "
+          >Manage Sets</span>
+        </Button>
+      </RouterLink>
       <CategoryCsvImportButton />
       <CategoryCsvExportButton />
       <Button class="gap-2" @click="openCreate">
@@ -95,8 +102,8 @@ async function handleToggleEnabled(id: string) {
       </Button>
     </header>
 
-    <div class="flex-1 overflow-auto p-4">
-      <div class="mx-auto flex max-w-3xl flex-col gap-4">
+    <div class="min-h-0 flex-1 overflow-auto p-4">
+      <div class="flex flex-col gap-4">
         <div class="relative">
           <Search
             class="
@@ -139,19 +146,24 @@ async function handleToggleEnabled(id: string) {
           No categories match "{{ search }}".
         </div>
 
-        <CategoryCard
-          v-for="(category, index) in filteredCategories"
-          :key="category.id"
-          :category="category"
-          :track-count="trackCounts.get(category.id) ?? 0"
-          :is-first="index === 0"
-          :is-last="index === filteredCategories.length - 1"
-          @edit="openEdit(category)"
-          @delete="handleDelete(category.id)"
-          @move-up="handleMoveUp(category.id)"
-          @move-down="handleMoveDown(category.id)"
-          @toggle-enabled="handleToggleEnabled(category.id)"
-        />
+        <div
+          v-else
+          class="
+            grid grid-cols-1 gap-3
+            sm:grid-cols-2
+            lg:grid-cols-3
+            xl:grid-cols-4
+          "
+        >
+          <CategoryCard
+            v-for="category in filteredCategories"
+            :key="category.id"
+            :category="category"
+            :track-count="trackCounts.get(category.id) ?? 0"
+            @edit="openEdit(category)"
+            @delete="handleDelete(category.id)"
+          />
+        </div>
       </div>
     </div>
 

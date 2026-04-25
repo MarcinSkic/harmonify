@@ -42,6 +42,7 @@ export const playlistSchema = z.object({
   name: z.string(),
   source: metadataSourceSchema,
   imageUrl: z.string().optional(),
+  categorySetId: z.string().optional(),
   createdAt: z.number(),
 })
 export type Playlist = z.infer<typeof playlistSchema>
@@ -52,11 +53,33 @@ export const categorySchema = z.object({
   displayName: z.string(),
   description: z.string().optional(),
   points: z.number().optional(),
-  order: z.number(),
-  enabled: z.boolean(),
   createdAt: z.number(),
 })
 export type Category = z.infer<typeof categorySchema>
+
+export const categorySetSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  createdAt: z.number(),
+})
+export type CategorySet = z.infer<typeof categorySetSchema>
+
+export const categorySetMemberSchema = z.object({
+  id: z.uuid(),
+  categorySetId: z.uuid(),
+  categoryId: z.uuid(),
+  order: z.number(),
+})
+export type CategorySetMember = z.infer<typeof categorySetMemberSchema>
+
+export const playlistBasedCategorySchema = z.object({
+  id: z.string(),
+  type: z.literal('playlist-based'),
+  displayName: z.string(),
+  playlistId: z.string(),
+  points: z.number(),
+})
+export type PlaylistBasedCategory = z.infer<typeof playlistBasedCategorySchema>
 
 // Link preview schemas
 
@@ -126,9 +149,9 @@ export const trackPoolStateSchema = z.object({
 export type TrackPoolState = z.infer<typeof trackPoolStateSchema>
 
 export const categoryPoolStateSchema = z.object({
-  categoryPools: z.record(z.uuid(), z.array(z.uuid())),
-  playedTrackIds: z.array(z.uuid()),
-  initialCounts: z.record(z.uuid(), z.number()),
+  categoryPools: z.record(z.string(), z.array(z.string())),
+  playedTrackIds: z.array(z.string()),
+  initialCounts: z.record(z.string(), z.number()),
 })
 export type CategoryPoolState = z.infer<typeof categoryPoolStateSchema>
 
@@ -156,6 +179,8 @@ export const localGameSettingsSchema = z.object({
   breakDurationBetweenRounds: z.number().default(3),
   saveGame: z.boolean().default(true),
   categoryLimit: categoryLimitSchema.default('none'),
+  generatePlaylistCategories: z.boolean().default(false),
+  generatedCategoryPoints: z.number().default(10),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 
@@ -181,5 +206,6 @@ export const localGameSchema = z.object({
   roundPhase: localGameRoundPhaseSchema,
   rounds: z.array(roundResultSchema).default([]),
   categoryLimitUsedByTeams: z.record(z.string(), z.array(z.string())).optional(),
+  ephemeralCategories: z.array(playlistBasedCategorySchema).optional(),
 })
 export type LocalGame = z.infer<typeof localGameSchema>

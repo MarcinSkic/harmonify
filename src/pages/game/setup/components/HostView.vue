@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMusicPlayerStore } from '@/pages/game/stores'
@@ -17,6 +17,13 @@ const musicPlayerStore = useMusicPlayerStore()
 const libraryStore = useLibraryStore()
 const connectionStore = useConnectionStore()
 const gameData = useGameDataStore()
+
+const selectedPlaylistIds = ref<string[]>(
+  libraryStore.selectedPlaylistId ? [libraryStore.selectedPlaylistId] : [],
+)
+watch(selectedPlaylistIds, (ids) => {
+  libraryStore.selectPlaylist(ids.length === 1 ? ids[0] : null)
+})
 
 async function handleGameStart() {
   if (!musicPlayerStore.ready)
@@ -75,14 +82,20 @@ defineExpose({ disableLoading })
         </TabsTrigger>
       </TabsList>
       <TabsContent value="tracks" class="h-[60vh]">
-        <LibraryTrackPicker />
+        <LibraryTrackPicker
+          :selected-playlist-ids="selectedPlaylistIds"
+          @update:selected-playlist-ids="selectedPlaylistIds = $event"
+        />
       </TabsContent>
       <TabsContent value="settings" class="h-[60vh]">
         <GameDataForm />
       </TabsContent>
     </Tabs>
     <template v-else>
-      <LibraryTrackPicker />
+      <LibraryTrackPicker
+        :selected-playlist-ids="selectedPlaylistIds"
+        @update:selected-playlist-ids="selectedPlaylistIds = $event"
+      />
       <GameDataForm />
     </template>
     <Button

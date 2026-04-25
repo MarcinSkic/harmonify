@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { Category, LocalGameTeam } from '@/db/schemas'
+import type { Category, LocalGameTeam, PlaylistBasedCategory } from '@/db/schemas'
 import { useBreakpoints } from '@vueuse/core'
 import { computed } from 'vue'
 import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Breakpoint } from '@/consts'
 import AddTeamInline from './AddTeamInline.vue'
 import CategoryProgressRing from './CategoryProgressRing.vue'
@@ -12,7 +13,7 @@ import CheatInput from './CheatInput.vue'
 import TeamTurnBar from './TeamTurnBar.vue'
 
 const props = defineProps<{
-  categories: Array<{ category: Category, count: number, initialCount: number }>
+  categories: Array<{ category: Category | PlaylistBasedCategory, count: number, initialCount: number }>
   teams: LocalGameTeam[]
   currentTeamId: string | undefined
   disabledCategoryIds?: Set<string>
@@ -66,7 +67,7 @@ function handleClick(categoryId: string, count: number) {
 
 <template>
   <div
-    class="grid w-full gap-4"
+    class="flex w-full flex-col gap-4"
     :style="{ maxWidth: containerMaxWidth }"
   >
     <div class="flex flex-wrap items-center justify-center gap-3">
@@ -106,61 +107,65 @@ function handleClick(categoryId: string, count: number) {
     >
       No categories available
     </div>
-    <div
+    <ScrollArea
       v-else
-      class="
-        grid gap-3
-        lg:gap-4
-      "
-      :style="{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }"
+      class="min-h-0 flex-1"
     >
-      <Card
-        v-for="{ category, count, initialCount } in categories"
-        :key="category.id"
-        class="transition" :class="[
-          !isCategoryDisabled(category.id, count)
-            ? `
-              cursor-pointer
-              hover:border-primary
-            `
-            : 'pointer-events-none opacity-40',
-        ]"
-        :data-testid="`category-${category.id}`"
-        @click="handleClick(category.id, count)"
+      <div
+        class="
+          grid gap-3
+          lg:gap-4
+        "
+        :style="{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }"
       >
-        <CardContent
-          class="
-            flex flex-col items-center gap-3 p-4 text-center
-            lg:p-6
-          "
+        <Card
+          v-for="{ category, count, initialCount } in categories"
+          :key="category.id"
+          class="transition" :class="[
+            !isCategoryDisabled(category.id, count)
+              ? `
+                cursor-pointer
+                hover:border-primary
+              `
+              : 'pointer-events-none opacity-40',
+          ]"
+          :data-testid="`category-${category.id}`"
+          @click="handleClick(category.id, count)"
         >
-          <CategoryProgressRing :current="count" :initial="initialCount" />
-          <span
+          <CardContent
             class="
-              text-lg font-semibold
-              lg:text-2xl
-            "
-          >{{ category.displayName }}</span>
-          <span
-            v-if="category.description"
-            class="
-              text-xs text-muted-foreground
-              lg:text-sm
+              flex flex-col items-center gap-3 p-4 text-center
+              lg:p-6
             "
           >
-            {{ category.description }}
-          </span>
-          <Badge
-            v-if="category.points !== undefined" variant="secondary" class="
-              px-3 py-1 text-xl
-              lg:px-3 lg:py-1 lg:text-2xl
-            "
-          >
-            <PointsDisplay :points="category.points" icon-class="size-5 lg:size-6" />
-          </Badge>
-        </CardContent>
-      </Card>
-    </div>
+            <CategoryProgressRing :current="count" :initial="initialCount" />
+            <span
+              class="
+                text-lg font-semibold
+                lg:text-2xl
+              "
+            >{{ category.displayName }}</span>
+            <span
+              v-if="'description' in category && category.description"
+              class="
+                text-xs text-muted-foreground
+                lg:text-sm
+              "
+            >
+              {{ (category as { description?: string }).description }}
+            </span>
+            <Badge
+              v-if="category.points !== undefined" variant="secondary" class="
+                px-3 py-1 text-xl
+                lg:px-3 lg:py-1 lg:text-2xl
+              "
+            >
+              <PointsDisplay :points="category.points" icon-class="size-5 lg:size-6" />
+            </Badge>
+          </CardContent>
+        </Card>
+      </div>
+    </ScrollArea>
 
     <CheatInput />
   </div>

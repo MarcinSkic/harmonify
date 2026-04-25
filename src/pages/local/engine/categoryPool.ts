@@ -1,4 +1,6 @@
-import type { Category, CategoryPoolState, Track } from '@/db/schemas'
+import type { Category, CategoryPoolState, PlaylistBasedCategory, Track } from '@/db/schemas'
+
+export type EngineCategory = Category | PlaylistBasedCategory
 
 function shuffle<T>(arr: T[]): T[] {
   const result = [...arr]
@@ -9,17 +11,27 @@ function shuffle<T>(arr: T[]): T[] {
   return result
 }
 
+function isPlaylistBased(category: EngineCategory): category is PlaylistBasedCategory {
+  return 'type' in category && category.type === 'playlist-based'
+}
+
 export function createCategoryPool(
   tracks: Track[],
-  categories: Category[],
+  categories: EngineCategory[],
 ): CategoryPoolState {
   const categoryPools: Record<string, string[]> = {}
   for (const category of categories) {
-    const filter = new Set(category.tagFilter)
-    const matchingIds: string[] = []
-    for (const track of tracks) {
-      if (track.tags.some(tag => filter.has(tag)))
-        matchingIds.push(track.id)
+    let matchingIds: string[]
+    if (isPlaylistBased(category)) {
+      matchingIds = tracks
+        .filter(t => t.playlistIds.includes(category.playlistId))
+        .map(t => t.id)
+    }
+    else {
+      const filter = new Set(category.tagFilter)
+      matchingIds = tracks
+        .filter(t => t.tags.some(tag => filter.has(tag)))
+        .map(t => t.id)
     }
     categoryPools[category.id] = shuffle(matchingIds)
   }
