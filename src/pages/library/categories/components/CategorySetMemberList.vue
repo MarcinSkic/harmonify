@@ -2,6 +2,7 @@
 import type { Category, CategorySetMember } from '@/db/schemas'
 import { ArrowDown, ArrowUp, X } from '@lucide/vue'
 import { computed } from 'vue'
+import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Button } from '@/components/ui/button'
 import { useCategoriesStore, useCategorySetsStore } from '@/stores'
 
@@ -74,12 +75,7 @@ async function remove(categoryId: string) {
       <span class="min-w-0 flex-1 truncate text-sm">
         {{ item.category?.displayName ?? item.member.categoryId }}
       </span>
-      <span
-        v-if="item.category?.points !== undefined"
-        class="text-xs text-muted-foreground"
-      >
-        {{ item.category.points }} pts
-      </span>
+      <PointsDisplay v-if="item.category?.points !== undefined" :points="item.category.points" />
       <Button
         type="button"
         variant="ghost"
