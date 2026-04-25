@@ -139,8 +139,7 @@ export async function deleteCategory(id: string): Promise<void> {
 }
 
 export async function getAllCategories(): Promise<Category[]> {
-  const categories = await db.categories.toArray()
-  return categories.sort((a, b) => a.displayName.localeCompare(b.displayName))
+  return db.categories.toArray()
 }
 
 export async function countTracksMatchingTagFilter(

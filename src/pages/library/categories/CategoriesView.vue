@@ -18,15 +18,6 @@ const search = ref('')
 const editOpen = ref(false)
 const editing = shallowRef<Category | null>(null)
 
-const filteredCategories = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q)
-    return categoriesStore.categories
-  return categoriesStore.categories.filter(c =>
-    c.displayName.toLowerCase().includes(q),
-  )
-})
-
 const trackCounts = computed(() => {
   const map = new Map<string, number>()
   for (const category of categoriesStore.categories) {
@@ -39,6 +30,23 @@ const trackCounts = computed(() => {
     map.set(category.id, ids.size)
   }
   return map
+})
+
+const filteredCategories = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  const cats = q
+    ? categoriesStore.categories.filter(c => c.displayName.toLowerCase().includes(q))
+    : categoriesStore.categories
+  return [...cats].sort((a, b) => {
+    const aHasPoints = a.points !== undefined
+    const bHasPoints = b.points !== undefined
+    if (aHasPoints !== bHasPoints) return aHasPoints ? -1 : 1
+    const pointsDiff = aHasPoints ? (a.points! - b.points!) : 0
+    if (pointsDiff !== 0) return pointsDiff
+    const tracksDiff = (trackCounts.value.get(b.id) ?? 0) - (trackCounts.value.get(a.id) ?? 0)
+    if (tracksDiff !== 0) return tracksDiff
+    return a.displayName.localeCompare(b.displayName)
+  })
 })
 
 function openCreate() {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Category } from '@/db/schemas'
-import { Pencil, Trash2 } from '@lucide/vue'
+import { Music, Pencil, Trash2 } from '@lucide/vue'
 import PointsDisplay from '@/components/PointsDisplay.vue'
 import {
   AlertDialog,
@@ -47,9 +47,6 @@ const emit = defineEmits<{
           >
             {{ category.description }}
           </p>
-          <p class="mt-1 text-xs text-muted-foreground">
-            {{ trackCount }} {{ trackCount === 1 ? 'track' : 'tracks' }}
-          </p>
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
@@ -87,14 +84,20 @@ const emit = defineEmits<{
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-1.5">
-        <Badge
-          v-for="tag in category.tagFilter"
-          :key="tag"
-          variant="outline"
-        >
-          {{ tag }}
-        </Badge>
+      <div class="flex items-end justify-between gap-2">
+        <div class="flex flex-wrap gap-1.5">
+          <Badge
+            v-for="tag in category.tagFilter"
+            :key="tag"
+            variant="outline"
+          >
+            {{ tag }}
+          </Badge>
+        </div>
+        <div class="flex shrink-0 items-center gap-1 text-muted-foreground">
+          <span class="text-2xl font-bold leading-none">{{ trackCount }}</span>
+          <Music class="size-5" />
+        </div>
       </div>
     </CardContent>
   </Card>
