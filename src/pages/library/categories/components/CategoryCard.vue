@@ -31,10 +31,10 @@ const emit = defineEmits<{
 <template>
   <Card>
     <CardContent class="flex flex-col gap-3 p-4">
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-2">
         <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2">
-            <h3 class="truncate text-lg font-semibold">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h3 class="truncate text-base font-semibold">
               {{ category.displayName }}
             </h3>
             <Badge v-if="category.points !== undefined" variant="secondary">
@@ -52,18 +52,19 @@ const emit = defineEmits<{
           </p>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="icon"
+            class="size-8"
             @click="emit('edit')"
           >
             <Pencil class="size-4" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger as-child>
-              <Button type="button" variant="ghost" size="icon">
+              <Button type="button" variant="ghost" size="icon" class="size-8">
                 <Trash2 class="size-4" />
               </Button>
             </AlertDialogTrigger>

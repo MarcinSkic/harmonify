@@ -1,7 +1,7 @@
 import type { CategorySet, CategorySetMember } from '@/db/schemas'
 import { defineStore } from 'pinia'
-import { db } from '@/db'
 import { useLiveQuery } from '@/composables/useLiveQuery'
+import { db } from '@/db'
 import { LibraryService } from '@/services'
 
 export const useCategorySetsStore = defineStore('categorySets', () => {

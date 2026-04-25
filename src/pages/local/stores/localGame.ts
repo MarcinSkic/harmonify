@@ -1,10 +1,10 @@
 import type { Category, CategoryLimit, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
-import { gameResultSchema } from '@/db/schemas'
 import type { EngineCategory } from '@/pages/local/engine/categoryPool'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
+import { gameResultSchema } from '@/db/schemas'
 import {
   createCategoryPool,
   getCategoryCounts,
@@ -89,7 +89,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
       const bIsEphemeral = 'type' in b.category
       if (aIsEphemeral !== bIsEphemeral)
         return aIsEphemeral ? 1 : -1
-      return a.category.displayName.localeCompare(b.category.displayName)
+      return 0
     })
   })
 
@@ -330,11 +330,25 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
+  function _findTrackInPool(trackIds: string[], poolState: NonNullable<typeof game.value>['categoryPoolState']): string | undefined {
+    if (!poolState)
+      return undefined
+    const allPoolIds = new Set([
+      ...Object.values(poolState.categoryPools).flat(),
+      ...poolState.playedTrackIds,
+    ])
+    return trackIds.find(id => allPoolIds.has(id))
+  }
+
   async function checkSourceId(sourceId: string): Promise<'available' | 'already-played' | 'not-found'> {
-    const track = await db.tracks.where('sourceId').equals(sourceId).first()
-    if (!track)
+    const tracks = await db.tracks.where('sourceId').equals(sourceId).toArray()
+    if (tracks.length === 0)
       return 'not-found'
-    if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
+    const poolState = game.value?.categoryPoolState
+    const trackId = _findTrackInPool(tracks.map(t => t.id), poolState)
+    if (!trackId)
+      return 'not-found'
+    if (poolState?.playedTrackIds.includes(trackId))
       return 'already-played'
     return 'available'
   }
@@ -345,12 +359,17 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!game.value.categoryPoolState)
       return 'not-found'
 
-    const track = await db.tracks.where('sourceId').equals(sourceId).first()
-    if (!track)
+    const tracks = await db.tracks.where('sourceId').equals(sourceId).toArray()
+    if (tracks.length === 0)
       return 'not-found'
 
     const poolState = game.value.categoryPoolState
-    const alreadyPlayed = poolState.playedTrackIds.includes(track.id)
+    const trackId = _findTrackInPool(tracks.map(t => t.id), poolState)
+    if (!trackId)
+      return 'not-found'
+
+    const track = tracks.find(t => t.id === trackId)!
+    const alreadyPlayed = poolState.playedTrackIds.includes(trackId)
 
     // Remove this track from all category pools
     const newCategoryPools: Record<string, string[]> = {}

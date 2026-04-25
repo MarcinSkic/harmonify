@@ -95,7 +95,7 @@ async function handleDelete(id: string) {
     </header>
 
     <div class="flex-1 overflow-auto p-4">
-      <div class="mx-auto flex max-w-3xl flex-col gap-4">
+      <div class="flex flex-col gap-4">
         <div class="relative">
           <Search
             class="
@@ -138,14 +138,24 @@ async function handleDelete(id: string) {
           No categories match "{{ search }}".
         </div>
 
-        <CategoryCard
-          v-for="category in filteredCategories"
-          :key="category.id"
-          :category="category"
-          :track-count="trackCounts.get(category.id) ?? 0"
-          @edit="openEdit(category)"
-          @delete="handleDelete(category.id)"
-        />
+        <div
+          v-else
+          class="
+            grid grid-cols-1 gap-3
+            sm:grid-cols-2
+            lg:grid-cols-3
+            xl:grid-cols-4
+          "
+        >
+          <CategoryCard
+            v-for="category in filteredCategories"
+            :key="category.id"
+            :category="category"
+            :track-count="trackCounts.get(category.id) ?? 0"
+            @edit="openEdit(category)"
+            @delete="handleDelete(category.id)"
+          />
+        </div>
       </div>
     </div>
 
