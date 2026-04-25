@@ -91,7 +91,8 @@ function handleNextRound() {
           "
         >
         <TrackDisplayWithCover
-          :image-url="showAlbumAsBig ? null : track.albumImageUrl"
+          :image-url="track.albumImageUrl"
+          :hide-image="showAlbumAsBig"
           :title="track.name"
           :artists="track.artists"
         />
