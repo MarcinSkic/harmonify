@@ -330,25 +330,11 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
-  function _findTrackInPool(trackIds: string[], poolState: NonNullable<typeof game.value>['categoryPoolState']): string | undefined {
-    if (!poolState)
-      return undefined
-    const allPoolIds = new Set([
-      ...Object.values(poolState.categoryPools).flat(),
-      ...poolState.playedTrackIds,
-    ])
-    return trackIds.find(id => allPoolIds.has(id))
-  }
-
   async function checkSourceId(sourceId: string): Promise<'available' | 'already-played' | 'not-found'> {
-    const tracks = await db.tracks.where('sourceId').equals(sourceId).toArray()
-    if (tracks.length === 0)
+    const track = await db.tracks.where('sourceId').equals(sourceId).first()
+    if (!track)
       return 'not-found'
-    const poolState = game.value?.categoryPoolState
-    const trackId = _findTrackInPool(tracks.map(t => t.id), poolState)
-    if (!trackId)
-      return 'not-found'
-    if (poolState?.playedTrackIds.includes(trackId))
+    if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
       return 'already-played'
     return 'available'
   }
@@ -359,17 +345,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!game.value.categoryPoolState)
       return 'not-found'
 
-    const tracks = await db.tracks.where('sourceId').equals(sourceId).toArray()
-    if (tracks.length === 0)
+    const track = await db.tracks.where('sourceId').equals(sourceId).first()
+    if (!track)
       return 'not-found'
 
     const poolState = game.value.categoryPoolState
-    const trackId = _findTrackInPool(tracks.map(t => t.id), poolState)
-    if (!trackId)
-      return 'not-found'
-
-    const track = tracks.find(t => t.id === trackId)!
-    const alreadyPlayed = poolState.playedTrackIds.includes(trackId)
+    const alreadyPlayed = poolState.playedTrackIds.includes(track.id)
 
     // Remove this track from all category pools
     const newCategoryPools: Record<string, string[]> = {}

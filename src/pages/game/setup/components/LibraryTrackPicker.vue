@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Playlist } from '@/db/schemas'
 import { ListMusic, Music } from '@lucide/vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -36,16 +36,10 @@ async function loadTrackCounts(playlists: Playlist[]) {
 
 watch(() => libraryStore.playlists, playlists => loadTrackCounts(playlists), { immediate: true })
 
-onMounted(() => {
-  if (props.selectedPlaylistIds.length === 0 && libraryStore.playlists.length > 0) {
-    emit('update:selectedPlaylistIds', libraryStore.playlists.map(p => p.id))
-  }
-})
-
 watch(() => libraryStore.playlists, (playlists) => {
   if (props.selectedPlaylistIds.length === 0 && playlists.length > 0)
     emit('update:selectedPlaylistIds', playlists.map(p => p.id))
-})
+}, { immediate: true })
 
 const allSelected = computed(
   () => libraryStore.playlists.every(p => props.selectedPlaylistIds.includes(p.id)),
