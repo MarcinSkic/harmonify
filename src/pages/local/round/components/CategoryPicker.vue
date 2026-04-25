@@ -15,6 +15,7 @@ const props = defineProps<{
   categories: Array<{ category: Category, count: number, initialCount: number }>
   teams: LocalGameTeam[]
   currentTeamId: string | undefined
+  disabledCategoryIds?: Set<string>
 }>()
 
 const emit = defineEmits<{
@@ -53,8 +54,12 @@ const currentTeam = computed(() =>
   props.teams.find(t => t.id === props.currentTeamId),
 )
 
+function isCategoryDisabled(categoryId: string, count: number) {
+  return count === 0 || (props.disabledCategoryIds?.has(categoryId) ?? false)
+}
+
 function handleClick(categoryId: string, count: number) {
-  if (count > 0)
+  if (!isCategoryDisabled(categoryId, count))
     emit('pick', categoryId)
 }
 </script>
@@ -113,7 +118,7 @@ function handleClick(categoryId: string, count: number) {
         v-for="{ category, count, initialCount } in categories"
         :key="category.id"
         class="transition" :class="[
-          count > 0
+          !isCategoryDisabled(category.id, count)
             ? `
               cursor-pointer
               hover:border-primary

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { LocalGameSettings } from '@/db/schemas'
-import { Infinity as InfinityIcon, Slash } from '@lucide/vue'
+import type { CategoryLimit, LocalGameSettings } from '@/db/schemas'
+import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash } from '@lucide/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
 import Switch from '@/components/ui/switch/Switch.vue'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 defineProps<{
   totalTracks: number
@@ -77,7 +78,10 @@ function toggleUnlimitedRounds() {
           variant="outline"
           size="icon"
           type="button"
-          :class="{ 'bg-accent': isUnlimitedRounds }"
+          :class="isUnlimitedRounds ? `
+            bg-primary text-primary-foreground
+            hover:bg-primary/90
+          ` : ''"
           @click="toggleUnlimitedRounds"
         >
           <InfinityIcon class="size-4" />
@@ -130,6 +134,41 @@ function toggleUnlimitedRounds() {
           Categories
         </Button>
       </div>
+
+      <template v-if="settings.gameMode === 'category'">
+        <Label class="text-base">Category limits</Label>
+        <ToggleGroup
+          type="single"
+          class="mb-2 w-full"
+          :model-value="settings.categoryLimit"
+          @update:model-value="(v) => v && (settings.categoryLimit = v as CategoryLimit)"
+        >
+          <ToggleGroupItem
+            value="none" class="
+              flex-1 gap-1.5
+              data-[state=on]:bg-primary data-[state=on]:text-primary-foreground
+            "
+          >
+            <InfinityIcon class="size-4" /> No limits
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="no-streak" class="
+              flex-1 gap-1.5
+              data-[state=on]:bg-primary data-[state=on]:text-primary-foreground
+            "
+          >
+            <Shuffle class="size-4" /> No streak
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="once" class="
+              flex-1 gap-1.5
+              data-[state=on]:bg-primary data-[state=on]:text-primary-foreground
+            "
+          >
+            <RotateCcw class="size-4" /> Once each
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </template>
 
       <Label for="partialPoints" class="text-base">Partial points (artist/album)</Label>
       <NumberField

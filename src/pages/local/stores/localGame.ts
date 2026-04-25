@@ -1,4 +1,4 @@
-import type { Category, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
+import type { Category, CategoryLimit, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, RoundResult, Track } from '@/db/schemas'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -71,6 +71,29 @@ export const useLocalGameStore = defineStore('localGame', () => {
         result.push({ category, count: counts[category.id], initialCount: initials[category.id] ?? counts[category.id] })
     }
     return result.sort((a, b) => a.category.order - b.category.order)
+  })
+
+  const disabledCategoryIdsForCurrentTeam = computed((): Set<string> => {
+    const g = game.value
+    if (!g || g.settings.gameMode !== 'category')
+      return new Set()
+    const limit: CategoryLimit = g.settings.categoryLimit ?? 'none'
+    const teamId = g.currentTeamId
+    if (!teamId || limit === 'none')
+      return new Set()
+
+    if (limit === 'no-streak') {
+      const teamRounds = g.rounds.filter(r => r.currentTeamId === teamId)
+      const lastCategoryId = teamRounds.at(-1)?.categoryId
+      return lastCategoryId ? new Set([lastCategoryId]) : new Set()
+    }
+
+    if (limit === 'once') {
+      const used = g.categoryLimitUsedByTeams?.[teamId] ?? []
+      return new Set(used)
+    }
+
+    return new Set()
   })
 
   const currentCategoryInfo = computed<{ displayName: string, points?: number } | undefined>(() => {
@@ -227,6 +250,19 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
+  function _trackOnceCategoryUsage(teamId: string, categoryId: string) {
+    if (!game.value?.categoryPoolState)
+      return
+    const usedByTeam = game.value.categoryLimitUsedByTeams ?? {}
+    const currentUsed = usedByTeam[teamId] ?? []
+    const newUsed = [...currentUsed, categoryId]
+    const totalCategories = Object.keys(game.value.categoryPoolState.initialCounts).length
+    game.value.categoryLimitUsedByTeams = {
+      ...usedByTeam,
+      [teamId]: newUsed.length >= totalCategories ? [] : newUsed,
+    }
+  }
+
   async function pickCategory(categoryId: string) {
     if (!game.value || game.value.settings.gameMode !== 'category')
       return
@@ -242,6 +278,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     game.value.currentTrackId = trackId
     game.value.currentCategory = categoryId
     game.value.roundPhase = 'playing'
+
+    if (game.value.settings.categoryLimit === 'once' && game.value.currentTeamId)
+      _trackOnceCategoryUsage(game.value.currentTeamId, categoryId)
 
     await _loadTrack(trackId)
     await _persist()
@@ -478,6 +517,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     sortedTeams,
     canAdvanceRound,
     allCategories,
+    disabledCategoryIdsForCurrentTeam,
     currentCategoryInfo,
     currentTeam,
     lastRoundTeamScores,

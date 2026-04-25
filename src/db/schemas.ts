@@ -144,6 +144,9 @@ export type LocalGameTeam = z.infer<typeof localGameTeamSchema>
 export const localGameGameModeSchema = z.enum(['random', 'category'])
 export type LocalGameGameMode = z.infer<typeof localGameGameModeSchema>
 
+export const categoryLimitSchema = z.enum(['none', 'no-streak', 'once'])
+export type CategoryLimit = z.infer<typeof categoryLimitSchema>
+
 export const localGameSettingsSchema = z.object({
   trackDuration: z.number(),
   gameMode: localGameGameModeSchema,
@@ -152,6 +155,7 @@ export const localGameSettingsSchema = z.object({
   partialPoints: z.number().default(2),
   breakDurationBetweenRounds: z.number().default(3),
   saveGame: z.boolean().default(true),
+  categoryLimit: categoryLimitSchema.default('none'),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 
@@ -176,5 +180,6 @@ export const localGameSchema = z.object({
   currentTeamId: z.string().optional(),
   roundPhase: localGameRoundPhaseSchema,
   rounds: z.array(roundResultSchema).default([]),
+  categoryLimitUsedByTeams: z.record(z.string(), z.array(z.string())).optional(),
 })
 export type LocalGame = z.infer<typeof localGameSchema>
