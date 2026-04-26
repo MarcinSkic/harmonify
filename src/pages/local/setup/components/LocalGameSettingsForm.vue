@@ -5,6 +5,7 @@ import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
+import { Slider } from '@/components/ui/slider'
 import Switch from '@/components/ui/switch/Switch.vue'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
@@ -114,6 +115,43 @@ function toggleUnlimitedRounds() {
           <span>s</span>
         </div>
       </NumberField>
+
+      <Label class="text-base">Track start</Label>
+      <div class="mb-2 flex w-full gap-2">
+        <Button
+          type="button"
+          class="flex-1"
+          :variant="settings.trackStartMode === 'beginning' ? 'default' : 'outline'"
+          @click="settings.trackStartMode = 'beginning'"
+        >
+          From start
+        </Button>
+        <Button
+          type="button"
+          class="flex-1"
+          :variant="settings.trackStartMode === 'random' ? 'default' : 'outline'"
+          @click="settings.trackStartMode = 'random'"
+        >
+          Random
+        </Button>
+      </div>
+
+      <template v-if="settings.trackStartMode === 'random'">
+        <Label class="text-base">
+          Random start range: {{ settings.randomStartRange[0] }}% – {{ settings.randomStartRange[1] }}%
+        </Label>
+        <Slider
+          class="mb-2"
+          :min="0"
+          :max="100"
+          :step="5"
+          :model-value="settings.randomStartRange"
+          @update:model-value="(v) => v && (settings.randomStartRange = v as [number, number])"
+        />
+      </template>
+
+      <Label class="text-base">Override track range</Label>
+      <Switch v-model:model-value="settings.overridePlaybackRange" class="mb-2" />
 
       <Label class="text-base">Game mode</Label>
       <div class="mb-2 flex w-full gap-2">

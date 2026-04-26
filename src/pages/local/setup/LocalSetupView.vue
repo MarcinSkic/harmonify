@@ -39,6 +39,9 @@ const settings = reactive<LocalGameSettings>({
   categoryLimit: 'none',
   generatePlaylistCategories: false,
   generatedCategoryPoints: 10,
+  trackStartMode: 'random',
+  randomStartRange: [10, 90],
+  overridePlaybackRange: false,
 })
 
 const selectedPlaylistIds = ref<string[]>([])

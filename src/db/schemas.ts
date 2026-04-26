@@ -182,6 +182,9 @@ export const localGameSettingsSchema = z.object({
   categoryLimit: categoryLimitSchema.default('none'),
   generatePlaylistCategories: z.boolean().default(false),
   generatedCategoryPoints: z.number().default(10),
+  trackStartMode: z.enum(['beginning', 'random']).default('beginning'),
+  randomStartRange: z.tuple([z.number(), z.number()]).default([0, 100]),
+  overridePlaybackRange: z.boolean().default(false),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 

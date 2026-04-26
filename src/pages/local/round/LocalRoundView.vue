@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
@@ -20,11 +20,42 @@ const settingsStore = useSettingsStore()
 const game = computed(() => localGameStore.game)
 const track = computed(() => localGameStore.currentTrack)
 
+const randomStartMs = ref(0)
+
+const useRandomStart = computed(() => {
+  const s = game.value?.settings
+  return s?.trackStartMode === 'random'
+})
+
+const effectivePlaybackRange = computed(() => {
+  const range = track.value?.playbackRange
+  if (!range || game.value?.settings.overridePlaybackRange)
+    return null
+  return range
+})
+
+watch(track, (t) => {
+  if (!t || !useRandomStart.value) {
+    randomStartMs.value = 0
+    return
+  }
+  const settings = game.value!.settings
+  const durationMs = effectivePlaybackRange.value
+    ? effectivePlaybackRange.value.endMs - effectivePlaybackRange.value.startMs
+    : t.durationMs
+  const [minPct, maxPct] = settings.randomStartRange
+  const safeMaxMs = Math.max(0, durationMs - settings.trackDuration * 1000)
+  const minMs = Math.min((minPct / 100) * durationMs, safeMaxMs)
+  const maxMs = Math.min((maxPct / 100) * durationMs, safeMaxMs)
+  randomStartMs.value = minMs >= maxMs ? minMs : Math.floor(Math.random() * (maxMs - minMs) + minMs)
+}, { immediate: true })
+
 const musicPlayData = computed(() => {
   if (!track.value?.audioUrl)
     return null
 
-  const startMs = track.value.playbackRange?.startMs ?? 0
+  const range = effectivePlaybackRange.value
+  const startMs = range ? range.startMs : randomStartMs.value
 
   return {
     uri: track.value.audioUrl,
@@ -33,7 +64,7 @@ const musicPlayData = computed(() => {
 })
 
 const effectiveDuration = computed(() => {
-  const range = track.value?.playbackRange
+  const range = effectivePlaybackRange.value
   if (range)
     return (range.endMs - range.startMs) / 1000
   return game.value?.settings.trackDuration ?? 30
