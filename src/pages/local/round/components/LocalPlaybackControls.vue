@@ -11,6 +11,8 @@ const props = defineProps<{
   musicPlayData: { uri: string, trackStart_ms: number }
 }>()
 
+const emit = defineEmits<{ started: [] }>()
+
 const musicPlayerStore = useMusicPlayerStore()
 
 const isPlayingStarted = ref(false)
@@ -37,6 +39,7 @@ function togglePlay() {
 async function startPlaying() {
   if (!isPlayingStarted.value) {
     isPlayingStarted.value = true
+    emit('started')
     await musicPlayerStore.play(props.musicPlayData)
   }
   else {

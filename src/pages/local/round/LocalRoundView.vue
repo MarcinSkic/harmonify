@@ -20,6 +20,7 @@ const settingsStore = useSettingsStore()
 const game = computed(() => localGameStore.game)
 const track = computed(() => localGameStore.currentTrack)
 
+const hasStartedPlaying = ref(false)
 const randomStartMs = ref(0)
 
 const useRandomStart = computed(() => {
@@ -32,6 +33,10 @@ const effectivePlaybackRange = computed(() => {
   if (!range || game.value?.settings.overridePlaybackRange)
     return null
   return range
+})
+
+watch(track, () => {
+  hasStartedPlaying.value = false
 })
 
 watch(track, (t) => {
@@ -166,6 +171,7 @@ async function handleContinueFromLeaderboard() {
           v-if="musicPlayData"
           :track-duration="effectiveDuration"
           :music-play-data="musicPlayData"
+          @started="hasStartedPlaying = true"
         />
 
         <div
@@ -184,7 +190,7 @@ async function handleContinueFromLeaderboard() {
           />
         </div>
 
-        <Button type="button" size="lg" class="mt-4" @click="handleShowAnswer">
+        <Button type="button" size="lg" class="mt-4" :disabled="!!musicPlayData && !hasStartedPlaying" @click="handleShowAnswer">
           Show answer
         </Button>
       </template>
