@@ -116,43 +116,6 @@ function toggleUnlimitedRounds() {
         </div>
       </NumberField>
 
-      <Label class="text-base">Track start</Label>
-      <div class="mb-2 flex w-full gap-2">
-        <Button
-          type="button"
-          class="flex-1"
-          :variant="settings.trackStartMode === 'beginning' ? 'default' : 'outline'"
-          @click="settings.trackStartMode = 'beginning'"
-        >
-          From start
-        </Button>
-        <Button
-          type="button"
-          class="flex-1"
-          :variant="settings.trackStartMode === 'random' ? 'default' : 'outline'"
-          @click="settings.trackStartMode = 'random'"
-        >
-          Random
-        </Button>
-      </div>
-
-      <template v-if="settings.trackStartMode === 'random'">
-        <Label class="text-base">
-          Random start range: {{ settings.randomStartRange[0] }}% – {{ settings.randomStartRange[1] }}%
-        </Label>
-        <Slider
-          class="mb-2"
-          :min="0"
-          :max="100"
-          :step="5"
-          :model-value="settings.randomStartRange"
-          @update:model-value="(v) => v && (settings.randomStartRange = v as [number, number])"
-        />
-      </template>
-
-      <Label class="text-base">Override track range</Label>
-      <Switch v-model:model-value="settings.overridePlaybackRange" class="mb-2" />
-
       <Label class="text-base">Game mode</Label>
       <div class="mb-2 flex w-full gap-2">
         <Button
@@ -172,6 +135,34 @@ function toggleUnlimitedRounds() {
           Categories
         </Button>
       </div>
+
+      <template v-if="settings.gameMode === 'random'">
+        <Label for="standardPoints" class="text-base">Standard points</Label>
+        <NumberField
+          id="standardPoints"
+          v-model:model-value="settings.standardPoints"
+          class="
+            mb-2 flex w-full items-stretch gap-0 justify-self-end
+            sm:w-40
+            lg:w-full
+          "
+          :min="1"
+        >
+          <NumberFieldContent>
+            <NumberFieldDecrement />
+            <NumberFieldInput class="rounded-r-none" />
+            <NumberFieldIncrement />
+          </NumberFieldContent>
+          <div
+            class="
+              flex w-max items-center rounded-r-md border border-l-0 bg-muted
+              px-3 text-muted-foreground
+            "
+          >
+            <Star class="size-4" />
+          </div>
+        </NumberField>
+      </template>
 
       <template v-if="settings.gameMode === 'category'">
         <Label class="text-base">Category limits</Label>
@@ -240,6 +231,43 @@ function toggleUnlimitedRounds() {
           </NumberField>
         </template>
       </template>
+
+      <Label class="text-base">Track start</Label>
+      <div class="mb-2 flex w-full gap-2">
+        <Button
+          type="button"
+          class="flex-1"
+          :variant="settings.trackStartMode === 'beginning' ? 'default' : 'outline'"
+          @click="settings.trackStartMode = 'beginning'"
+        >
+          From start
+        </Button>
+        <Button
+          type="button"
+          class="flex-1"
+          :variant="settings.trackStartMode === 'random' ? 'default' : 'outline'"
+          @click="settings.trackStartMode = 'random'"
+        >
+          Random
+        </Button>
+      </div>
+
+      <template v-if="settings.trackStartMode === 'random'">
+        <Label class="text-base">
+          Random start range: {{ settings.randomStartRange[0] }}% – {{ settings.randomStartRange[1] }}%
+        </Label>
+        <Slider
+          class="mb-2"
+          :min="0"
+          :max="100"
+          :step="5"
+          :model-value="settings.randomStartRange"
+          @update:model-value="(v) => v && (settings.randomStartRange = v as [number, number])"
+        />
+      </template>
+
+      <Label class="text-base">Override track range</Label>
+      <Switch v-model:model-value="settings.overridePlaybackRange" class="mb-2" />
 
       <Label for="partialPoints" class="text-base">Partial points (bonus)</Label>
       <NumberField

@@ -26,6 +26,9 @@ const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.roun
 const fullPlusBonusPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
 const halfPlusBonusPoints = computed(() => halfPoints.value !== undefined ? halfPoints.value + props.settings.partialPoints : undefined)
 
+const standardPoints = computed(() => props.settings.gameMode === 'random' ? props.settings.standardPoints : undefined)
+const standardFullPlusBonusPoints = computed(() => standardPoints.value !== undefined ? standardPoints.value + props.settings.partialPoints : undefined)
+
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 const showAlbumAsBig = computed(() => !previewImageUrl.value && !!props.track.albumImageUrl)
 
@@ -138,49 +141,74 @@ function handleNextRound() {
               </NumberFieldContent>
             </NumberField>
             <div
-              v-if="categoryPoints !== undefined" class="
+              v-if="categoryPoints !== undefined || standardPoints !== undefined" class="
                 flex flex-wrap justify-center gap-1
               "
             >
-              <Button
-                v-if="team.id === currentTeamId"
-                type="button" variant="outline" size="sm"
-                class="text-green-500"
-                @click="scores[team.id] = categoryPoints!"
-              >
-                Full
-              </Button>
-              <Button
-                v-if="team.id === currentTeamId"
-                type="button" variant="outline" size="sm"
-                class="text-green-600"
-                @click="scores[team.id] = fullPlusBonusPoints!"
-              >
-                Full+Bonus
-              </Button>
-              <Button
-                v-if="team.id !== currentTeamId"
-                type="button" variant="outline" size="sm"
-                class="text-amber-400"
-                @click="scores[team.id] = halfPoints!"
-              >
-                Half
-              </Button>
-              <Button
-                v-if="team.id !== currentTeamId"
-                type="button" variant="outline" size="sm"
-                class="text-amber-500"
-                @click="scores[team.id] = halfPlusBonusPoints!"
-              >
-                Half+Bonus
-              </Button>
-              <Button
-                type="button" variant="outline" size="sm"
-                class="text-yellow-500"
-                @click="scores[team.id] = settings.partialPoints"
-              >
-                Bonus
-              </Button>
+              <template v-if="categoryPoints !== undefined">
+                <Button
+                  v-if="team.id === currentTeamId"
+                  type="button" variant="outline" size="sm"
+                  class="text-green-500"
+                  @click="scores[team.id] = categoryPoints!"
+                >
+                  Full
+                </Button>
+                <Button
+                  v-if="team.id === currentTeamId"
+                  type="button" variant="outline" size="sm"
+                  class="text-green-600"
+                  @click="scores[team.id] = fullPlusBonusPoints!"
+                >
+                  Full+Bonus
+                </Button>
+                <Button
+                  v-if="team.id !== currentTeamId"
+                  type="button" variant="outline" size="sm"
+                  class="text-amber-400"
+                  @click="scores[team.id] = halfPoints!"
+                >
+                  Half
+                </Button>
+                <Button
+                  v-if="team.id !== currentTeamId"
+                  type="button" variant="outline" size="sm"
+                  class="text-amber-500"
+                  @click="scores[team.id] = halfPlusBonusPoints!"
+                >
+                  Half+Bonus
+                </Button>
+                <Button
+                  type="button" variant="outline" size="sm"
+                  class="text-yellow-500"
+                  @click="scores[team.id] = settings.partialPoints"
+                >
+                  Bonus
+                </Button>
+              </template>
+              <template v-else-if="standardPoints !== undefined">
+                <Button
+                  type="button" variant="outline" size="sm"
+                  class="text-green-500"
+                  @click="scores[team.id] = standardPoints!"
+                >
+                  Full
+                </Button>
+                <Button
+                  type="button" variant="outline" size="sm"
+                  class="text-green-600"
+                  @click="scores[team.id] = standardFullPlusBonusPoints!"
+                >
+                  Full+Bonus
+                </Button>
+                <Button
+                  type="button" variant="outline" size="sm"
+                  class="text-yellow-500"
+                  @click="scores[team.id] = settings.partialPoints"
+                >
+                  Bonus
+                </Button>
+              </template>
             </div>
           </div>
         </div>
