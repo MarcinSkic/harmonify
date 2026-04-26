@@ -58,7 +58,10 @@ function handleNextRound() {
       >
         <div
           v-if="trackCategories?.length || category"
-          class="flex w-full flex-wrap gap-2"
+          class="
+            flex max-w-xs flex-wrap gap-2
+            lg:max-w-170
+          "
         >
           <Badge
             v-for="cat in trackCategories"
@@ -87,7 +90,7 @@ function handleNextRound() {
           alt="Link preview"
           class="
             max-h-100 max-w-full rounded-md object-cover
-            lg:max-h-170
+            lg:max-h-170 lg:min-w-170
           "
         >
         <img

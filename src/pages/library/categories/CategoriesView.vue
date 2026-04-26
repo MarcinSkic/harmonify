@@ -40,11 +40,14 @@ const filteredCategories = computed(() => {
   return [...cats].sort((a, b) => {
     const aHasPoints = a.points !== undefined
     const bHasPoints = b.points !== undefined
-    if (aHasPoints !== bHasPoints) return aHasPoints ? -1 : 1
+    if (aHasPoints !== bHasPoints)
+      return aHasPoints ? -1 : 1
     const pointsDiff = aHasPoints ? (a.points! - b.points!) : 0
-    if (pointsDiff !== 0) return pointsDiff
+    if (pointsDiff !== 0)
+      return pointsDiff
     const tracksDiff = (trackCounts.value.get(b.id) ?? 0) - (trackCounts.value.get(a.id) ?? 0)
-    if (tracksDiff !== 0) return tracksDiff
+    if (tracksDiff !== 0)
+      return tracksDiff
     return a.displayName.localeCompare(b.displayName)
   })
 })
