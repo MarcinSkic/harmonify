@@ -21,11 +21,15 @@ function computeResult(
   gameMode: LocalGameGameMode,
   isCurrentTeam: boolean,
   categoryPoints?: number,
+  standardPoints?: number,
 ): LocalGuessLevel {
   if (points === 0)
     return 'none'
-  if (gameMode === 'random')
+  if (gameMode === 'random') {
+    if (standardPoints !== undefined && points < standardPoints)
+      return 'artist'
     return 'full'
+  }
   if (categoryPoints !== undefined && points >= categoryPoints)
     return 'full'
   if (!isCurrentTeam && categoryPoints !== undefined && points >= categoryPoints / 2)
@@ -465,6 +469,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
             g.settings.gameMode,
             team.id === g.currentTeamId,
             currentCategoryInfo.value?.points,
+            g.settings.standardPoints,
           ),
         })),
       }
