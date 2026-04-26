@@ -74,6 +74,7 @@ const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
 )
 const hasCategories = computed(() => gameCategories.value.length > 0)
+const hasAnyCategorySource = computed(() => hasCategories.value || settings.generatePlaylistCategories)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)
@@ -82,7 +83,7 @@ const startButtonText = computed(() => {
     return 'Select a playlist'
   if (!hasValidTeams.value)
     return 'Fill in team names'
-  if (settings.gameMode === 'category' && !hasCategories.value)
+  if (settings.gameMode === 'category' && !hasAnyCategorySource.value)
     return 'Link a category set to selected playlists'
   if (isLoading.value)
     return 'Loading...'
@@ -93,7 +94,7 @@ async function handleGameStart() {
   if (!hasValidTeams.value || !hasTracksSelected.value)
     return
 
-  if (settings.gameMode === 'category' && !hasCategories.value) {
+  if (settings.gameMode === 'category' && !hasAnyCategorySource.value) {
     toast.error('Link a category set to selected playlists first')
     return
   }
@@ -173,7 +174,7 @@ async function handleGameStart() {
         !musicPlayerStore.ready
           || !hasTracksSelected
           || !hasValidTeams
-          || (settings.gameMode === 'category' && !hasCategories)
+          || (settings.gameMode === 'category' && !hasAnyCategorySource)
           || isLoading
       "
       type="submit"
