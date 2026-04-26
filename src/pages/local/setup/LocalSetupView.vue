@@ -51,7 +51,9 @@ const gameEnabledTracks = useLiveQuery(
     if (selectedPlaylistIds.value.length === 0)
       return [] as Track[]
     const tracks = await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds.value).toArray()
-    return tracks.filter(t => t.enabled !== false && !!t.audioUrl)
+    return tracks.filter(t =>
+      !!t.audioUrl && selectedPlaylistIds.value.some(pid => t.enabledByPlaylist[pid] !== false),
+    )
   },
   [] as Track[],
   [selectedPlaylistIds],

@@ -40,17 +40,17 @@ async function handleImport() {
         durationMs: t.durationMs,
         albumName: t.album ?? '',
         albumImageUrl: t.hasCoverArt
-          ? MusicServerService.getCoverUrl(playlist.name, t.id)
+          ? MusicServerService.getCoverUrl(t.id)
           : undefined,
-        audioUrl: MusicServerService.getAudioUrl(playlist.name, t.id),
+        audioUrl: MusicServerService.getAudioUrl(t.id),
         playbackRange: null,
         tags: [],
         playlistIds: [playlistId],
         metadataSource: 'server' as const,
-        enabled: true,
+        enabledByPlaylist: { [playlistId]: true },
       }))
 
-      await LibraryService.addTracks(tracks)
+      await LibraryService.addTracksDeduplicating(tracks)
       totalTracks += tracks.length
     }
 

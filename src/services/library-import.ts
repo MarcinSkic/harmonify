@@ -32,7 +32,7 @@ export function spotifyTrackToTrack(track: SpotifyTrack, playlistIds: string[]):
     tags: [],
     playlistIds,
     metadataSource: 'spotify',
-    enabled: true,
+    enabledByPlaylist: Object.fromEntries(playlistIds.map(pid => [pid, true])),
   }
 }
 

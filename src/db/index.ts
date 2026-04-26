@@ -63,3 +63,17 @@ db.version(4)
       await tx.table('categories').put(rest)
     }
   })
+
+db.version(5)
+  .stores({
+    tracks: 'id, sourceId, name, *playlistIds, *tags, metadataSource, createdAt',
+  })
+  .upgrade(async (tx) => {
+    await tx.table('tracks').toCollection().modify((track) => {
+      const enabledByPlaylist: Record<string, boolean> = {}
+      for (const pid of track.playlistIds ?? [])
+        enabledByPlaylist[pid] = track.enabled !== false
+      track.enabledByPlaylist = enabledByPlaylist
+      delete track.enabled
+    })
+  })

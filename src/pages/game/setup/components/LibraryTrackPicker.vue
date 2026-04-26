@@ -27,7 +27,7 @@ async function loadTrackCounts(playlists: Playlist[]) {
     const count = await db.tracks
       .where('playlistIds')
       .equals(p.id)
-      .filter(t => t.enabled !== false && !!t.audioUrl)
+      .filter(t => t.enabledByPlaylist[p.id] !== false && !!t.audioUrl)
       .count()
     map.set(p.id, count)
   }
