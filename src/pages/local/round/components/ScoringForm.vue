@@ -23,8 +23,8 @@ const emit = defineEmits<{
 }>()
 const categoryPoints = computed(() => props.category?.points)
 const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.round(categoryPoints.value / 2) : undefined)
-const fullPlusArtistPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
-const halfPlusArtistPoints = computed(() => halfPoints.value !== undefined ? halfPoints.value + props.settings.partialPoints : undefined)
+const fullPlusBonusPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
+const halfPlusBonusPoints = computed(() => halfPoints.value !== undefined ? halfPoints.value + props.settings.partialPoints : undefined)
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 const showAlbumAsBig = computed(() => !previewImageUrl.value && !!props.track.albumImageUrl)
@@ -154,9 +154,9 @@ function handleNextRound() {
                 v-if="team.id === currentTeamId"
                 type="button" variant="outline" size="sm"
                 class="text-green-600"
-                @click="scores[team.id] = fullPlusArtistPoints!"
+                @click="scores[team.id] = fullPlusBonusPoints!"
               >
-                Full+Artist
+                Full+Bonus
               </Button>
               <Button
                 v-if="team.id !== currentTeamId"
@@ -170,16 +170,16 @@ function handleNextRound() {
                 v-if="team.id !== currentTeamId"
                 type="button" variant="outline" size="sm"
                 class="text-amber-500"
-                @click="scores[team.id] = halfPlusArtistPoints!"
+                @click="scores[team.id] = halfPlusBonusPoints!"
               >
-                Half+Artist
+                Half+Bonus
               </Button>
               <Button
                 type="button" variant="outline" size="sm"
                 class="text-yellow-500"
                 @click="scores[team.id] = settings.partialPoints"
               >
-                Artist
+                Bonus
               </Button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CategoryLimit, LocalGameSettings } from '@/db/schemas'
-import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash } from '@lucide/vue'
+import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash, Star } from '@lucide/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -226,14 +226,22 @@ function toggleUnlimitedRounds() {
           >
             <NumberFieldContent>
               <NumberFieldDecrement />
-              <NumberFieldInput />
+              <NumberFieldInput class="rounded-r-none" />
               <NumberFieldIncrement />
             </NumberFieldContent>
+            <div
+              class="
+                flex w-max items-center rounded-r-md border border-l-0 bg-muted
+                px-3 text-muted-foreground
+              "
+            >
+              <Star class="size-4" />
+            </div>
           </NumberField>
         </template>
       </template>
 
-      <Label for="partialPoints" class="text-base">Partial points (artist/album)</Label>
+      <Label for="partialPoints" class="text-base">Partial points (bonus)</Label>
       <NumberField
         id="partialPoints"
         v-model:model-value="settings.partialPoints"
@@ -246,9 +254,17 @@ function toggleUnlimitedRounds() {
       >
         <NumberFieldContent>
           <NumberFieldDecrement />
-          <NumberFieldInput />
+          <NumberFieldInput class="rounded-r-none" />
           <NumberFieldIncrement />
         </NumberFieldContent>
+        <div
+          class="
+            flex w-max items-center rounded-r-md border border-l-0 bg-muted px-3
+            text-muted-foreground
+          "
+        >
+          <Star class="size-4" />
+        </div>
       </NumberField>
 
       <Label for="breakDurationBetweenRounds" class="text-base">Leaderboard duration</Label>
