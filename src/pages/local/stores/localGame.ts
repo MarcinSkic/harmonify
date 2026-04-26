@@ -359,40 +359,17 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const trimmed = input.trim()
     const g = game.value
 
-    if (trimmed.includes('/')) {
-      const slashIdx = trimmed.lastIndexOf('/')
-      const prefix = trimmed.slice(0, slashIdx)
-      const numPart = trimmed.slice(slashIdx + 1)
-      const num = Number.parseInt(numPart, 10)
-
-      const idsToTry: string[] = [trimmed]
-      if (!Number.isNaN(num)) {
-        const unpadded = `${prefix}/${String(num)}`
-        if (unpadded !== trimmed)
-          idsToTry.push(unpadded)
-      }
-
-      for (const id of idsToTry) {
-        const track = await db.tracks.where('sourceId').equals(id).first()
-        if (track) {
-          if (!g || g.selectedPlaylistIds.length === 0 || g.selectedPlaylistIds.some(pid => track.playlistIds.includes(pid)))
-            return [track]
-          return []
-        }
-      }
-      return []
+    const num = Number(trimmed)
+    if (Number.isInteger(num) && trimmed !== '') {
+      const suffix = `/${trimmed}`
+      const candidates = g && g.selectedPlaylistIds.length > 0
+        ? await db.tracks.where('playlistIds').anyOf(g.selectedPlaylistIds).toArray()
+        : await db.tracks.toArray()
+      return candidates.filter(t => t.sourceId.endsWith(suffix))
     }
 
-    const num = Number.parseInt(trimmed, 10)
-    if (Number.isNaN(num))
-      return []
-
-    const suffix = `/${String(num)}`
-    const candidates = g && g.selectedPlaylistIds.length > 0
-      ? await db.tracks.where('playlistIds').anyOf(g.selectedPlaylistIds).toArray()
-      : await db.tracks.toArray()
-
-    return candidates.filter(t => t.sourceId.endsWith(suffix))
+    const track = await db.tracks.where('sourceId').equals(trimmed).first()
+    return track ? [track] : []
   }
 
   async function checkSourceId(input: string): Promise<'available' | 'already-played' | 'not-found' | AmbiguousResult> {
