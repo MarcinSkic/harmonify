@@ -42,16 +42,16 @@ export async function getPlaylists(): Promise<ServerPlaylist[]> {
 }
 
 export async function getTracks(playlistName: string): Promise<ServerTrack[]> {
-  const response = await fetch(`${baseUrl}/${encodeURIComponent(playlistName)}`, { headers: authHeaders() })
+  const response = await fetch(`${baseUrl}/tracks/${playlistName}`, { headers: authHeaders() })
   return z.array(serverTrackSchema).parse(await response.json())
 }
 
-export function getAudioUrl(playlistName: string, trackId: string): string {
-  return `${baseUrl}/${encodeURIComponent(playlistName)}/${encodeURIComponent(trackId)}`
+export function getAudioUrl(trackId: string): string {
+  return `${baseUrl}/audio/${trackId}`
 }
 
-export function getCoverUrl(playlistName: string, trackId: string): string {
-  return `${baseUrl}/${encodeURIComponent(playlistName)}/${encodeURIComponent(trackId)}/cover`
+export function getCoverUrl(trackId: string): string {
+  return `${baseUrl}/cover/${trackId}`
 }
 
 export function isConfigured(): boolean {

@@ -31,7 +31,7 @@ export const trackSchema = z.object({
   tags: z.array(z.string()),
   playlistIds: z.array(z.uuid()),
   metadataSource: metadataSourceSchema,
-  enabled: z.boolean().default(true),
+  enabledByPlaylist: z.record(z.string(), z.boolean()).default({}),
   previewImageUrl: z.string().optional(),
   createdAt: z.number(),
 })

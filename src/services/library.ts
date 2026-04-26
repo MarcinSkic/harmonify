@@ -52,8 +52,50 @@ export async function addTracks(tracks: NewTrack[]): Promise<void> {
   )
 }
 
+export async function addTracksDeduplicating(newTracks: NewTrack[]): Promise<void> {
+  const existing = await db.tracks.toArray()
+  const byAudioUrl = new Map(existing.filter(t => t.audioUrl).map(t => [t.audioUrl!, t]))
+  const now = Date.now()
+
+  await db.transaction('rw', db.tracks, async () => {
+    for (const track of newTracks) {
+      const dupe = track.audioUrl ? byAudioUrl.get(track.audioUrl) : undefined
+      if (dupe) {
+        const added = track.playlistIds.filter(pid => !dupe.playlistIds.includes(pid))
+        if (added.length === 0)
+          continue
+        const newEnabledByPlaylist = { ...dupe.enabledByPlaylist }
+        for (const pid of added)
+          newEnabledByPlaylist[pid] = true
+        await db.tracks.update(dupe.id, {
+          playlistIds: [...dupe.playlistIds, ...added],
+          enabledByPlaylist: newEnabledByPlaylist,
+        })
+        dupe.playlistIds = [...dupe.playlistIds, ...added]
+        dupe.enabledByPlaylist = newEnabledByPlaylist
+      }
+      else {
+        const id = crypto.randomUUID()
+        const full = { ...track, id, createdAt: now }
+        await db.tracks.add(full)
+        if (track.audioUrl)
+          byAudioUrl.set(track.audioUrl, full as Track)
+      }
+    }
+  })
+}
+
 export async function updateTrack(id: string, data: Partial<Omit<Track, 'id' | 'createdAt'>>): Promise<void> {
   await db.tracks.update(id, data)
+}
+
+export async function setTrackEnabledForPlaylist(id: string, playlistId: string, enabled: boolean): Promise<void> {
+  const track = await db.tracks.get(id)
+  if (!track)
+    return
+  await db.tracks.update(id, {
+    enabledByPlaylist: { ...track.enabledByPlaylist, [playlistId]: enabled },
+  })
 }
 
 export async function deleteTrack(id: string): Promise<void> {
@@ -80,20 +122,24 @@ export async function applyCSVToPlaylist(
 ): Promise<CSVApplyResult> {
   const tracks = await db.tracks.where('playlistIds').equals(playlistId).toArray()
   const bySourceId = new Map(tracks.map(t => [t.sourceId, t]))
+  const byLocalId = new Map(tracks.map((t) => {
+    const slash = t.sourceId.lastIndexOf('/')
+    return [slash >= 0 ? t.sourceId.slice(slash + 1) : t.sourceId, t]
+  }))
 
   const notFound: string[] = []
   const previewUrlSet = new Set<string>()
   let updated = 0
 
   for (const row of rows) {
-    const track = bySourceId.get(row.sourceId)
+    const track = bySourceId.get(row.sourceId) ?? byLocalId.get(row.sourceId)
     if (!track) {
       notFound.push(row.sourceId)
       continue
     }
     const updateData: Partial<Track> = { tags: row.tags, playbackRange: row.playbackRange }
     if (row.enabled !== undefined)
-      updateData.enabled = row.enabled
+      updateData.enabledByPlaylist = { ...track.enabledByPlaylist, [playlistId]: row.enabled }
     if (row.previewImageUrl !== undefined) {
       updateData.previewImageUrl = row.previewImageUrl
       previewUrlSet.add(row.previewImageUrl)
@@ -150,7 +196,7 @@ export async function countTracksMatchingTagFilter(
   const matchedIds = new Set<string>()
   const tracks = await db.tracks.where('tags').anyOf(tagFilter).toArray()
   for (const track of tracks) {
-    if (track.enabled !== false)
+    if (track.playlistIds.some(pid => track.enabledByPlaylist[pid] !== false))
       matchedIds.add(track.id)
   }
   return matchedIds.size

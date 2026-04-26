@@ -24,7 +24,7 @@ const hasAnyImage = computed(() => !!(props.track.albumImageUrl || previewImageU
 </script>
 
 <template>
-  <TableRow :class="{ 'opacity-50': track.enabled === false }">
+  <TableRow :class="{ 'opacity-50': libraryStore.selectedPlaylistId !== null && track.enabledByPlaylist[libraryStore.selectedPlaylistId] === false }">
     <TableCell>
       <div class="flex items-center gap-3">
         <HoverCard v-if="hasAnyImage" :open-delay="300" :close-delay="100">
@@ -113,8 +113,9 @@ const hasAnyImage = computed(() => !!(props.track.albumImageUrl || previewImageU
     <TableCell>
       <div class="flex items-center gap-1">
         <Switch
-          :model-value="track.enabled !== false"
-          @update:model-value="libraryStore.setTrackEnabled(track.id, $event)"
+          v-if="libraryStore.selectedPlaylistId !== null"
+          :model-value="track.enabledByPlaylist[libraryStore.selectedPlaylistId] !== false"
+          @update:model-value="libraryStore.setTrackEnabled(track.id, libraryStore.selectedPlaylistId!, $event)"
         />
         <Button
           variant="ghost"
