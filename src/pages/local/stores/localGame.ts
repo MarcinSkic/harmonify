@@ -14,6 +14,8 @@ import {
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
 import { useCategoriesStore } from '@/stores'
 
+export interface AmbiguousResult { type: 'ambiguous', candidates: string[] }
+
 function computeResult(
   points: number,
   gameMode: LocalGameGameMode,
@@ -353,25 +355,71 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
-  async function checkSourceId(sourceId: string): Promise<'available' | 'already-played' | 'not-found'> {
-    const track = await db.tracks.where('sourceId').equals(sourceId).first()
-    if (!track)
+  async function _findTracksInPool(input: string): Promise<Track[]> {
+    const trimmed = input.trim()
+    const g = game.value
+
+    if (trimmed.includes('/')) {
+      const slashIdx = trimmed.lastIndexOf('/')
+      const prefix = trimmed.slice(0, slashIdx)
+      const numPart = trimmed.slice(slashIdx + 1)
+      const num = Number.parseInt(numPart, 10)
+
+      const idsToTry: string[] = [trimmed]
+      if (!Number.isNaN(num)) {
+        const unpadded = `${prefix}/${String(num)}`
+        if (unpadded !== trimmed)
+          idsToTry.push(unpadded)
+      }
+
+      for (const id of idsToTry) {
+        const track = await db.tracks.where('sourceId').equals(id).first()
+        if (track) {
+          if (!g || g.selectedPlaylistIds.length === 0 || g.selectedPlaylistIds.some(pid => track.playlistIds.includes(pid)))
+            return [track]
+          return []
+        }
+      }
+      return []
+    }
+
+    const num = Number.parseInt(trimmed, 10)
+    if (Number.isNaN(num))
+      return []
+
+    const suffix = `/${String(num)}`
+    const candidates = g && g.selectedPlaylistIds.length > 0
+      ? await db.tracks.where('playlistIds').anyOf(g.selectedPlaylistIds).toArray()
+      : await db.tracks.toArray()
+
+    return candidates.filter(t => t.sourceId.endsWith(suffix))
+  }
+
+  async function checkSourceId(input: string): Promise<'available' | 'already-played' | 'not-found' | AmbiguousResult> {
+    const tracks = await _findTracksInPool(input)
+    if (tracks.length === 0)
       return 'not-found'
+    if (tracks.length > 1)
+      return { type: 'ambiguous', candidates: tracks.map(t => t.sourceId) }
+    const track = tracks[0]
     if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
       return 'already-played'
     return 'available'
   }
 
-  async function playSpecificTrack(sourceId: string): Promise<'played' | 'already-played' | 'not-found'> {
+  async function playSpecificTrack(input: string): Promise<'played' | 'already-played' | 'not-found' | AmbiguousResult> {
     if (!game.value || game.value.settings.gameMode !== 'category')
       return 'not-found'
     if (!game.value.categoryPoolState)
       return 'not-found'
 
-    const track = await db.tracks.where('sourceId').equals(sourceId).first()
-    if (!track)
+    const tracks = await _findTracksInPool(input)
+    if (tracks.length === 0)
       return 'not-found'
+    if (tracks.length > 1)
+      return { type: 'ambiguous', candidates: tracks.map(t => t.sourceId) }
 
+    const track = tracks[0]
     const poolState = game.value.categoryPoolState
     const alreadyPlayed = poolState.playedTrackIds.includes(track.id)
 
