@@ -239,6 +239,9 @@ function toggleUnlimitedRounds() {
         </div>
       </NumberField>
 
+      <Label class="text-base">Show track categories</Label>
+      <Switch v-model:model-value="settings.showTrackCategories" class="mb-2" />
+
       <Label class="text-base">Host sees answer</Label>
       <Switch v-model:model-value="settings.hostSeesAnswer" class="mb-2" />
 

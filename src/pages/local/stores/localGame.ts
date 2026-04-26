@@ -129,6 +129,27 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return { displayName: categoryId }
   })
 
+  const currentTrackMatchingCategories = computed<Array<{ displayName: string }>>(() => {
+    const track = currentTrack.value
+    if (!track || !game.value?.categoryPoolState)
+      return []
+    if (!game.value.settings.showTrackCategories)
+      return []
+
+    const currentCategoryId = game.value.currentCategory
+
+    return allCategories.value
+      .filter(({ category }) => {
+        if (category.id === currentCategoryId)
+          return false
+        if ('type' in category && category.type === 'playlist-based')
+          return track.playlistIds.includes(category.playlistId)
+        const filter = new Set((category as Category).tagFilter)
+        return track.tags.some(tag => filter.has(tag))
+      })
+      .map(({ category }) => ({ displayName: category.displayName }))
+  })
+
   const currentTeam = computed(() => {
     const id = game.value?.currentTeamId
     if (!id)
@@ -562,6 +583,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     allCategories,
     disabledCategoryIdsForCurrentTeam,
     currentCategoryInfo,
+    currentTrackMatchingCategories,
     currentTeam,
     lastRoundTeamScores,
     createGame,
