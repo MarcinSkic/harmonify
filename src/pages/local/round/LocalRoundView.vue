@@ -165,6 +165,7 @@ async function handleContinueFromLeaderboard() {
           :teams="game.teams"
           :current-team-id="game.currentTeamId"
           :category="localGameStore.currentCategoryInfo"
+          :track-categories="localGameStore.currentTrackMatchingCategories"
           :settings="game.settings"
           @submit="handleSubmitScores"
         />

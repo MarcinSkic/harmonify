@@ -14,6 +14,7 @@ const props = defineProps<{
   teams: LocalGameTeam[]
   currentTeamId: string | undefined
   category?: { displayName: string, points?: number }
+  trackCategories?: { displayName: string }[]
   settings: LocalGameSettings
 }>()
 
@@ -43,23 +44,6 @@ function handleNextRound() {
 
 <template>
   <div class="grid place-items-center gap-6">
-    <div class="grid justify-items-center gap-2 text-center">
-      <div
-        v-if="category" class="flex flex-wrap items-center justify-center gap-2"
-      >
-        <Badge variant="secondary" class="text-base">
-          {{ category.displayName }}
-        </Badge>
-        <Badge
-          v-if="category.points !== undefined" variant="outline" class="
-            text-base
-          "
-        >
-          <PointsDisplay :points="category.points" />
-        </Badge>
-      </div>
-    </div>
-
     <div
       class="
         flex flex-wrap items-start justify-center gap-8
@@ -72,13 +56,41 @@ function handleNextRound() {
           lg:max-w-300
         "
       >
+        <div
+          v-if="trackCategories?.length || category"
+          class="
+            flex max-w-xs flex-wrap gap-2
+            lg:max-w-170
+          "
+        >
+          <Badge
+            v-for="cat in trackCategories"
+            :key="cat.displayName"
+            variant="secondary"
+            class="text-sm"
+          >
+            {{ cat.displayName }}
+          </Badge>
+          <template v-if="category">
+            <Badge variant="secondary" class="text-sm font-semibold">
+              {{ category.displayName }}
+            </Badge>
+            <Badge
+              v-if="category.points !== undefined" variant="outline" class="
+                text-sm
+              "
+            >
+              <PointsDisplay :points="category.points" />
+            </Badge>
+          </template>
+        </div>
         <img
           v-if="previewImageUrl"
           :src="previewImageUrl"
           alt="Link preview"
           class="
             max-h-100 max-w-full rounded-md object-cover
-            lg:max-h-170
+            lg:max-h-170 lg:min-w-170
           "
         >
         <img

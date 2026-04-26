@@ -35,6 +35,7 @@ const settings = reactive<LocalGameSettings>({
   partialPoints: 2,
   breakDurationBetweenRounds: 3,
   saveGame: settingsStore.defaultSaveGame,
+  showTrackCategories: true,
   categoryLimit: 'none',
   generatePlaylistCategories: false,
   generatedCategoryPoints: 10,

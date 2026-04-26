@@ -95,7 +95,7 @@ const emit = defineEmits<{
           </Badge>
         </div>
         <div class="flex shrink-0 items-center gap-1 text-muted-foreground">
-          <span class="text-2xl font-bold leading-none">{{ trackCount }}</span>
+          <span class="text-2xl leading-none font-bold">{{ trackCount }}</span>
           <Music class="size-5" />
         </div>
       </div>

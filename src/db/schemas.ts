@@ -178,6 +178,7 @@ export const localGameSettingsSchema = z.object({
   partialPoints: z.number().default(2),
   breakDurationBetweenRounds: z.number().default(3),
   saveGame: z.boolean().default(true),
+  showTrackCategories: z.boolean().default(true),
   categoryLimit: categoryLimitSchema.default('none'),
   generatePlaylistCategories: z.boolean().default(false),
   generatedCategoryPoints: z.number().default(10),
