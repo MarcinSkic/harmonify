@@ -10,7 +10,12 @@ const localGameStore = useLocalGameStore()
 
 const open = ref(false)
 const sourceId = ref('')
-const status = ref<{ type: 'error' | 'warning', message: string } | null>(null)
+const status = ref<
+  | { type: 'error', message: string }
+  | { type: 'warning', message: string }
+  | { type: 'ambiguous', candidates: string[] }
+  | null
+>(null)
 
 watchDebounced(sourceId, async (value) => {
   const trimmed = value.trim()
@@ -20,7 +25,9 @@ watchDebounced(sourceId, async (value) => {
   }
 
   const result = await localGameStore.checkSourceId(trimmed)
-  if (result === 'not-found')
+  if (typeof result === 'object')
+    status.value = { type: 'ambiguous', candidates: result.candidates }
+  else if (result === 'not-found')
     status.value = { type: 'error', message: `Track not found for sourceId: ${trimmed}` }
   else if (result === 'already-played')
     status.value = { type: 'warning', message: 'This track was already played' }
@@ -30,10 +37,12 @@ watchDebounced(sourceId, async (value) => {
 
 async function handleSubmit() {
   const value = sourceId.value.trim()
-  if (!value || status.value?.type === 'error')
+  if (!value || status.value?.type === 'error' || status.value?.type === 'ambiguous')
     return
 
-  await localGameStore.playSpecificTrack(value)
+  const result = await localGameStore.playSpecificTrack(value)
+  if (typeof result === 'object')
+    status.value = { type: 'ambiguous', candidates: result.candidates }
 }
 </script>
 
@@ -58,17 +67,23 @@ async function handleSubmit() {
           placeholder="Paste sourceId..."
           class="flex-1"
         />
-        <Button type="submit" size="sm" :disabled="!sourceId.trim() || status?.type === 'error'">
+        <Button type="submit" size="sm" :disabled="!sourceId.trim() || status?.type === 'error' || status?.type === 'ambiguous'">
           Play
         </Button>
       </form>
       <p
-        v-if="status"
+        v-if="status?.type === 'error' || status?.type === 'warning'"
         class="text-sm" :class="[
           status.type === 'error' ? 'text-destructive' : 'text-yellow-500',
         ]"
       >
         {{ status.message }}
+      </p>
+      <p
+        v-else-if="status?.type === 'ambiguous'"
+        class="text-sm text-yellow-500"
+      >
+        Podaj pelny sourceId: {{ status.candidates.join(' lub ') }}
       </p>
     </template>
   </div>

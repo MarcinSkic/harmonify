@@ -14,6 +14,8 @@ import {
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
 import { useCategoriesStore } from '@/stores'
 
+export interface AmbiguousResult { type: 'ambiguous', candidates: string[] }
+
 function computeResult(
   points: number,
   gameMode: LocalGameGameMode,
@@ -353,25 +355,48 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
   }
 
-  async function checkSourceId(sourceId: string): Promise<'available' | 'already-played' | 'not-found'> {
-    const track = await db.tracks.where('sourceId').equals(sourceId).first()
-    if (!track)
+  async function _findTracksInPool(input: string): Promise<Track[]> {
+    const trimmed = input.trim()
+    const g = game.value
+
+    const num = Number(trimmed)
+    if (Number.isInteger(num) && trimmed !== '') {
+      const suffix = `/${trimmed}`
+      const candidates = g && g.selectedPlaylistIds.length > 0
+        ? await db.tracks.where('playlistIds').anyOf(g.selectedPlaylistIds).toArray()
+        : await db.tracks.toArray()
+      return candidates.filter(t => t.sourceId.endsWith(suffix))
+    }
+
+    const track = await db.tracks.where('sourceId').equals(trimmed).first()
+    return track ? [track] : []
+  }
+
+  async function checkSourceId(input: string): Promise<'available' | 'already-played' | 'not-found' | AmbiguousResult> {
+    const tracks = await _findTracksInPool(input)
+    if (tracks.length === 0)
       return 'not-found'
+    if (tracks.length > 1)
+      return { type: 'ambiguous', candidates: tracks.map(t => t.sourceId) }
+    const track = tracks[0]
     if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
       return 'already-played'
     return 'available'
   }
 
-  async function playSpecificTrack(sourceId: string): Promise<'played' | 'already-played' | 'not-found'> {
+  async function playSpecificTrack(input: string): Promise<'played' | 'already-played' | 'not-found' | AmbiguousResult> {
     if (!game.value || game.value.settings.gameMode !== 'category')
       return 'not-found'
     if (!game.value.categoryPoolState)
       return 'not-found'
 
-    const track = await db.tracks.where('sourceId').equals(sourceId).first()
-    if (!track)
+    const tracks = await _findTracksInPool(input)
+    if (tracks.length === 0)
       return 'not-found'
+    if (tracks.length > 1)
+      return { type: 'ambiguous', candidates: tracks.map(t => t.sourceId) }
 
+    const track = tracks[0]
     const poolState = game.value.categoryPoolState
     const alreadyPlayed = poolState.playedTrackIds.includes(track.id)
 
