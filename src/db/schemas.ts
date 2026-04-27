@@ -136,7 +136,7 @@ export const gameResultSchema = z.object({
     totalScore: z.number(),
   })),
   rounds: z.array(roundResultSchema),
-  selectedPlaylistIds: z.array(z.string()),
+  selectedPlaylists: z.array(z.object({ id: z.string(), name: z.string(), imageUrl: z.string().optional() })),
 })
 export type GameResult = z.infer<typeof gameResultSchema>
 

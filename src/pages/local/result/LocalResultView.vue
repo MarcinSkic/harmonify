@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import { db } from '@/db'
 import GameResultTabs from '@/pages/local/components/GameResultTabs.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
 
@@ -12,12 +13,23 @@ const teams = computed(() =>
   localGameStore.sortedTeams.map(t => ({ id: t.id, name: t.name, score: t.score })),
 )
 
+const selectedPlaylists = ref<{ id: string, name: string, imageUrl?: string }[]>([])
+
 onMounted(async () => {
   if (!localGameStore.game) {
     const gameId = router.currentRoute.value.params.id as string
     const restored = await localGameStore.resumeGame(gameId)
-    if (!restored)
+    if (!restored) {
       router.push({ name: 'localSetup' })
+      return
+    }
+  }
+
+  if (localGameStore.game) {
+    const playlists = await db.playlists.bulkGet(localGameStore.game.selectedPlaylistIds)
+    selectedPlaylists.value = playlists
+      .filter((p): p is NonNullable<typeof p> => p != null)
+      .map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl }))
   }
 })
 </script>
@@ -39,7 +51,7 @@ onMounted(async () => {
       Game Finished
     </h1>
 
-    <GameResultTabs :teams="teams" :rounds="localGameStore.game.rounds" />
+    <GameResultTabs :teams="teams" :rounds="localGameStore.game.rounds" :playlists="selectedPlaylists" />
 
     <div class="flex justify-center gap-3">
       <Button @click="router.push({ name: 'localSetup' })">

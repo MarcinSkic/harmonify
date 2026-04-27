@@ -533,6 +533,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
 
     if (game.value.settings.saveGame) {
+      const playlists = await db.playlists.bulkGet(game.value.selectedPlaylistIds)
       const gameResult: GameResult = {
         id: game.value.id,
         createdAt: game.value.createdAt,
@@ -544,7 +545,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
           totalScore: t.score,
         })),
         rounds: JSON.parse(JSON.stringify(game.value.rounds)) as RoundResult[],
-        selectedPlaylistIds: [...game.value.selectedPlaylistIds],
+        selectedPlaylists: playlists
+          .filter((p): p is NonNullable<typeof p> => p != null)
+          .map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl })),
       }
       await db.gameResults.put(gameResult)
     }
