@@ -25,13 +25,30 @@ async function handleImport() {
   isImporting.value = true
   try {
     let totalTracks = 0
+    const existingPlaylists = await LibraryService.getAllPlaylists()
 
     for (const playlist of selected) {
       const serverTracks = await MusicServerService.getTracks(playlist.name)
-      const playlistId = await LibraryService.addPlaylist({
-        name: playlist.name,
-        source: 'server',
-      })
+      const imageUrl = playlist.hasCover
+        ? MusicServerService.getPlaylistCoverUrl(playlist.name)
+        : undefined
+
+      const existing = existingPlaylists.find(
+        p => p.name === playlist.name && p.source === 'server',
+      )
+
+      let playlistId: string
+      if (existing) {
+        playlistId = existing.id
+        await LibraryService.updatePlaylist(playlistId, { imageUrl })
+      }
+      else {
+        playlistId = await LibraryService.addPlaylist({
+          name: playlist.name,
+          source: 'server',
+          imageUrl,
+        })
+      }
 
       const tracks = serverTracks.map(t => ({
         sourceId: t.id,

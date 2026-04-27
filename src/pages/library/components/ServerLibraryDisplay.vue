@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import CheckableCard from '@/components/spotify/CheckableCard.vue'
+import PlaylistCard from '@/components/PlaylistCard.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
+import { MusicServerService } from '@/services'
 import { useServerLibraryStore } from '@/stores'
 
 const serverLibraryStore = useServerLibraryStore()
@@ -11,15 +12,15 @@ const serverLibraryStore = useServerLibraryStore()
   <ScrollArea
     class="flex max-h-full flex-col justify-start rounded-lg border p-4"
   >
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
       <template v-if="!serverLibraryStore.isLoading">
-        <CheckableCard
+        <PlaylistCard
           v-for="playlist of serverLibraryStore.playlists"
-          :id="playlist.name"
           :key="playlist.name"
           v-model="playlist.selected"
-          :title="`${playlist.name} (${playlist.trackCount})`"
-          :alt="playlist.name"
+          :name="playlist.name"
+          :track-count="playlist.trackCount"
+          :image-url="playlist.hasCover ? MusicServerService.getPlaylistCoverUrl(playlist.name) : undefined"
         />
       </template>
       <template v-else>

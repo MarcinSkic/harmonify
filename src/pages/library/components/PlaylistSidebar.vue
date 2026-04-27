@@ -42,6 +42,7 @@ function getSetName(playlist: Playlist): string | null {
     </div>
 
     <ScrollArea class="flex-1 px-2">
+      <!--
       <Button
         variant="ghost"
         class="w-full justify-start gap-2"
@@ -51,6 +52,7 @@ function getSetName(playlist: Playlist): string | null {
         <ListMusic class="size-4 shrink-0" />
         All tracks
       </Button>
+      -->
 
       <div
         v-for="playlist in libraryStore.playlists"
@@ -60,11 +62,24 @@ function getSetName(playlist: Playlist): string | null {
         <div class="flex items-center">
           <Button
             variant="ghost"
-            class="flex-1 justify-start gap-2 truncate"
+            class="flex-1 justify-start gap-2 truncate px-2 py-1"
             :class="{ 'bg-accent text-accent-foreground': libraryStore.selectedPlaylistId === playlist.id }"
             @click="libraryStore.selectPlaylist(playlist.id)"
           >
-            <ListMusic class="size-4 shrink-0" />
+            <div
+              class="
+                flex aspect-square shrink-0 items-center justify-center
+                self-stretch
+              "
+            >
+              <img
+                v-if="playlist.imageUrl"
+                :src="playlist.imageUrl"
+                :alt="playlist.name"
+                class="size-full rounded-sm object-cover"
+              >
+              <ListMusic v-else class="size-full" />
+            </div>
             <span class="truncate">{{ playlist.name }}</span>
           </Button>
           <Button

@@ -1,6 +1,6 @@
 import type { Playlist, Track } from '@/db/schemas'
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useLiveQuery } from '@/composables/useLiveQuery'
 import { db } from '@/db'
 import { LibraryService } from '@/services'
@@ -30,6 +30,11 @@ export const useLibraryStore = defineStore('library', () => {
   const selectedPlaylist = computed(() =>
     playlists.value.find(p => p.id === selectedPlaylistId.value) ?? null,
   )
+
+  watch(playlists, (list) => {
+    if (selectedPlaylistId.value === null && list.length > 0)
+      selectedPlaylistId.value = list[0].id
+  }, { immediate: true })
 
   function selectPlaylist(id: string | null) {
     selectedPlaylistId.value = id

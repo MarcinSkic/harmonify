@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Playlist } from '@/db/schemas'
-import { ListMusic, Music } from '@lucide/vue'
+import { Music } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
+import PlaylistCard from '@/components/PlaylistCard.vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { db } from '@/db'
@@ -109,24 +109,17 @@ function toggleAll() {
         </Button>
       </div>
 
-      <button
-        v-for="playlist in libraryStore.playlists"
-        :key="playlist.id"
-        type="button"
-        class="
-          flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm
-          transition-colors
-          hover:bg-accent
-        "
-        :class="{ 'bg-accent text-accent-foreground': selectedPlaylistIds.includes(playlist.id) }"
-        @click="togglePlaylist(playlist.id)"
-      >
-        <ListMusic class="size-4 shrink-0" />
-        <span class="flex-1 truncate">{{ playlist.name }}</span>
-        <Badge variant="secondary" class="ml-auto shrink-0">
-          {{ trackCounts.get(playlist.id) ?? '…' }}
-        </Badge>
-      </button>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
+        <PlaylistCard
+          v-for="playlist in libraryStore.playlists"
+          :key="playlist.id"
+          :model-value="selectedPlaylistIds.includes(playlist.id)"
+          :name="playlist.name"
+          :track-count="trackCounts.get(playlist.id) ?? '…'"
+          :image-url="playlist.imageUrl"
+          @update:model-value="togglePlaylist(playlist.id)"
+        />
+      </div>
     </div>
   </ScrollArea>
 </template>
