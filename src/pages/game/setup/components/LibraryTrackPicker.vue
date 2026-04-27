@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { db } from '@/db'
+import { cn } from '@/lib/utils'
 import { useLibraryStore } from '@/stores'
 
 const props = defineProps<{
@@ -109,24 +110,41 @@ function toggleAll() {
         </Button>
       </div>
 
-      <button
-        v-for="playlist in libraryStore.playlists"
-        :key="playlist.id"
-        type="button"
-        class="
-          flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm
-          transition-colors
-          hover:bg-accent
-        "
-        :class="{ 'bg-accent text-accent-foreground': selectedPlaylistIds.includes(playlist.id) }"
-        @click="togglePlaylist(playlist.id)"
-      >
-        <ListMusic class="size-4 shrink-0" />
-        <span class="flex-1 truncate">{{ playlist.name }}</span>
-        <Badge variant="secondary" class="ml-auto shrink-0">
-          {{ trackCounts.get(playlist.id) ?? '…' }}
-        </Badge>
-      </button>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
+        <button
+          v-for="playlist in libraryStore.playlists"
+          :key="playlist.id"
+          type="button"
+          class="flex flex-col items-center gap-1 text-center font-semibold"
+          @click="togglePlaylist(playlist.id)"
+        >
+          <div
+            :class="cn(`
+              relative box-border aspect-square w-full overflow-hidden border-4
+              border-solid border-transparent
+            `, selectedPlaylistIds.includes(playlist.id) && `
+              border-primary shadow-[0px_2px_16px_3px_rgba(245,190,11,0.33)]
+            `)"
+          >
+            <img
+              v-if="playlist.imageUrl"
+              :src="playlist.imageUrl"
+              :alt="playlist.name"
+              class="
+                size-full object-contain transition-transform duration-300
+                hover:scale-105
+              "
+            >
+            <div v-else class="grid h-full place-items-center bg-muted">
+              <ListMusic :size="40" class="text-muted-foreground" />
+            </div>
+          </div>
+          <span class="line-clamp-2 text-sm">{{ playlist.name }}</span>
+          <Badge variant="secondary" class="shrink-0">
+            {{ trackCounts.get(playlist.id) ?? '…' }}
+          </Badge>
+        </button>
+      </div>
     </div>
   </ScrollArea>
 </template>

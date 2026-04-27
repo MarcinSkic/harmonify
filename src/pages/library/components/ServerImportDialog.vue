@@ -13,7 +13,7 @@ const open = defineModel<boolean>('open', { required: true })
 
 <template>
   <Dialog v-model:open="open">
-    <DialogContent class="flex max-h-[85vh] max-w-2xl flex-col">
+    <DialogContent class="flex max-h-[85vh] max-w-3xl flex-col">
       <DialogHeader>
         <DialogTitle>Import from music server</DialogTitle>
         <DialogDescription>Select playlists to import into your library.</DialogDescription>

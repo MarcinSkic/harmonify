@@ -23,6 +23,7 @@ export async function fetchAudioBlobUrl(url: string): Promise<string> {
 const serverPlaylistSchema = z.object({
   name: z.string(),
   trackCount: z.number(),
+  hasCover: z.boolean(),
 })
 export type ServerPlaylist = z.infer<typeof serverPlaylistSchema>
 
@@ -52,6 +53,10 @@ export function getAudioUrl(trackId: string): string {
 
 export function getCoverUrl(trackId: string): string {
   return `${baseUrl}/cover/${trackId}`
+}
+
+export function getPlaylistCoverUrl(playlistName: string): string {
+  return `${baseUrl}/playlist-cover/${playlistName}`
 }
 
 export function isConfigured(): boolean {
