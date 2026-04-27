@@ -42,6 +42,7 @@ function getSetName(playlist: Playlist): string | null {
     </div>
 
     <ScrollArea class="flex-1 px-2">
+      <!--
       <Button
         variant="ghost"
         class="w-full justify-start gap-2"
@@ -51,6 +52,7 @@ function getSetName(playlist: Playlist): string | null {
         <ListMusic class="size-4 shrink-0" />
         All tracks
       </Button>
+      -->
 
       <div
         v-for="playlist in libraryStore.playlists"

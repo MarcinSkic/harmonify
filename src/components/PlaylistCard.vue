@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ListMusic } from '@lucide/vue'
+import CheckableCard from '@/components/spotify/CheckableCard.vue'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 
 defineProps<{
   imageUrl?: string
@@ -13,38 +13,18 @@ const selected = defineModel<boolean>({ required: true })
 </script>
 
 <template>
-  <button
-    type="button"
-    class="flex flex-col items-center gap-1 text-center font-semibold"
-    @click="selected = !selected"
-  >
-    <div
-      :class="cn(
-        `
-          relative box-border aspect-square w-full overflow-hidden border-4
-          border-solid border-transparent
-        `,
-        selected && `
-          border-primary shadow-[0px_2px_16px_3px_rgba(245,190,11,0.33)]
-        `,
-      )"
+  <div class="flex flex-col items-stretch gap-1">
+    <CheckableCard
+      :id="name"
+      v-model="selected"
+      :src="imageUrl"
+      :alt="name"
+      :title="name"
     >
-      <img
-        v-if="imageUrl"
-        :src="imageUrl"
-        :alt="name"
-        class="
-          size-full object-contain transition-transform duration-300
-          hover:scale-105
-        "
-      >
-      <div v-else class="grid h-full place-items-center bg-muted">
-        <ListMusic :size="40" class="text-muted-foreground" />
-      </div>
-    </div>
-    <span class="line-clamp-2 text-sm">{{ name }}</span>
-    <Badge variant="secondary" class="shrink-0">
+      <ListMusic :size="40" class="text-muted-foreground" />
+    </CheckableCard>
+    <Badge variant="secondary" class="shrink-0 self-center">
       {{ trackCount }}
     </Badge>
-  </button>
+  </div>
 </template>
