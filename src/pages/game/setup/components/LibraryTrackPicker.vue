@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import type { Playlist } from '@/db/schemas'
-import { ListMusic, Music } from '@lucide/vue'
+import { Music } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Badge } from '@/components/ui/badge'
+import PlaylistCard from '@/components/PlaylistCard.vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { db } from '@/db'
-import { cn } from '@/lib/utils'
 import { useLibraryStore } from '@/stores'
 
 const props = defineProps<{
@@ -111,39 +110,15 @@ function toggleAll() {
       </div>
 
       <div class="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
-        <button
+        <PlaylistCard
           v-for="playlist in libraryStore.playlists"
           :key="playlist.id"
-          type="button"
-          class="flex flex-col items-center gap-1 text-center font-semibold"
-          @click="togglePlaylist(playlist.id)"
-        >
-          <div
-            :class="cn(`
-              relative box-border aspect-square w-full overflow-hidden border-4
-              border-solid border-transparent
-            `, selectedPlaylistIds.includes(playlist.id) && `
-              border-primary shadow-[0px_2px_16px_3px_rgba(245,190,11,0.33)]
-            `)"
-          >
-            <img
-              v-if="playlist.imageUrl"
-              :src="playlist.imageUrl"
-              :alt="playlist.name"
-              class="
-                size-full object-contain transition-transform duration-300
-                hover:scale-105
-              "
-            >
-            <div v-else class="grid h-full place-items-center bg-muted">
-              <ListMusic :size="40" class="text-muted-foreground" />
-            </div>
-          </div>
-          <span class="line-clamp-2 text-sm">{{ playlist.name }}</span>
-          <Badge variant="secondary" class="shrink-0">
-            {{ trackCounts.get(playlist.id) ?? '…' }}
-          </Badge>
-        </button>
+          :model-value="selectedPlaylistIds.includes(playlist.id)"
+          :name="playlist.name"
+          :track-count="trackCounts.get(playlist.id) ?? '…'"
+          :image-url="playlist.imageUrl"
+          @update:model-value="togglePlaylist(playlist.id)"
+        />
       </div>
     </div>
   </ScrollArea>
