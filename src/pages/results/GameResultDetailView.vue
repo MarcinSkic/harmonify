@@ -62,7 +62,7 @@ onMounted(async () => {
       </span>
     </div>
 
-    <GameResultTabs :teams="teams" :rounds="result.rounds" />
+    <GameResultTabs :teams="teams" :rounds="result.rounds" :playlists="result.selectedPlaylists" />
 
     <div class="flex justify-center gap-3">
       <Button variant="outline" @click="localGameStore.exportGameResult(result!)">
