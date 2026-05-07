@@ -75,7 +75,7 @@ const { blobUrl: previewBlobUrl } = useLinkPreview(previewUrl)
         v-if="previewBlobUrl"
         :src="previewBlobUrl"
         alt="Preview"
-        class="w-1/2 object-cover"
+        class="w-1/2 object-cover object-left"
       >
     </div>
   </div>
