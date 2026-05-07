@@ -29,7 +29,7 @@ const teamsWithWidth = computed(() => {
 <template>
   <Tabs
     default-value="results" class="
-      grid min-h-0 grid-cols-[80%] grid-rows-[auto_1fr] justify-center
+      grid min-h-0 grid-cols-[95%] grid-rows-[auto_1fr] justify-center
     "
   >
     <TabsList class="w-80 justify-self-center">
