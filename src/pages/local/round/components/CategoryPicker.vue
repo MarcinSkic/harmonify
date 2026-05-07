@@ -135,10 +135,18 @@ function handleClick(categoryId: string, count: number) {
         >
           <CardContent
             class="
-              flex flex-col items-center gap-3 p-4 text-center
+              relative flex flex-col items-center gap-3 p-4 text-center
               lg:p-6
             "
           >
+            <Badge
+              v-if="category.points !== undefined" variant="secondary" class="
+                absolute top-3 right-3 px-3 py-1 text-xl
+                lg:px-3 lg:py-1 lg:text-2xl
+              "
+            >
+              <PointsDisplay :points="category.points" icon-class="size-5 lg:size-6" />
+            </Badge>
             <CategoryProgressRing :current="count" :initial="initialCount" />
             <span
               class="
@@ -155,14 +163,6 @@ function handleClick(categoryId: string, count: number) {
             >
               {{ (category as { description?: string }).description }}
             </span>
-            <Badge
-              v-if="category.points !== undefined" variant="secondary" class="
-                px-3 py-1 text-xl
-                lg:px-3 lg:py-1 lg:text-2xl
-              "
-            >
-              <PointsDisplay :points="category.points" icon-class="size-5 lg:size-6" />
-            </Badge>
           </CardContent>
         </Card>
       </div>
