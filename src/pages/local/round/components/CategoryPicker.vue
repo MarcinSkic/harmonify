@@ -80,6 +80,7 @@ function handleClick(categoryId: string, count: number) {
         @toggle-disabled="(id: string) => emit('toggleTeamDisabled', id)"
       />
       <AddTeamInline @add="emit('addTeam', $event)" />
+      <CheatInput />
     </div>
 
     <h2
@@ -166,7 +167,5 @@ function handleClick(categoryId: string, count: number) {
         </Card>
       </div>
     </ScrollArea>
-
-    <CheatInput />
   </div>
 </template>
