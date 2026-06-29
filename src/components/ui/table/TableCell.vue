@@ -13,7 +13,7 @@ const props = defineProps<{
       cn(
         `
           p-4 align-middle
-          [&:has([role=checkbox])]:pr-0
+          has-[[role=checkbox]]:pr-0
         `,
         props.class,
       )

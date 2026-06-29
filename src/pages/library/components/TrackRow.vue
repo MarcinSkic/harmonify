@@ -35,8 +35,8 @@ const hasAnyImage = computed(() => !!(props.track.albumImageUrl || previewImageU
                 :src="previewImageUrl"
                 :alt="track.name"
                 class="
-                  absolute inset-0 size-10 translate-x-[15%] translate-y-[15%]
-                  rounded-sm object-cover object-bottom-right
+                  absolute inset-0 size-10 translate-[15%] rounded-sm
+                  object-cover object-bottom-right
                 "
               >
               <img
