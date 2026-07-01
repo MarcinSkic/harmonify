@@ -11,6 +11,8 @@ import CategoryPicker from './components/CategoryPicker.vue'
 import LocalLeaderboard from './components/LocalLeaderboard.vue'
 import LocalPlaybackControls from './components/LocalPlaybackControls.vue'
 import ScoringForm from './components/ScoringForm.vue'
+import TakeOverButton from './components/TakeOverButton.vue'
+import TakeOverModal from './components/TakeOverModal.vue'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
@@ -22,6 +24,7 @@ const track = computed(() => localGameStore.currentTrack)
 
 const hasStartedPlaying = ref(false)
 const randomStartMs = ref(0)
+const takeOverOpen = ref(false)
 
 const useRandomStart = computed(() => {
   const s = game.value?.settings
@@ -92,6 +95,11 @@ async function handleShowAnswer() {
   await localGameStore.showAnswer()
 }
 
+async function handleTakeOverShowAnswer() {
+  takeOverOpen.value = false
+  await handleShowAnswer()
+}
+
 async function handlePickCategory(categoryId: string) {
   await localGameStore.pickCategory(categoryId)
 }
@@ -131,7 +139,7 @@ async function handleContinueFromLeaderboard() {
 <template>
   <div
     v-if="game"
-    class="h-full"
+    class="relative h-full"
     :class="game.roundPhase === 'playing' ? 'grid grid-rows-[1fr_15vh]' : `
       grid grid-rows-[1fr]
     `"
@@ -220,5 +228,16 @@ async function handleContinueFromLeaderboard() {
       </template>
     </div>
     <AudioVisualizer v-if="game.roundPhase === 'playing'" />
+
+    <TakeOverButton
+      v-if="game.roundPhase === 'playing'"
+      @click="takeOverOpen = true"
+    />
+    <TakeOverModal
+      v-model:open="takeOverOpen"
+      :teams="game.teams"
+      :current-team-id="game.currentTeamId"
+      @show-answer="handleTakeOverShowAnswer"
+    />
   </div>
 </template>
