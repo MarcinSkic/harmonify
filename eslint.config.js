@@ -11,10 +11,15 @@ export default antfu({
       entryPoint: 'src/assets/tailwind.css',
     },
   },
+  rules: {
+    'vue/first-attribute-linebreak': 'off',
+  },
 }, {
   ...tailwind.configs['recommended-error'],
   rules: {
     ...tailwind.configs['recommended-error'].rules,
     'better-tailwindcss/no-unknown-classes': 'off',
+    // repo enforces LF via .gitattributes (eol=lf), so this is safe on Windows and Linux alike
+    'better-tailwindcss/enforce-consistent-line-wrapping': ['error', { lineBreakStyle: 'unix' }],
   },
 })

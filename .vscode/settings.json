@@ -1,4 +1,7 @@
 {
+  // Force LF regardless of OS — repo's .gitattributes enforces eol=lf
+  "files.eol": "\n",
+
   // Enable the ESlint flat config support
   "eslint.useFlatConfig": true,
 
