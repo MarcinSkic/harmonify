@@ -51,22 +51,24 @@ async function handleQuitAndFinish() {
 </script>
 
 <template>
-  <div
-    class="
-      grid h-screen min-h-screen grid-rows-[minmax(0,auto)_minmax(0,1fr)]
-      place-content-stretch
-    "
+  <div class="
+    grid h-screen min-h-screen grid-rows-[minmax(0,auto)_minmax(0,1fr)]
+    place-content-stretch
+  "
   >
-    <div
-      class="z-20 grid grid-cols-[minmax(auto,1200px)] justify-center border-b"
+    <div class="
+      z-20 grid grid-cols-[minmax(auto,1200px)] justify-center border-b
+    "
     >
       <div class="flex items-center justify-start p-1">
-        <span
-          v-if="localGameStore.game?.status === 'playing'" class="
-            mr-auto px-2 text-sm font-medium
-          "
-        >
-          Round {{ localGameStore.game.currentRound }}
+        <span v-if="localGameStore.game?.status === 'playing'" class="
+          mr-auto flex gap-3 px-2 text-sm font-medium
+        "
+        ><span>
+           Round {{ localGameStore.game.currentRound }}
+         </span>
+          <span>|</span>
+          <span>{{ localGameStore.currentTeam?.name }}'s turn</span>
         </span>
         <span v-else class="mr-auto px-2 text-sm font-medium">
           Local Game
@@ -87,11 +89,10 @@ async function handleQuitAndFinish() {
         <DialogTitle>Wyjdź z gry</DialogTitle>
         <DialogDescription>Co chcesz zrobić z tą grą?</DialogDescription>
       </DialogHeader>
-      <DialogFooter
-        class="
-          flex-col gap-2
-          sm:flex-col
-        "
+      <DialogFooter class="
+        flex-col gap-2
+        sm:flex-col
+      "
       >
         <Button class="w-full" @click="handleFinishEarly">
           Zakończ wcześniej
