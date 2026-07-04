@@ -132,7 +132,6 @@ function handleNextRound() {
             <NumberField
               v-model:model-value="scores[team.id]"
               class="flex items-stretch gap-0"
-              :min="0"
             >
               <NumberFieldContent>
                 <NumberFieldDecrement />

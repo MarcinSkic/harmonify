@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { Shuffle } from '@lucide/vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils.ts'
 import BaseDisplay from '@/pages/game/components/trackDisplay/BaseDisplay.vue'
 import AudioVisualizer from '@/pages/game/round/components/AudioVisualizer.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
@@ -11,7 +13,7 @@ import CategoryPicker from './components/CategoryPicker.vue'
 import LocalLeaderboard from './components/LocalLeaderboard.vue'
 import LocalPlaybackControls from './components/LocalPlaybackControls.vue'
 import ScoringForm from './components/ScoringForm.vue'
-import TakeOverButton from './components/TakeOverButton.vue'
+import ShowPlayingIdButton from './components/ShowPlayingIdButton.vue'
 import TakeOverModal from './components/TakeOverModal.vue'
 
 const router = useRouter()
@@ -139,10 +141,9 @@ async function handleContinueFromLeaderboard() {
 <template>
   <div
     v-if="game"
-    class="relative h-full"
-    :class="game.roundPhase === 'playing' ? 'grid grid-rows-[1fr_15vh]' : `
-      grid grid-rows-[1fr]
-    `"
+    :class="cn(`relative h-full`, game.roundPhase === 'playing' ? `
+      grid grid-rows-[1fr_15vh]
+    ` : `grid grid-rows-[1fr]`)"
   >
     <!-- Picking category phase — fills row height so CategoryPicker can scroll internally -->
     <div
@@ -177,6 +178,7 @@ async function handleContinueFromLeaderboard() {
       <template v-if="game.roundPhase === 'playing' && track">
         <LocalPlaybackControls
           v-if="musicPlayData"
+          class="-mr-14"
           :track-duration="effectiveDuration"
           :music-play-data="musicPlayData"
           @started="hasStartedPlaying = true"
@@ -198,9 +200,15 @@ async function handleContinueFromLeaderboard() {
           />
         </div>
 
-        <Button type="button" size="lg" class="mt-4" :disabled="!!musicPlayData && !hasStartedPlaying" @click="handleShowAnswer">
-          Show answer
-        </Button>
+        <div class="mt-4 flex items-center gap-4">
+          <Button type="button" size="lg" :disabled="!!musicPlayData && !hasStartedPlaying" @click="handleShowAnswer">
+            Show answer
+          </Button>
+          <Button type="button" size="lg" :disabled="!!musicPlayData && !hasStartedPlaying" @click="takeOverOpen = true">
+            <Shuffle class="size-4" />
+            Take over
+          </Button>
+        </div>
       </template>
 
       <!-- Scoring phase -->
@@ -229,10 +237,7 @@ async function handleContinueFromLeaderboard() {
     </div>
     <AudioVisualizer v-if="game.roundPhase === 'playing'" />
 
-    <TakeOverButton
-      v-if="game.roundPhase === 'playing'"
-      @click="takeOverOpen = true"
-    />
+    <ShowPlayingIdButton v-if="game.roundPhase === 'playing'" :track-source-id="localGameStore.currentTrack?.sourceId" />
     <TakeOverModal
       v-model:open="takeOverOpen"
       :teams="game.teams"
