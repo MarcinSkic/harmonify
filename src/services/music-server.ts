@@ -62,3 +62,7 @@ export function getPlaylistCoverUrl(playlistName: string): string {
 export function isConfigured(): boolean {
   return baseUrl !== '' && user !== '' && password !== ''
 }
+
+export function getBaseUrl(): string {
+  return baseUrl
+}

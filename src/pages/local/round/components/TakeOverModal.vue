@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
-  'showAnswer': []
+  'showAnswer': [winnerTeamId?: string]
 }>()
 
 const wheelRef = useTemplateRef<InstanceType<typeof TeamWheel>>('wheelRef')
@@ -33,7 +33,9 @@ const participants = computed(() =>
 )
 
 const canSpin = computed(() => participants.value.length >= 2 && !isSpinning.value)
-const winnerName = computed(() => props.teams.find(t => t.id === winnerId.value)?.name)
+// With no spin needed (only one candidate), that lone candidate is the takeover team.
+const resolvedWinnerId = computed(() => winnerId.value ?? (participants.value.length === 1 ? participants.value[0].id : null))
+const winnerName = computed(() => props.teams.find(t => t.id === resolvedWinnerId.value)?.name)
 
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
@@ -177,7 +179,7 @@ function onSpinEnd(id: string) {
           variant="secondary"
           size="lg"
           :disabled="isSpinning"
-          @click="emit('showAnswer')"
+          @click="emit('showAnswer', resolvedWinnerId ?? undefined)"
         >
           Show answer
         </Button>

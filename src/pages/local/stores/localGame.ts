@@ -497,6 +497,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     }
 
     game.value.currentTeamId = getNextEnabledTeamId(game.value.currentTeamId)
+    game.value.takeoverTeamId = undefined
 
     await startRound()
   }
@@ -508,6 +509,13 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!team || team.disabled)
       return
     game.value.currentTeamId = teamId
+    await _persist()
+  }
+
+  async function setTakeoverTeam(teamId: string) {
+    if (!game.value)
+      return
+    game.value.takeoverTeamId = teamId
     await _persist()
   }
 
@@ -634,6 +642,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     showLeaderboard,
     nextRound,
     setCurrentTeam,
+    setTakeoverTeam,
     toggleTeamDisabled,
     addTeam,
     finishGame,

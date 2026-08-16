@@ -13,6 +13,7 @@ const props = defineProps<{
   track: Track
   teams: LocalGameTeam[]
   currentTeamId: string | undefined
+  takeoverTeamId?: string
   category?: { displayName: string, points?: number }
   trackCategories?: { displayName: string }[]
   settings: LocalGameSettings
@@ -25,6 +26,8 @@ const categoryPoints = computed(() => props.category?.points)
 const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.round(categoryPoints.value / 2) : undefined)
 const fullPlusBonusPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
 const halfPlusBonusPoints = computed(() => halfPoints.value !== undefined ? halfPoints.value + props.settings.partialPoints : undefined)
+
+const highlightedTeamId = computed(() => props.takeoverTeamId ?? props.currentTeamId)
 
 const standardPoints = computed(() => props.settings.gameMode === 'random' ? props.settings.standardPoints : undefined)
 const standardFullPlusBonusPoints = computed(() => standardPoints.value !== undefined ? standardPoints.value + props.settings.partialPoints : undefined)
@@ -124,7 +127,7 @@ function handleNextRound() {
             v-for="team in teams" :key="team.id"
             class="flex flex-col items-center gap-2 rounded-md p-2 transition"
             :class="[
-              team.id === currentTeamId ? 'ring-2 ring-primary' : '',
+              team.id === highlightedTeamId ? 'ring-2 ring-primary' : '',
               team.disabled ? 'opacity-50' : '',
             ]"
           >

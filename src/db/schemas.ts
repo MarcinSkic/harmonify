@@ -208,6 +208,7 @@ export const localGameSchema = z.object({
   currentTrackId: z.string().optional(),
   currentCategory: z.string().optional(),
   currentTeamId: z.string().optional(),
+  takeoverTeamId: z.string().optional(),
   roundPhase: localGameRoundPhaseSchema,
   rounds: z.array(roundResultSchema).default([]),
   categoryLimitUsedByTeams: z.record(z.string(), z.array(z.string())).optional(),

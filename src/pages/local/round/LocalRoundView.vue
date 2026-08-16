@@ -97,8 +97,10 @@ async function handleShowAnswer() {
   await localGameStore.showAnswer()
 }
 
-async function handleTakeOverShowAnswer() {
+async function handleTakeOverShowAnswer(winnerTeamId?: string) {
   takeOverOpen.value = false
+  if (winnerTeamId)
+    await localGameStore.setTakeoverTeam(winnerTeamId)
   await handleShowAnswer()
 }
 
@@ -217,6 +219,7 @@ async function handleContinueFromLeaderboard() {
           :track="track"
           :teams="game.teams"
           :current-team-id="game.currentTeamId"
+          :takeover-team-id="game.takeoverTeamId"
           :category="localGameStore.currentCategoryInfo"
           :track-categories="localGameStore.currentTrackMatchingCategories"
           :settings="game.settings"

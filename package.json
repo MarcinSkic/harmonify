@@ -5,8 +5,8 @@
   "private": true,
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "dev": "vite --port 37450",
-    "dev:api": "vercel -A vercel.local.json dev --listen 37450",
+    "dev": "vite --port 37449",
+    "dev:api": "vercel -A vercel.local.json dev --listen 37449",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest",
