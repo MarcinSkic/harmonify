@@ -1,7 +1,8 @@
 import type { RouteLocationNormalized } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import { toast } from 'vue-sonner'
 import { db } from '@/db'
-import { useConnectionStore, useGameDataStore } from '@/stores'
+import { useConnectionStore, useGameDataStore, useNavidromeStore } from '@/stores'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,6 +89,12 @@ const router = createRouter({
       component: () => import('@/pages/library/categories/CategorySetsView.vue'),
     },
     {
+      path: '/navidrome',
+      name: 'navidrome',
+      component: () => import('@/pages/navidrome/NavidromeLibraryView.vue'),
+      beforeEnter: beforeNavidromeEnter,
+    },
+    {
       path: '/cover',
       name: 'cover',
       component: () => import(`@/pages/cover/CoverCreatorView.vue`),
@@ -131,6 +138,23 @@ async function beforeGameEnter(to: RouteLocationNormalized) {
   catch (e) {
     return { name: 'home' }
   }
+}
+
+async function beforeNavidromeEnter() {
+  const navidromeStore = useNavidromeStore()
+
+  if (navidromeStore.isConnected)
+    return
+
+  // On a page reload the guard runs before the application-wide session check, so it waits for it
+  // instead of bouncing a perfectly valid session back to home.
+  if (navidromeStore.session && await navidromeStore.verifySession() === 'connected')
+    return
+
+  toast.error('Connect to Navidrome to browse its library')
+  navidromeStore.openConnectDialog()
+
+  return { name: 'home' }
 }
 
 async function beforeLocalGameEnter(to: RouteLocationNormalized) {

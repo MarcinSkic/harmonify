@@ -20,6 +20,13 @@ Web app for playing the "Name that tune" game with playlists and albums from use
 - Support for keyboard only gameplay
 - Points calculated based on how fast player guessed (partial points for guessing only album or artist)
 
+## Navidrome
+
+Harmonify can connect to your own [Navidrome](https://www.navidrome.org/) server and play from your
+local music library. See [docs/navidrome-setup.md](./docs/navidrome-setup.md) for the
+required `Tags.*` configuration, CORS troubleshooting and a note on what is stored in the browser
+(never the password).
+
 ## Showcase
 
 ![Selecting playlists and albums window](/public/showcase/setup.png)

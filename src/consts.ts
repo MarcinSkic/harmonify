@@ -7,6 +7,7 @@ export const LOCAL_STORAGE = {
   HIDE_SCORES: 'hide_scores',
   DEFAULT_SAVE_GAME: 'default_save_game',
   SAVED_COVERS: 'saved_covers',
+  NAVIDROME_SESSION: 'navidrome_session',
 } as const
 
 export const DEFAULT_COVER = {

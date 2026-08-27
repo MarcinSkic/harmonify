@@ -90,7 +90,7 @@ api/
 
 Check these files for deeper context when working in related areas:
 
-| File                                                                             | When to check                                                                                    |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [.claude/docs/architectural_patterns.md](.claude/docs/architectural_patterns.md) | Modifying stores, services, WebSocket handling, auth flow, UI components, or adding new features |
-| [.claude/docs/code_review.md](.claude/docs/code_review.md) | Reviewing code: lint/type-check commands, size calibration, extraction targets, error-handling and naming conventions, review exclusions |
+| File                                                                             | When to check                                                                                                                            |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| [.claude/docs/architectural_patterns.md](.claude/docs/architectural_patterns.md) | Modifying stores, services, WebSocket handling, auth flow, UI components, or adding new features                                         |
+| [.claude/docs/code_review.md](.claude/docs/code_review.md)                       | Reviewing code: lint/type-check commands, size calibration, extraction targets, error-handling and naming conventions, review exclusions |

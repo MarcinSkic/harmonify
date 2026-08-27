@@ -48,6 +48,7 @@ Services are modules of stateless functions, re-exported as namespaces from `src
 
 - Pattern in the barrel: `export * as LibraryService from './library'`.
 - **Accepted exception:** `export * as` does not re-export *types*, so a type-only deep import is allowed — `import type { ServerPlaylist } from '@/services/music-server'` in `src/stores/serverLibrary.ts`. Value imports must still go through the barrel.
+- **Accepted exception:** `NavidromeService` is **not** stateless — `src/services/navidrome/client.ts` owns the persisted session ref (`getSession` / `setSession` / `clearSession`, `useStorage` on `LOCAL_STORAGE.NAVIDROME_SESSION`) and rewrites the JWT from the `x-nd-authorization` header on every native response. The store (`src/stores/navidrome.ts`) reads it through `computed(() => NavidromeService.getSession())` instead of holding its own copy, for two reasons that are visible in the code: putting the ref in the store would close an import cycle (`stores/navidrome` → `@/services` → `navidrome/client` → `@/stores`), and components call the service directly (`getCoverArtUrl`, `getStreamUrl`, `getSongTags`), so the service has to see the refreshed token without going through Pinia.
 
 ## Pinia Store Organization
 
