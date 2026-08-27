@@ -9,8 +9,8 @@ Harmonify is a multiplayer "Name that tune" game. Players join a room, listen to
 Vue 3 (Composition API, `<script setup>`) + TypeScript + Pinia + Vue Router + TailwindCSS + Zod
 UI: shadcn-vue (built on reka-ui) + class-variance-authority + @lucide/vue
 Build: Vite + Vercel (hosting + serverless functions)
-Testing: Vitest (unit) + Cypress (e2e)
-Linting: @antfu/eslint-config + eslint-plugin-tailwindcss
+Testing: Vitest (unit) + Playwright (e2e, run in Docker)
+Linting: @antfu/eslint-config + eslint-plugin-better-tailwindcss
 
 ## Commands
 
@@ -25,8 +25,8 @@ pnpm test:unit          # Unit tests (Vitest, watch mode)
 pnpm vitest run         # Unit tests (single run)
 pnpm vitest src/lib/__tests__/track.spec.ts  # Single test file
 
-pnpm test:e2e:dev       # E2E tests against dev server
-pnpm cypress run --spec "cypress/e2e/[file].cy.ts"  # Single e2e test
+pnpm test:e2e           # E2E tests (Playwright in Docker — docker-compose.e2e.yml)
+pnpm exec playwright test e2e/[file].spec.ts  # Single e2e spec
 ```
 
 ## Architecture — Vertical Slices
@@ -39,28 +39,33 @@ The codebase is organized by **vertical slices** under `src/pages/`. Each slice 
 
 ```
 src/
-├── types/                # Shared Zod schemas + TS types, split by domain (spotify, game, message)
+├── types/                # Shared Zod wire schemas + inferred types (spotify, game, message)
+├── db/                   # Dexie/IndexedDB: db instance + migrations (index.ts), persisted schemas (schemas.ts)
 ├── consts.ts             # LocalStorage keys, animation durations, responsive breakpoints
-├── stores/               # Shared Pinia stores (connection, gameData, result, library)
-├── services/             # Shared services (spotify, library)
-├── lib/                  # Shared utilities (spotify fetch wrapper, track utils, cn())
-├── composables/          # Shared composables
-├── router/index.ts       # Routes + beforeGameEnter guard
-├── components/ui/        # shadcn-vue primitives (button, dialog, toast, etc.)
+├── stores/               # Shared Pinia stores (connection, gameData, result, settings, library,
+│                         #   categories, categorySets, serverLibrary, spotifyLibrary)
+├── services/             # Shared services (library, library-import, link-preview, music-server, spotify)
+├── lib/                  # Shared utilities (spotify fetch wrapper, csv, track utils, cn())
+├── composables/          # Shared composables (useLiveQuery, useLinkPreview, library loaders)
+├── router/index.ts       # Routes + beforeGameEnter / beforeLocalGameEnter guards
+├── components/           # Shared components; components/ui = shadcn-vue primitives (generated)
 ├── pages/
-│   ├── game/             # Game slice
-│   │   ├── components/   # Game-only components (player, trackDisplay, guessLevelIcon, playerResult)
-│   │   ├── stores/       # Game-only stores (musicPlayer, settings, spotifyLibrary)
+│   ├── game/             # Multiplayer game slice
+│   │   ├── components/   # Game-only components (player, trackDisplay, playerResult)
+│   │   ├── stores/       # Game-only stores (musicPlayer)
 │   │   ├── types.ts      # Game-only types (SpotifyPlayedTrack, MusicPlayer)
 │   │   ├── setup/        # Game setup view
 │   │   ├── round/        # In-game round view
 │   │   ├── roundResult/  # Round result view
 │   │   ├── result/       # Final result view
-│   │   └── layout/       # Game layout wrapper
+│   │   └── layout/       # Game layout wrapper + MusicPlayer implementations
+│   ├── local/            # Single-device game slice (engine/ = pure round logic, stores/localGame)
+│   ├── results/          # Saved game results slice
 │   ├── cover/            # Cover Creator slice (own stores, types, components)
 │   ├── home/             # Home slice
 │   ├── library/          # Library slice
 │   └── disclaimer/       # Disclaimer slice
+e2e/                      # Playwright specs
 api/
 └── token/                # Vercel serverless functions for Spotify OAuth
 ```
@@ -88,3 +93,4 @@ Check these files for deeper context when working in related areas:
 | File                                                                             | When to check                                                                                    |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [.claude/docs/architectural_patterns.md](.claude/docs/architectural_patterns.md) | Modifying stores, services, WebSocket handling, auth flow, UI components, or adding new features |
+| [.claude/docs/code_review.md](.claude/docs/code_review.md) | Reviewing code: lint/type-check commands, size calibration, extraction targets, error-handling and naming conventions, review exclusions |
