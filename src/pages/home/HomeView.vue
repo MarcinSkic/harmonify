@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LocalGame } from '@/db/schemas'
-import { BookOpen, History, Library, Monitor, Play, Settings } from '@lucide/vue'
+import { BookOpen, History, Library, Monitor, Play, Server, Settings } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SettingsSheet from '@/components/SettingsSheet.vue'
@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import GameListItem from '@/pages/local/components/GameListItem.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
+import NavidromeStatusBadge from '@/pages/navidrome/components/NavidromeStatusBadge.vue'
 import { useLibraryStore } from '@/stores'
 import CreateRoom from './components/CreateRoom.vue'
 import JoinRoom from './components/JoinRoom.vue'
@@ -44,6 +45,8 @@ async function deleteGame(game: LocalGame) {
 
 <template>
   <div class="flex h-screen flex-col items-center justify-center gap-6 p-6">
+    <NavidromeStatusBadge class="fixed top-4 right-4 z-10" />
+
     <header>
       <h1
         class="
@@ -60,7 +63,7 @@ async function deleteGame(game: LocalGame) {
     <!-- tiles row + absolutely-positioned submenu -->
     <div class="relative w-full max-w-4xl">
       <!-- 4 main tiles -->
-      <div class="mx-auto grid max-w-3xl grid-cols-4 gap-4">
+      <div class="mx-auto grid max-w-3xl grid-cols-5 gap-4">
         <RouterLink
           to="/library"
           class="
@@ -111,6 +114,18 @@ async function deleteGame(game: LocalGame) {
             <span class="text-xl font-semibold">Settings</span>
           </button>
         </SettingsSheet>
+
+        <RouterLink
+          to="/navidrome"
+          class="
+            flex flex-col items-center gap-3 rounded-xl border bg-card p-8
+            shadow-sm transition-colors
+            hover:bg-accent hover:text-accent-foreground
+          "
+        >
+          <Server class="size-10" />
+          <span class="text-xl font-semibold">Navidrome</span>
+        </RouterLink>
 
         <RouterLink
           to="/results"
