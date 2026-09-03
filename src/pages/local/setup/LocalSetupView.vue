@@ -122,7 +122,7 @@ async function handleGameStart() {
       grid h-[85vh] max-h-[85vh] w-[90vw] grid-rows-[1fr_auto] place-self-center
       lg:h-[80vh] lg:max-h-[80vh] lg:w-auto
       lg:grid-cols-[minmax(200px,400px)_minmax(200px,400px)_minmax(200px,300px)]
-      lg:grid-rows-[1fr_50px] lg:gap-5
+      lg:grid-rows-[minmax(0,1fr)_50px] lg:gap-5
     "
     @submit.prevent="handleGameStart"
   >
@@ -152,9 +152,15 @@ async function handleGameStart() {
       </TabsContent>
     </Tabs>
     <template v-else>
-      <NavidromeGameSourcePicker v-model:selected="selectedSources" />
-      <TeamManager v-model="teams" />
-      <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" />
+      <NavidromeGameSourcePicker v-model:selected="selectedSources" class="
+        min-h-0
+      "
+      />
+      <TeamManager v-model="teams" class="min-h-0" />
+      <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" class="
+        min-h-0
+      "
+      />
     </template>
     <Button
       class="

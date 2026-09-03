@@ -55,6 +55,38 @@ RootLayout:         h-screen
 
 ---
 
+## Wzorzec 3: rodzic to CSS Grid (nie flex), np. wielokolumnowy formularz
+
+CSS Grid ma dokładnie ten sam domyślny `min-height: auto`/`min-width: auto` na elementach siatki co
+flexbox na elementach flex — **`1fr` w `grid-template-rows`/`grid-template-columns` nie jest z tego
+zwolnione.** Wiersz/kolumna `1fr` i tak nie skurczy się poniżej min-content zawartości elementu
+siatki, więc kolumna z długą listą (np. siatka albumów) i tak urośnie do wysokości treści, mimo
+`align-items: stretch` (domyślne) i mimo poprawnego `min-h-0 flex-1` na `ScrollArea` w środku.
+
+Dwa miejsca do poprawienia naraz:
+
+1. **Ślad `minmax(0, …)` w definicji toru siatki** zamiast gołego `1fr`:
+   `grid-rows-[minmax(0,1fr)_50px]` zamiast `grid-rows-[1fr_50px]` (analogicznie dla
+   `grid-template-columns`).
+2. **`min-h-0` wprost na elemencie siatki** (bezpośrednim dziecku grida) — jeśli to komponent
+   Vue z jednym korzeniem, wystarczy przekazać `class="min-h-0"` na tagu komponentu, Vue scali ją
+   z klasami korzenia.
+
+```vue
+<!-- form: class="grid ... grid-rows-[minmax(0,1fr)_50px]" -->
+
+<SomePanel class="min-h-0" />  <!-- korzeń SomePanel: h-full flex flex-col -->
+```
+
+Pominięcie punktu 2 (sam `minmax(0, …)` na torze) czasem nie wystarcza — element siatki wnosi
+własny automatyczny rozmiar minimalny do algorytmu sizingu toru niezależnie od definicji toru, więc
+oba kroki są potrzebne razem, tak jak `min-h-0` na przodku ORAZ na `ScrollArea` we wzorcu 2.
+
+**Przykład w projekcie:** `src/pages/local/setup/LocalSetupView.vue` (`lg:` desktopowy layout —
+3 kolumny grida, jedna z nich to siatka albumów/playlist wewnątrz `NavidromeGameSourcePicker.vue`).
+
+---
+
 ## Kiedy nie używać ScrollArea
 
 Gdy ScrollArea jest zbyt głęboko zagnieżdżone i łańcuch wysokości trudno przeprowadzić — użyj natywnego `overflow-y-auto` z `max-h-[Xvh]`. To pragmatyczne rozwiązanie dla rzadko używanych UI.
