@@ -11,17 +11,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import GameListItem from '@/pages/local/components/GameListItem.vue'
 import { useLocalGameStore } from '@/pages/local/stores'
 import NavidromeStatusBadge from '@/pages/navidrome/components/NavidromeStatusBadge.vue'
-import { useLibraryStore } from '@/stores'
 import CreateRoom from './components/CreateRoom.vue'
 import JoinRoom from './components/JoinRoom.vue'
 
 const router = useRouter()
 const localGameStore = useLocalGameStore()
-const libraryStore = useLibraryStore()
 
 const savedGames = ref<LocalGame[]>([])
 const showPlayMenu = ref(false)
@@ -76,31 +73,18 @@ async function deleteGame(game: LocalGame) {
           <span class="text-xl font-semibold">Library</span>
         </RouterLink>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <span class="contents">
-                <button
-                  class="
-                    flex w-full flex-col items-center gap-3 rounded-xl border
-                    bg-card p-8 shadow-sm transition-colors
-                    hover:bg-accent hover:text-accent-foreground
-                    disabled:pointer-events-none disabled:opacity-50
-                  "
-                  :class="{ 'bg-accent text-accent-foreground': showPlayMenu }"
-                  :disabled="libraryStore.enabledTracks.length === 0"
-                  @click="showPlayMenu = !showPlayMenu"
-                >
-                  <Play class="size-10" />
-                  <span class="text-xl font-semibold">Play</span>
-                </button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent v-if="libraryStore.enabledTracks.length === 0">
-              Add tracks to the library first
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <button
+          class="
+            flex w-full flex-col items-center gap-3 rounded-xl border bg-card
+            p-8 shadow-sm transition-colors
+            hover:bg-accent hover:text-accent-foreground
+          "
+          :class="{ 'bg-accent text-accent-foreground': showPlayMenu }"
+          @click="showPlayMenu = !showPlayMenu"
+        >
+          <Play class="size-10" />
+          <span class="text-xl font-semibold">Play</span>
+        </button>
 
         <SettingsSheet as-child>
           <button
