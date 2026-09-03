@@ -2,25 +2,45 @@
 import type { NavidromeCoverTile } from '../types'
 import { ChevronLeft, ChevronRight, ImageOff } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NavidromeService } from '@/services'
 
-defineProps<{
+const props = defineProps<{
   tiles: NavidromeCoverTile[]
   isLoading: boolean
   emptyMessage: string
   page: number
   hasNextPage: boolean
+  /** When set, clicking a tile toggles it in `selectedIds` instead of emitting `select`. */
+  selectable?: boolean
+  selectedIds?: string[]
 }>()
 
-defineEmits<{
-  select: [id: string]
-  previous: []
-  next: []
+const emit = defineEmits<{
+  'select': [id: string]
+  'previous': []
+  'next': []
+  'update:selectedIds': [ids: string[]]
 }>()
 
 function coverUrl(coverArt: string): string {
   return NavidromeService.getCoverArtUrl(coverArt, 300)
+}
+
+function isSelected(id: string): boolean {
+  return props.selectedIds?.includes(id) ?? false
+}
+
+function handleTileClick(id: string) {
+  if (!props.selectable) {
+    emit('select', id)
+    return
+  }
+
+  const current = props.selectedIds ?? []
+  const next = isSelected(id) ? current.filter(i => i !== id) : [...current, id]
+  emit('update:selectedIds', next)
 }
 </script>
 
@@ -51,12 +71,12 @@ function coverUrl(coverArt: string): string {
             transition-colors
             hover:bg-accent hover:text-accent-foreground
           "
-          @click="$emit('select', tile.id)"
+          @click="handleTileClick(tile.id)"
         >
           <div
             class="
-              flex aspect-square items-center justify-center overflow-hidden
-              rounded-md bg-muted
+              relative flex aspect-square items-center justify-center
+              overflow-hidden rounded-md bg-muted
             "
           >
             <img
@@ -67,6 +87,13 @@ function coverUrl(coverArt: string): string {
               loading="lazy"
             >
             <ImageOff v-else class="size-8 text-muted-foreground" />
+            <Checkbox
+              v-if="selectable"
+              :model-value="isSelected(tile.id)"
+              class="
+                pointer-events-none absolute top-1.5 right-1.5 bg-background
+              "
+            />
           </div>
           <div class="min-w-0">
             <p class="truncate text-sm font-medium">

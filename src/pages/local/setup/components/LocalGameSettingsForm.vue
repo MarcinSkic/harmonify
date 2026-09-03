@@ -116,26 +116,8 @@ function toggleUnlimitedRounds() {
         </div>
       </NumberField>
 
-      <Label class="text-base">Game mode</Label>
-      <div class="mb-2 flex w-full gap-2">
-        <Button
-          type="button"
-          class="flex-1"
-          :variant="settings.gameMode === 'random' ? 'default' : 'outline'"
-          @click="settings.gameMode = 'random'"
-        >
-          Random
-        </Button>
-        <Button
-          type="button"
-          class="flex-1"
-          :variant="settings.gameMode === 'category' ? 'default' : 'outline'"
-          @click="settings.gameMode = 'category'"
-        >
-          Categories
-        </Button>
-      </div>
-
+      <!-- Category mode is Navidrome-tag-based work for Phase 2 — the mode switch returns then;
+           until it does, the form always operates in `gameMode: 'random'`. -->
       <template v-if="settings.gameMode === 'random'">
         <Label for="standardPoints" class="text-base">Standard points</Label>
         <NumberField

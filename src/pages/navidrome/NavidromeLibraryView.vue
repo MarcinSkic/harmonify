@@ -12,6 +12,8 @@ import { NavidromeService } from '@/services'
 import { useNavidromeStore } from '@/stores'
 import NavidromeAlbumGrid from './components/NavidromeAlbumGrid.vue'
 import NavidromeAudioPreview from './components/NavidromeAudioPreview.vue'
+import NavidromeOverlayCsvExportButton from './components/NavidromeOverlayCsvExportButton.vue'
+import NavidromeOverlayCsvImportButton from './components/NavidromeOverlayCsvImportButton.vue'
 import NavidromePlaylistGrid from './components/NavidromePlaylistGrid.vue'
 import NavidromeTrackTable from './components/NavidromeTrackTable.vue'
 import NavidromeTrackTags from './components/NavidromeTrackTags.vue'
@@ -158,14 +160,20 @@ function showTags(song: SubsonicSong) {
       </ScrollArea>
 
       <Tabs v-else v-model="tab" class="flex min-h-0 flex-1 flex-col">
-        <TabsList class="mx-4 mt-3 grid w-auto max-w-md grid-cols-2">
-          <TabsTrigger value="albums">
-            Albums
-          </TabsTrigger>
-          <TabsTrigger value="playlists">
-            Playlists
-          </TabsTrigger>
-        </TabsList>
+        <div class="mx-4 mt-3 flex flex-wrap items-center justify-between gap-2">
+          <TabsList class="grid w-auto max-w-md grid-cols-2">
+            <TabsTrigger value="albums">
+              Albums
+            </TabsTrigger>
+            <TabsTrigger value="playlists">
+              Playlists
+            </TabsTrigger>
+          </TabsList>
+          <div class="flex gap-2">
+            <NavidromeOverlayCsvImportButton />
+            <NavidromeOverlayCsvExportButton />
+          </div>
+        </div>
         <TabsContent value="albums" class="flex min-h-0 flex-1 flex-col">
           <ScrollArea class="min-h-0 flex-1">
             <NavidromeAlbumGrid

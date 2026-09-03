@@ -1,5 +1,6 @@
 import type { Category, CategoryLimit, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
 import type { EngineCategory } from '@/pages/local/engine/categoryPool'
+import type { NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -11,7 +12,9 @@ import {
   isCategoryPoolExhausted,
   pickFromCategory,
 } from '@/pages/local/engine/categoryPool'
+import { toDisplayTrack } from '@/pages/local/engine/navidromeTrack'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
+import { NavidromeGameSourceService } from '@/services'
 import { useCategoriesStore } from '@/stores'
 
 export interface AmbiguousResult { type: 'ambiguous', candidates: string[] }
@@ -188,6 +191,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
   }
 
   async function _loadTrack(trackId: string) {
+    const g = game.value
+    if (g?.source === 'navidrome') {
+      const t = g.navidromeTracks?.[trackId]
+      currentTrack.value = t ? toDisplayTrack(t) : null
+      return
+    }
     currentTrack.value = await db.tracks.get(trackId) ?? null
   }
 
@@ -255,6 +264,46 @@ export const useLocalGameStore = defineStore('localGame', () => {
       roundPhase: 'playing',
       rounds: [],
       ephemeralCategories,
+    }
+
+    await _persist()
+    return id
+  }
+
+  async function createNavidromeGame(
+    teams: { name: string }[],
+    settings: LocalGameSettings,
+    sources: NavidromeGameSourceRef[],
+  ): Promise<string> {
+    const pool = await NavidromeGameSourceService.materializePool(sources)
+    const navidromeTracks = Object.fromEntries(pool.map(t => [t.id, t]))
+    const trackPoolState = createPool(pool.map(t => t.id))
+
+    const id = crypto.randomUUID()
+
+    const createdTeams = teams.map(t => ({
+      id: crypto.randomUUID(),
+      name: t.name,
+      score: 0,
+      roundScores: [],
+      disabled: false,
+    }))
+
+    game.value = {
+      id,
+      createdAt: Date.now(),
+      status: 'playing',
+      teams: createdTeams,
+      settings,
+      currentRound: 0,
+      trackPoolState,
+      selectedPlaylistIds: [],
+      currentTeamId: createdTeams[0]?.id,
+      roundPhase: 'playing',
+      rounds: [],
+      source: 'navidrome',
+      navidromeTracks,
+      navidromeSources: sources,
     }
 
     await _persist()
@@ -541,7 +590,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await _persist()
 
     if (game.value.settings.saveGame) {
-      const playlists = await db.playlists.bulkGet(game.value.selectedPlaylistIds)
+      const selectedPlaylists = game.value.source === 'navidrome'
+        ? (game.value.navidromeSources ?? []).map(s => ({ id: s.id, name: s.name, imageUrl: s.imageUrl }))
+        : (await db.playlists.bulkGet(game.value.selectedPlaylistIds))
+            .filter((p): p is NonNullable<typeof p> => p != null)
+            .map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl }))
+
       const gameResult: GameResult = {
         id: game.value.id,
         createdAt: game.value.createdAt,
@@ -553,9 +607,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
           totalScore: t.score,
         })),
         rounds: JSON.parse(JSON.stringify(game.value.rounds)) as RoundResult[],
-        selectedPlaylists: playlists
-          .filter((p): p is NonNullable<typeof p> => p != null)
-          .map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl })),
+        selectedPlaylists,
       }
       await db.gameResults.put(gameResult)
     }
@@ -630,6 +682,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     currentTeam,
     lastRoundTeamScores,
     createGame,
+    createNavidromeGame,
     resumeGame,
     findUnfinishedGame,
     findAllUnfinishedGames,

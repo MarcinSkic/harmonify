@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@lucide/vue':
-        specifier: ^1.8.0
+        specifier: ^1.22.0
         version: 1.22.0(vue@3.5.39(typescript@6.0.3))
       '@types/canvas-confetti':
         specifier: ^1.9.0
@@ -18,7 +18,7 @@ importers:
         specifier: ^2.0.7
         version: 2.0.7
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: ^14.3.0
         version: 14.3.0(vue@3.5.39(typescript@6.0.3))
       audiomotion-analyzer:
         specifier: ^4.5.4
@@ -57,7 +57,7 @@ importers:
         specifier: ^9.3.1
         version: 9.4.1
       reka-ui:
-        specifier: ^2.9.2
+        specifier: ^2.10.1
         version: 2.10.1(vue@3.5.39(typescript@6.0.3))
       tailwind-merge:
         specifier: ^3.5.0

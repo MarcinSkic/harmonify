@@ -1,5 +1,5 @@
 import type { EntityTable } from 'dexie'
-import type { Category, CategorySet, CategorySetMember, GameResult, LinkPreview, LocalGame, Playlist, Track } from './schemas'
+import type { Category, CategorySet, CategorySetMember, GameResult, LinkPreview, LocalGame, Playlist, Track, TrackOverlay } from './schemas'
 import Dexie from 'dexie'
 
 export const db = new Dexie('harmonifyLibrary') as Dexie & {
@@ -11,6 +11,7 @@ export const db = new Dexie('harmonifyLibrary') as Dexie & {
   gameResults: EntityTable<GameResult, 'id'>
   categorySets: EntityTable<CategorySet, 'id'>
   categorySetMembers: EntityTable<CategorySetMember, 'id'>
+  trackOverlays: EntityTable<TrackOverlay, 'id'>
 }
 
 db.version(1).stores({
@@ -77,3 +78,7 @@ db.version(5)
       delete track.enabled
     })
   })
+
+db.version(6).stores({
+  trackOverlays: 'id',
+})
