@@ -24,6 +24,7 @@ import NavidromeTrackOverlayDialog from './NavidromeTrackOverlayDialog.vue'
 const props = defineProps<{
   songs: SubsonicSong[]
   previewedSongId?: string
+  sourceName?: string
 }>()
 
 defineEmits<{
@@ -93,9 +94,15 @@ async function onOverlaySaved() {
     await refreshOverlay(overlaySong.value)
 }
 
+/** Strips characters that are unsafe/awkward in filenames on common filesystems. */
+function sanitizeFilename(name: string): string {
+  return name.trim().replace(/[/\\?%*:|"<>]/g, '-')
+}
+
 function exportIds() {
   const csv = serializeTrackIdentityCSV(props.songs)
-  saveAs(new Blob([csv], { type: 'text/csv' }), 'navidrome-track-ids.csv')
+  const filename = props.sourceName ? `${sanitizeFilename(props.sourceName)}-ids.csv` : 'navidrome-track-ids.csv'
+  saveAs(new Blob([csv], { type: 'text/csv' }), filename)
   toast.success(`Exported ${props.songs.length} track IDs`)
 }
 

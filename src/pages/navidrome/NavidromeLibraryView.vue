@@ -154,6 +154,7 @@ function showTags(song: SubsonicSong) {
         <NavidromeTrackTable
           :songs="selection.songs"
           :previewed-song-id="previewedSong?.id"
+          :source-name="selection.title"
           @preview="previewedSong = $event"
           @show-tags="showTags"
         />

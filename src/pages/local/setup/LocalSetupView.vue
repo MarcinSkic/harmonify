@@ -122,7 +122,7 @@ async function handleGameStart() {
       grid h-[85vh] max-h-[85vh] w-[90vw] grid-rows-[1fr_auto] place-self-center
       lg:h-[80vh] lg:max-h-[80vh] lg:w-auto
       lg:grid-cols-[minmax(200px,400px)_minmax(200px,400px)_minmax(200px,300px)]
-      lg:grid-rows-[1fr_50px] lg:items-start lg:gap-5
+      lg:grid-rows-[1fr_50px] lg:gap-5
     "
     @submit.prevent="handleGameStart"
   >
