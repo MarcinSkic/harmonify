@@ -86,8 +86,8 @@ function updateSelection(type: NavidromeGameSourceRef['type'], ids: string[], ti
           Playlists
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="albums" class="min-h-0 flex-1">
-        <ScrollArea class="h-full">
+      <TabsContent value="albums" class="flex min-h-0 flex-1 flex-col">
+        <ScrollArea class="min-h-0 flex-1">
           <NavidromeCoverGrid
             :tiles="albumTiles"
             :is-loading="isLoadingAlbums"
@@ -102,8 +102,8 @@ function updateSelection(type: NavidromeGameSourceRef['type'], ids: string[], ti
           />
         </ScrollArea>
       </TabsContent>
-      <TabsContent value="playlists" class="min-h-0 flex-1">
-        <ScrollArea class="h-full">
+      <TabsContent value="playlists" class="flex min-h-0 flex-1 flex-col">
+        <ScrollArea class="min-h-0 flex-1">
           <NavidromeCoverGrid
             :tiles="playlistTiles"
             :is-loading="isLoadingPlaylists"

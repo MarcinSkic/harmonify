@@ -138,13 +138,16 @@ async function handleGameStart() {
           Settings
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="library" class="min-h-0 flex-1">
+      <TabsContent value="library" class="flex min-h-0 flex-1 flex-col">
         <NavidromeGameSourcePicker v-model:selected="selectedSources" />
       </TabsContent>
-      <TabsContent value="teams" class="min-h-0 flex-1">
+      <TabsContent value="teams" class="flex min-h-0 flex-1 flex-col">
         <TeamManager v-model="teams" />
       </TabsContent>
-      <TabsContent value="settings" class="min-h-0 flex-1 overflow-y-auto">
+      <TabsContent value="settings" class="
+        flex min-h-0 flex-1 flex-col overflow-y-auto
+      "
+      >
         <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" />
       </TabsContent>
     </Tabs>
