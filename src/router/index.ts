@@ -47,6 +47,7 @@ const router = createRouter({
         {
           path: 'setup',
           name: 'localSetup',
+          beforeEnter: beforeNavidromeEnter,
           component: () => import('@/pages/local/setup/LocalSetupView.vue'),
         },
         {

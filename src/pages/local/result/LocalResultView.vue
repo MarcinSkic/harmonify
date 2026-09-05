@@ -26,10 +26,11 @@ onMounted(async () => {
   }
 
   if (localGameStore.game) {
-    const playlists = await db.playlists.bulkGet(localGameStore.game.selectedPlaylistIds)
-    selectedPlaylists.value = playlists
-      .filter((p): p is NonNullable<typeof p> => p != null)
-      .map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl }))
+    selectedPlaylists.value = localGameStore.game.source === 'navidrome'
+      ? (localGameStore.game.navidromeSources ?? []).map(s => ({ id: s.id, name: s.name, imageUrl: s.imageUrl }))
+      : (await db.playlists.bulkGet(localGameStore.game.selectedPlaylistIds))
+          .filter((p): p is NonNullable<typeof p> => p != null)
+          .map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl }))
   }
 })
 </script>

@@ -1,6 +1,8 @@
 export * as LibraryService from './library'
 export * as LibraryImportService from './library-import'
+export * as LibraryOverlayService from './libraryOverlay'
 export * as LinkPreviewService from './link-preview'
 export * as MusicServerService from './music-server'
 export * as NavidromeService from './navidrome'
+export * as NavidromeGameSourceService from './navidromeGameSource'
 export * as SpotifyService from './spotify'

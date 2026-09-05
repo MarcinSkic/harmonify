@@ -143,3 +143,60 @@ have reused elsewhere, does not leak.
 
 Phase 0 **imports nothing** from Navidrome into Harmonify's local database (IndexedDB) — browsing
 the library and previewing audio go straight to the server.
+
+Since Phase 1, per-track annotations (`playbackRange`, `previewImageUrl`, whether a track is
+enabled, and any custom field such as `popularity`) live in a local overlay, described below.
+
+## 6. Track overlay: annotating tracks without touching your files
+
+Harmonify never writes to Navidrome or to your music files. Instead, `/navidrome` → an album or
+playlist → the pencil icon on a track opens an editor for a local **overlay**: playback range,
+preview image, enabled/disabled, and any number of custom fields (name + value, e.g.
+`popularity` → `8`). This overlay is stored in Harmonify's IndexedDB, keyed so it survives moving
+to a different Navidrome instance that serves the same collection (§ below).
+
+### The matching key
+
+Each overlay is keyed by `musicBrainzId` when the track has one (tagged as `musicbrainz_trackid`
+in your files and mapped by Navidrome at scan time). A track without one falls back to
+`albumId|discNumber|track|title` when you edit it live from `/navidrome` — that composite key is
+only ever computed from the fields of the real track you have open, never from text typed into a
+CSV cell (see below).
+
+### CSV import/export
+
+`/navidrome` → the tabs view (Albums/Playlists) has **Import CSV** / **Export CSV** buttons for
+the whole overlay table.
+
+**Export CSV** columns, in order: `musicBrainzId, albumId, discNumber, track, title, artist,
+playbackRange, previewImageUrl, enabled`, followed by every custom field name in use across all
+overlays (sorted alphabetically, one column per name, exactly as you typed it). `playbackRange` is
+formatted `mm:ss-mm:ss`. Example row:
+
+```csv
+musicBrainzId,albumId,discNumber,track,title,artist,playbackRange,previewImageUrl,enabled,popularity
+f4a1b2c3-...,al-42,1,7,Sample Track,Sample Artist,0:15-0:45,https://example.com/cover.jpg,true,8
+```
+
+**Import CSV**: `musicBrainzId` is the **only** matching key — a row without it (empty cell or a
+missing column) is **not applied** and is reported as skipped, with its `title` (if the column is
+present) shown in the toast so you know which track to fix. There is no silent fallback to
+`albumId`/`discNumber`/`track`/`title` on import: those columns exist in the export purely for
+readability, not for matching, because CSV text is outside the app's control and matching a track
+by a title typed by hand risks silently annotating the wrong one. Any column that is not one of
+the known ones above becomes a custom field, keeping the exact header spelling (`Popularity` stays
+`Popularity`, not `popularity`).
+
+**Practical consequence:** if a track has no `musicBrainzId`, export→reimport of your own CSV is
+not a full round trip for it — its overlay comes back reported as skipped and has to be re-entered
+by hand through the editor (or you tag `musicbrainz_trackid` in the file and rescan Navidrome
+first). This affects a small minority of a typical library.
+
+### Migrating an old, `sourceId`-keyed annotation sheet
+
+If you have annotations from before Phase 1, keyed by the old per-server `sourceId`, there is no
+automatic migration — the sourceId is server-specific and does not survive a rescan or a different
+instance. Open the album/playlist in `/navidrome` and use **Export IDs** (next to the track table)
+to get a CSV of `index, musicBrainzId, title` for the currently loaded tracks, in the same order as
+shown on screen. Use it as a bridge to match your old sheet's rows to `musicBrainzId` by hand, then
+build (or hand-edit) an overlay CSV in the format above and import it.

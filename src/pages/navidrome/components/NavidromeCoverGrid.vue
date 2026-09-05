@@ -5,22 +5,41 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NavidromeService } from '@/services'
 
-defineProps<{
+const props = defineProps<{
   tiles: NavidromeCoverTile[]
   isLoading: boolean
   emptyMessage: string
   page: number
   hasNextPage: boolean
+  /** When set, clicking a tile toggles it in `selectedIds` instead of emitting `select`. */
+  selectable?: boolean
+  selectedIds?: string[]
 }>()
 
-defineEmits<{
-  select: [id: string]
-  previous: []
-  next: []
+const emit = defineEmits<{
+  'select': [id: string]
+  'previous': []
+  'next': []
+  'update:selectedIds': [ids: string[]]
 }>()
 
 function coverUrl(coverArt: string): string {
   return NavidromeService.getCoverArtUrl(coverArt, 300)
+}
+
+function isSelected(id: string): boolean {
+  return props.selectedIds?.includes(id) ?? false
+}
+
+function handleTileClick(id: string) {
+  if (!props.selectable) {
+    emit('select', id)
+    return
+  }
+
+  const current = props.selectedIds ?? []
+  const next = isSelected(id) ? current.filter(i => i !== id) : [...current, id]
+  emit('update:selectedIds', next)
 }
 </script>
 
@@ -48,10 +67,14 @@ function coverUrl(coverArt: string): string {
           type="button"
           class="
             flex flex-col gap-2 rounded-lg border bg-card p-2 text-left
-            transition-colors
+            transition
             hover:bg-accent hover:text-accent-foreground
           "
-          @click="$emit('select', tile.id)"
+          :class="isSelected(tile.id) && `
+            border-primary shadow-[0px_2px_16px_3px_rgba(245,190,11,0.33)]
+            ring-2 ring-primary
+          `"
+          @click="handleTileClick(tile.id)"
         >
           <div
             class="

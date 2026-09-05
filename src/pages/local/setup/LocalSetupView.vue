@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import type { Category, LocalGameSettings, Track } from '@/db/schemas'
-import { useWindowSize } from '@vueuse/core'
+import type { LocalGameSettings } from '@/db/schemas'
+import type { NavidromeGameSourceRef } from '@/services/navidromeGameSource'
+import { useWindowSize, watchDebounced } from '@vueuse/core'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useLiveQuery } from '@/composables/useLiveQuery'
 import { Breakpoint } from '@/consts'
-import { db } from '@/db'
-import LibraryTrackPicker from '@/pages/game/setup/components/LibraryTrackPicker.vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
-import { LibraryService } from '@/services'
+import { NavidromeGameSourceService } from '@/services'
 import { useSettingsStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
+import NavidromeGameSourcePicker from './components/NavidromeGameSourcePicker.vue'
 import TeamManager from './components/TeamManager.vue'
 
 const router = useRouter()
@@ -29,7 +28,9 @@ const isLoading = ref(false)
 const teams = ref([{ name: '' }])
 const settings = reactive<LocalGameSettings>({
   trackDuration: 20,
-  gameMode: 'category',
+  // Defaults to random: category mode only starts working again once Phase 2 sources categories
+  // from Navidrome tags. The mode switch itself stays in the form.
+  gameMode: 'random',
   hostSeesAnswer: false,
   maxRounds: null,
   partialPoints: 2,
@@ -45,71 +46,64 @@ const settings = reactive<LocalGameSettings>({
   overridePlaybackRange: false,
 })
 
-const selectedPlaylistIds = ref<string[]>([])
+const selectedSources = ref<NavidromeGameSourceRef[]>([])
 
-const gameEnabledTracks = useLiveQuery(
-  async () => {
-    if (selectedPlaylistIds.value.length === 0)
-      return [] as Track[]
-    const tracks = await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds.value).toArray()
-    return tracks.filter(t =>
-      !!t.audioUrl && selectedPlaylistIds.value.some(pid => t.enabledByPlaylist[pid] !== false),
-    )
-  },
-  [] as Track[],
-  [selectedPlaylistIds],
-)
+// Mirrors what createNavidromeGame will actually pool at start (dedup + overlay-disabled tracks
+// excluded), so the round count shown next to "Rounds" is not a lie. Debounced because
+// materializePool re-fetches every selected source from scratch — without it, picking sources one
+// after another would refetch already-fetched ones on every single click (O(n^2) requests).
+const totalTracks = ref(0)
+let poolPreviewRequest = 0
 
-const gameCategories = useLiveQuery(
-  async () => {
-    if (selectedPlaylistIds.value.length === 0)
-      return [] as Category[]
-    return LibraryService.getCategoriesForPlaylists(selectedPlaylistIds.value)
-  },
-  [] as Category[],
-  [selectedPlaylistIds],
-)
+watchDebounced(selectedSources, async (sources) => {
+  const request = ++poolPreviewRequest
 
-const hasTracksSelected = computed(() => gameEnabledTracks.value.length > 0)
+  if (sources.length === 0) {
+    totalTracks.value = 0
+    return
+  }
+
+  try {
+    const pool = await NavidromeGameSourceService.materializePool(sources)
+    if (request === poolPreviewRequest)
+      totalTracks.value = pool.length
+  }
+  catch {
+    if (request === poolPreviewRequest)
+      totalTracks.value = 0
+  }
+}, { immediate: true, debounce: 500 })
+
+const hasSourcesSelected = computed(() => selectedSources.value.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
 )
-const hasCategories = computed(() => gameCategories.value.length > 0)
-const hasAnyCategorySource = computed(() => hasCategories.value || settings.generatePlaylistCategories)
 
 const startButtonText = computed(() => {
   if (!musicPlayerStore.ready)
     return 'Connecting...'
-  if (!hasTracksSelected.value)
-    return 'Select a playlist'
+  if (!hasSourcesSelected.value)
+    return 'Select an album or playlist'
   if (!hasValidTeams.value)
     return 'Fill in team names'
-  if (settings.gameMode === 'category' && !hasAnyCategorySource.value)
-    return 'Link a category set to selected playlists'
   if (isLoading.value)
     return 'Loading...'
   return 'Play!'
 })
 
 async function handleGameStart() {
-  if (!hasValidTeams.value || !hasTracksSelected.value)
+  if (!hasValidTeams.value || !hasSourcesSelected.value)
     return
-
-  if (settings.gameMode === 'category' && !hasAnyCategorySource.value) {
-    toast.error('Link a category set to selected playlists first')
-    return
-  }
 
   isLoading.value = true
 
   try {
     await musicPlayerStore.turnOn()
 
-    const id = await localGameStore.createGame(
+    const id = await localGameStore.createNavidromeGame(
       teams.value.map(t => ({ name: t.name.trim() })),
       settings,
-      selectedPlaylistIds.value,
-      gameCategories.value,
+      selectedSources.value,
     )
 
     await localGameStore.startRound()
@@ -129,7 +123,7 @@ async function handleGameStart() {
       grid h-[85vh] max-h-[85vh] w-[90vw] grid-rows-[1fr_auto] place-self-center
       lg:h-[80vh] lg:max-h-[80vh] lg:w-auto
       lg:grid-cols-[minmax(200px,400px)_minmax(200px,400px)_minmax(200px,300px)]
-      lg:grid-rows-[1fr_50px] lg:items-start lg:gap-5
+      lg:grid-rows-[minmax(0,1fr)_50px] lg:gap-5
     "
     @submit.prevent="handleGameStart"
   >
@@ -145,26 +139,29 @@ async function handleGameStart() {
           Settings
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="library" class="min-h-0 flex-1">
-        <LibraryTrackPicker
-          :selected-playlist-ids="selectedPlaylistIds"
-          @update:selected-playlist-ids="selectedPlaylistIds = $event"
-        />
+      <TabsContent value="library" class="flex min-h-0 flex-1 flex-col">
+        <NavidromeGameSourcePicker v-model:selected="selectedSources" />
       </TabsContent>
-      <TabsContent value="teams" class="min-h-0 flex-1">
+      <TabsContent value="teams" class="flex min-h-0 flex-1 flex-col">
         <TeamManager v-model="teams" />
       </TabsContent>
-      <TabsContent value="settings" class="min-h-0 flex-1 overflow-y-auto">
-        <LocalGameSettingsForm v-model="settings" :total-tracks="gameEnabledTracks.length" />
+      <TabsContent value="settings" class="
+        flex min-h-0 flex-1 flex-col overflow-y-auto
+      "
+      >
+        <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" />
       </TabsContent>
     </Tabs>
     <template v-else>
-      <LibraryTrackPicker
-        :selected-playlist-ids="selectedPlaylistIds"
-        @update:selected-playlist-ids="selectedPlaylistIds = $event"
+      <NavidromeGameSourcePicker v-model:selected="selectedSources" class="
+        min-h-0
+      "
       />
-      <TeamManager v-model="teams" />
-      <LocalGameSettingsForm v-model="settings" :total-tracks="gameEnabledTracks.length" />
+      <TeamManager v-model="teams" class="min-h-0" />
+      <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" class="
+        min-h-0
+      "
+      />
     </template>
     <Button
       class="
@@ -173,9 +170,8 @@ async function handleGameStart() {
       "
       :disabled="
         !musicPlayerStore.ready
-          || !hasTracksSelected
+          || !hasSourcesSelected
           || !hasValidTeams
-          || (settings.gameMode === 'category' && !hasAnyCategorySource)
           || isLoading
       "
       type="submit"

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { localGuessLevelSchema } from '@/types'
 
-export const metadataSourceSchema = z.enum(['spotify', 'server', 'manual', 'csv'])
+export const metadataSourceSchema = z.enum(['spotify', 'server', 'manual', 'csv', 'navidrome'])
 export type MetadataSource = z.infer<typeof metadataSourceSchema>
 
 export const playbackRangeSchema = z.object({
@@ -36,6 +36,24 @@ export const trackSchema = z.object({
   createdAt: z.number(),
 })
 export type Track = z.infer<typeof trackSchema>
+
+// Track overlay schema (local annotations layered on top of a Navidrome library)
+
+export const trackOverlaySchema = z.object({
+  id: z.string(), // deriveOverlayKey() result — table's primary key
+  musicBrainzId: z.string().optional(),
+  albumId: z.string().optional(),
+  discNumber: z.number().optional(),
+  track: z.number().optional(),
+  title: z.string(),
+  artist: z.string().optional(),
+  playbackRange: playbackRangeSchema.nullable(),
+  previewImageUrl: z.string().optional(),
+  enabled: z.boolean().default(true),
+  customFields: z.record(z.string(), z.string()).default({}),
+  updatedAt: z.number(),
+})
+export type TrackOverlay = z.infer<typeof trackOverlaySchema>
 
 export const playlistSchema = z.object({
   id: z.uuid(),
@@ -189,6 +207,31 @@ export const localGameSettingsSchema = z.object({
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 
+// Navidrome game source schemas (mirror the TS interfaces in `src/services/navidromeGameSource.ts`,
+// needed here so `localGameSchema` can freeze a Navidrome-sourced pool inside a `LocalGame`)
+
+export const navidromeGameSourceRefSchema = z.object({
+  type: z.enum(['album', 'playlist']),
+  id: z.string(),
+  name: z.string(),
+  imageUrl: z.string().optional(),
+})
+export type NavidromeGameSourceRef = z.infer<typeof navidromeGameSourceRefSchema>
+
+export const frozenNavidromeTrackSchema = z.object({
+  id: z.string(),
+  overlayKey: z.string(),
+  title: z.string(),
+  artist: z.string().optional(),
+  albumName: z.string().optional(),
+  albumId: z.string().optional(),
+  coverArt: z.string().optional(),
+  durationMs: z.number().optional(),
+  playbackRange: playbackRangeSchema.nullable(),
+  previewImageUrl: z.string().optional(),
+})
+export type FrozenNavidromeTrack = z.infer<typeof frozenNavidromeTrackSchema>
+
 export const localGameStatusSchema = z.enum(['setup', 'playing', 'finished'])
 export type LocalGameStatus = z.infer<typeof localGameStatusSchema>
 
@@ -213,5 +256,8 @@ export const localGameSchema = z.object({
   rounds: z.array(roundResultSchema).default([]),
   categoryLimitUsedByTeams: z.record(z.string(), z.array(z.string())).optional(),
   ephemeralCategories: z.array(playlistBasedCategorySchema).optional(),
+  source: z.enum(['library', 'navidrome']).optional(), // missing = pre-migration game
+  navidromeTracks: z.record(z.string(), frozenNavidromeTrackSchema).optional(), // keyed by song.id
+  navidromeSources: z.array(navidromeGameSourceRefSchema).optional(),
 })
 export type LocalGame = z.infer<typeof localGameSchema>
