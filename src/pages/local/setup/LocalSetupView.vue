@@ -28,7 +28,8 @@ const isLoading = ref(false)
 const teams = ref([{ name: '' }])
 const settings = reactive<LocalGameSettings>({
   trackDuration: 20,
-  // Category mode is Navidrome-tag-based work for Phase 2 — this picker only offers random.
+  // Defaults to random: category mode only starts working again once Phase 2 sources categories
+  // from Navidrome tags. The mode switch itself stays in the form.
   gameMode: 'random',
   hostSeesAnswer: false,
   maxRounds: null,
