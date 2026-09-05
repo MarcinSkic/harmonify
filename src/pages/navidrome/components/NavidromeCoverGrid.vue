@@ -2,7 +2,6 @@
 import type { NavidromeCoverTile } from '../types'
 import { ChevronLeft, ChevronRight, ImageOff } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NavidromeService } from '@/services'
 
@@ -68,15 +67,19 @@ function handleTileClick(id: string) {
           type="button"
           class="
             flex flex-col gap-2 rounded-lg border bg-card p-2 text-left
-            transition-colors
+            transition
             hover:bg-accent hover:text-accent-foreground
           "
+          :class="isSelected(tile.id) && `
+            border-primary shadow-[0px_2px_16px_3px_rgba(245,190,11,0.33)]
+            ring-2 ring-primary
+          `"
           @click="handleTileClick(tile.id)"
         >
           <div
             class="
-              relative flex aspect-square items-center justify-center
-              overflow-hidden rounded-md bg-muted
+              flex aspect-square items-center justify-center overflow-hidden
+              rounded-md bg-muted
             "
           >
             <img
@@ -87,13 +90,6 @@ function handleTileClick(id: string) {
               loading="lazy"
             >
             <ImageOff v-else class="size-8 text-muted-foreground" />
-            <Checkbox
-              v-if="selectable"
-              :model-value="isSelected(tile.id)"
-              class="
-                pointer-events-none absolute top-1.5 right-1.5 bg-background
-              "
-            />
           </div>
           <div class="min-w-0">
             <p class="truncate text-sm font-medium">
