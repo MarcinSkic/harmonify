@@ -22,6 +22,8 @@ interface Selection {
   title: string
   subtitle: string
   songs: SubsonicSong[]
+  /** A playlist track keeps the number it has on its own album, so it is numbered by position. */
+  numbering: 'track' | 'position'
 }
 
 const navidromeStore = useNavidromeStore()
@@ -78,14 +80,14 @@ async function openSelection(load: () => Promise<Selection>) {
 function openAlbum(album: SubsonicAlbum) {
   openSelection(async () => {
     const { songs } = await NavidromeService.getAlbum(album.id)
-    return { title: album.name, subtitle: album.artist ?? 'Unknown artist', songs }
+    return { title: album.name, subtitle: album.artist ?? 'Unknown artist', songs, numbering: 'track' }
   })
 }
 
 function openPlaylist(playlist: SubsonicPlaylist) {
   openSelection(async () => {
     const { songs } = await NavidromeService.getPlaylist(playlist.id)
-    return { title: playlist.name, subtitle: playlist.comment ?? 'Playlist', songs }
+    return { title: playlist.name, subtitle: playlist.comment ?? 'Playlist', songs, numbering: 'position' }
   })
 }
 
@@ -155,6 +157,7 @@ function showTags(song: SubsonicSong) {
           :songs="selection.songs"
           :previewed-song-id="previewedSong?.id"
           :source-name="selection.title"
+          :numbering="selection.numbering"
           @preview="previewedSong = $event"
           @show-tags="showTags"
         />

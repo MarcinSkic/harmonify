@@ -21,11 +21,15 @@ import { deriveOverlayKey } from '@/lib/trackOverlayKey'
 import { LibraryOverlayService } from '@/services'
 import NavidromeTrackOverlayDialog from './NavidromeTrackOverlayDialog.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   songs: SubsonicSong[]
   previewedSongId?: string
   sourceName?: string
-}>()
+  /** Playlists number rows by position in the list; albums by the track's own number. */
+  numbering?: 'track' | 'position'
+}>(), {
+  numbering: 'track',
+})
 
 defineEmits<{
   preview: [song: SubsonicSong]
@@ -161,15 +165,15 @@ function formatDuration(seconds?: number): string {
           </div>
         </TableEmpty>
         <TableRow
-          v-for="song in songs"
-          :key="song.id"
+          v-for="(song, index) in songs"
+          :key="`${song.id}-${index}`"
           :class="{
             'bg-accent/50': song.id === previewedSongId,
             'opacity-50': !isEnabled(song),
           }"
         >
           <TableCell class="text-right text-muted-foreground">
-            {{ song.track ?? '—' }}
+            {{ numbering === 'position' ? index + 1 : song.track ?? '—' }}
           </TableCell>
           <TableCell class="font-medium">
             {{ song.title }}
