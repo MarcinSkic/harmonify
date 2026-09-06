@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, FieldLimitation, LocalGameSettings } from '@/db/schemas'
+import type { Category, FieldLimitation, FieldMinDistance, LocalGameSettings } from '@/db/schemas'
 import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import { useWindowSize, watchDebounced } from '@vueuse/core'
 import { computed, reactive, ref, watch } from 'vue'
@@ -119,6 +119,12 @@ const activeLimitations = computed<FieldLimitation[]>(() =>
   isCategoryMode.value ? (selectedCategorySet.value?.valueLimitations ?? []) : [],
 )
 
+// Same gate, and only handed to the game being created: unlike the limitations, spacing rules do not
+// trim the pool, they only reorder how it is dealt, so nothing shown on this screen depends on them.
+const activeMinDistances = computed<FieldMinDistance[]>(() =>
+  isCategoryMode.value ? (selectedCategorySet.value?.minDistances ?? []) : [],
+)
+
 // `ref` + `watch`, not `computed`: the cut depends on `Math.random()` (via `shuffle`), so it must be
 // computed once per change of input and stay stable across re-reads, not reshuffled on every access.
 const limitedPool = ref<FrozenNavidromeTrack[]>([])
@@ -203,6 +209,7 @@ async function handleGameStart() {
       selectedSources.value,
       selectedCategories.value,
       gamePool,
+      activeMinDistances.value,
     )
 
     await localGameStore.startRound()

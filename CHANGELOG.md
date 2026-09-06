@@ -6,6 +6,30 @@
 
 </div>
 
+## Category sets can space out repeats
+
+A category set can now carry **minimum distances** (`work — min 5 rounds`), defined in the set's own
+card under its value limits. In a category game the round no longer plays the first track waiting in
+the category: it plays the first one that is at least that many rounds away from the last track
+sharing the same field value, so two openings from the same anime cannot land back to back. Every
+value of a multi-valued tag counts, and the comparison ignores case. The smallest distance you can
+set is 2 — "not back to back" — because two tracks are never closer than one round apart, so 1 would
+be a rule that blocks nothing.
+
+The cost is that the rule can run out of room. When nothing in the chosen category satisfies it, the
+round still plays — it takes the track that breaks the rule by the smallest margin rather than
+stalling, so a nearly exhausted category degrades instead of blocking. Playing a track by its number
+(the host's escape hatch) ignores the rule entirely, though the forced track still occupies a round
+that later rounds measure their distance against. Category counters are unchanged: they still say
+how many tracks are left in a category, not how many are playable right now.
+
+Distances apply **only** in category mode — random mode has no set to carry them — and they are
+frozen when the game starts, so editing the set mid-game does not change the running match. Category
+set JSON export/import carries `minDistances` inline; sets exported before this release import
+unchanged, as sets without distances. Importing a file over a set you already have replaces both its
+value limits and its distances with what the file says — a set is imported as the file's whole
+configuration, never as a mix of the file's proportions and the spacing you had before.
+
 ## Category sets can cap repeated values
 
 A category set can now carry **value limits** (`work — self max 3`, `└ grouping max 1`, …), defined

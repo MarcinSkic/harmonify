@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CategorySet, CategorySetMember, FieldLimitation } from '@/db/schemas'
+import type { CategorySet, CategorySetMember, FieldLimitation, FieldMinDistance } from '@/db/schemas'
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from '@lucide/vue'
 import { computed, ref, shallowRef } from 'vue'
 import {
@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import CategorySetCategoryPicker from './CategorySetCategoryPicker.vue'
 import CategorySetMemberList from './CategorySetMemberList.vue'
+import MinDistanceEditDialog from './MinDistanceEditDialog.vue'
+import MinDistanceList from './MinDistanceList.vue'
 import ValueLimitationEditDialog from './ValueLimitationEditDialog.vue'
 import ValueLimitationList from './ValueLimitationList.vue'
 
@@ -47,6 +49,23 @@ function openLimitationEdit(limitation: FieldLimitation) {
   editingLimitation.value = limitation
   limitDialogOpen.value = true
 }
+
+// Sets stored before this field existed have no `minDistances` at all — rows come straight out of
+// Dexie, so the schema default never fires.
+const minDistances = computed(() => props.categorySet.minDistances ?? [])
+
+const distanceDialogOpen = ref(false)
+const editingDistance = shallowRef<FieldMinDistance | null>(null)
+
+function openDistanceCreate() {
+  editingDistance.value = null
+  distanceDialogOpen.value = true
+}
+
+function openDistanceEdit(distance: FieldMinDistance) {
+  editingDistance.value = distance
+  distanceDialogOpen.value = true
+}
 </script>
 
 <template>
@@ -70,6 +89,9 @@ function openLimitationEdit(limitation: FieldLimitation) {
           {{ members.length }} {{ members.length === 1 ? 'category' : 'categories' }}
           <template v-if="valueLimitations.length > 0">
             · {{ valueLimitations.length }} {{ valueLimitations.length === 1 ? 'limit' : 'limits' }}
+          </template>
+          <template v-if="minDistances.length > 0">
+            · {{ minDistances.length }} {{ minDistances.length === 1 ? 'distance' : 'distances' }}
           </template>
         </span>
       </button>
@@ -155,6 +177,33 @@ function openLimitationEdit(limitation: FieldLimitation) {
           v-model:open="limitDialogOpen"
           :category-set="props.categorySet"
           :limitation="editingLimitation"
+        />
+      </div>
+
+      <div class="mt-4 border-t pt-4">
+        <h4 class="text-sm font-semibold">
+          Minimum distance
+        </h4>
+        <MinDistanceList
+          class="mt-2"
+          :set-id="props.categorySet.id"
+          :distances="minDistances"
+          @edit="openDistanceEdit"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          class="mt-3 gap-2"
+          @click="openDistanceCreate"
+        >
+          <Plus class="size-3" />
+          Add distance
+        </Button>
+        <MinDistanceEditDialog
+          v-model:open="distanceDialogOpen"
+          :category-set="props.categorySet"
+          :min-distance="editingDistance"
         />
       </div>
     </CardContent>

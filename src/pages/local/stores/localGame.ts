@@ -1,4 +1,5 @@
-import type { Category, CategoryLimit, CategoryPoolState, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
+import type { Category, CategoryLimit, CategoryPoolState, FieldMinDistance, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
+import type { FieldBag } from '@/lib/categoryPredicate'
 import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
@@ -208,6 +209,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     sources: NavidromeGameSourceRef[],
     categories: Category[],
     pool: FrozenNavidromeTrack[],
+    minDistances: FieldMinDistance[],
   ): Promise<string> {
     // The pool is handed over by the setup view rather than materialized again here: the view already
     // ran `applyValuesLimitations` on it (main plan §7), and a second, independent materialization
@@ -256,6 +258,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
       source: 'navidrome',
       navidromeTracks,
       navidromeSources: sources,
+      // Frozen with the game for the same reason as the pool: the category set stays editable while
+      // a match is running, and the running match must not change under it (decision F4.6).
+      minDistances,
     }
 
     await _persist()
@@ -343,9 +348,17 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!game.value.categoryPoolState)
       return
 
+    // Both halves of the context come off the frozen game. An id the game does not know maps to an
+    // empty bag, which no rule constrains — that is how a game sourced from the local library, which
+    // has no `navidromeTracks` at all, keeps playing exactly as before.
+    const fieldsById: Record<string, FieldBag> = {}
+    for (const [id, track] of Object.entries(game.value.navidromeTracks ?? {}))
+      fieldsById[id] = track.fields ?? {}
+
     const { trackId, newState } = pickFromCategory(
       game.value.categoryPoolState,
       categoryId,
+      { fieldsById, minDistances: game.value.minDistances ?? [] },
     )
 
     game.value.categoryPoolState = newState
@@ -404,6 +417,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const track = tracks[0]
     const poolState = game.value.categoryPoolState
     const alreadyPlayed = poolState.playedTrackIds.includes(track.id)
+
+    // The host forcing a track bypasses the minimum distance rules — that is what the escape hatch
+    // is for — but the track still lands in `playedTrackIds`, so it occupies a round in the history
+    // that every later pick measures its gaps against. Whether its own values also block anything
+    // depends on the game knowing its bag: ids here are resolved through `db.tracks`, so in a
+    // Navidrome game the forced track is absent from `navidromeTracks` and constrains nothing.
 
     // Remove this track from all category pools
     const newCategoryPools: Record<string, string[]> = {}

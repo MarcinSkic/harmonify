@@ -1,6 +1,6 @@
-import type { Category, CategorySet, FieldLimitation } from '@/db/schemas'
+import type { Category, CategorySet, FieldLimitation, FieldMinDistance } from '@/db/schemas'
 import { z } from 'zod'
-import { categoryMatchSchema, fieldLimitationSchema } from '@/db/schemas'
+import { categoryMatchSchema, fieldLimitationSchema, fieldMinDistanceSchema } from '@/db/schemas'
 
 /**
  * Categories and category sets are exchanged as JSON, not CSV: a predicate is a nested structure
@@ -28,6 +28,7 @@ const categorySetJsonSchema = z.object({
   name: z.string().min(1),
   categories: z.array(z.string().min(1)),
   valueLimitations: z.array(fieldLimitationSchema).default([]),
+  minDistances: z.array(fieldMinDistanceSchema).default([]),
 })
 export type ParsedCategorySet = z.infer<typeof categorySetJsonSchema>
 
@@ -123,6 +124,9 @@ export function serializeCategorySetsJSON(
       // Rows written before this field existed have no `valueLimitations` at all: schemas are never
       // used as parsers on read from Dexie, so `?? []` is the fallback, not `.default([])`.
       valueLimitations: set.valueLimitations ?? [],
+      // Written out explicitly for the same reason: this object is built field by field, so a new
+      // column of the set only reaches the file once it is named here.
+      minDistances: set.minDistances ?? [],
     })),
     null,
     2,
@@ -168,6 +172,21 @@ export function findLimitationWithDuplicatePair(
   return undefined
 }
 
+/**
+ * A minimum distance's `name` is its identity within one set. Two entries for `work` are two
+ * different answers to the same question, not a sum — the same class of silent error Phase 3
+ * rejected for `otherValuesLimit`, so it is a row error here too rather than a merge.
+ */
+export function findDuplicateMinDistanceName(distances: FieldMinDistance[]): string | undefined {
+  const seen = new Set<string>()
+  for (const distance of distances) {
+    if (seen.has(distance.name))
+      return distance.name
+    seen.add(distance.name)
+  }
+  return undefined
+}
+
 export function parseCategorySetsJSON(text: string): { rows: ParsedCategorySet[], errors: JsonRowError[] } {
   const { rows, errors } = parseArray(text, categorySetJsonSchema, 'category sets')
 
@@ -190,6 +209,11 @@ export function parseCategorySetsJSON(text: string): { rows: ParsedCategorySet[]
         index,
         message: `Duplicate pair limit "${duplicatePair.duplicate}" in value limitation "${duplicatePair.limitation.name}" of set "${value.name}"`,
       })
+      continue
+    }
+    const duplicateDistance = findDuplicateMinDistanceName(value.minDistances)
+    if (duplicateDistance) {
+      errors.push({ index, message: `Duplicate minimum distance "${duplicateDistance}" in set "${value.name}"` })
       continue
     }
     seen.add(value.name)
