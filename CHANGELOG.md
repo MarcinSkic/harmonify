@@ -6,6 +6,26 @@
 
 </div>
 
+## Category sets can cap repeated values
+
+A category set can now carry **value limits** (`work — self max 3`, `└ grouping max 1`, …), defined
+in the set's own card next to its categories. Before a category game starts, the pool is trimmed so
+no field value — and no pair of field values — repeats past its configured limit; a "Madoka Magica"
+tag can no longer supply four openings in one game just because the library has four. Limits are
+duplicated per set on purpose (decision: the set is the unit that versions together, in the UI and
+in the exported JSON), and they apply **only** in category mode — random mode has no set to carry
+them.
+
+Setup shows the effect as a single number, `N → M tracks after value limits`, next to "Rounds", plus
+a one-line `Trims the pool: work ≤3, grouping ≤1` caption on the category-set picker and a warning
+when the trimmed pool can no longer fill the planned number of rounds. The coverage report's counts
+are now computed **after** this trim, not before.
+
+Category set JSON export/import carries `valueLimitations` inline. Sets exported before this release
+import unchanged, as sets without limits. `exceptions` (per-value overrides) are validated, stored,
+and round-tripped through the editor and the file, but the engine does not act on them yet — they
+are a v5.x extension point.
+
 ## Categories are metadata predicates
 
 A category is no longer a list of library tags. It is now a condition on track metadata — Navidrome

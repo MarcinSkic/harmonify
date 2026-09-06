@@ -60,6 +60,7 @@ defineProps<{
       <div class="text-xs text-muted-foreground">
         <p>{{ report.matchedByNone }} of {{ report.total }} tracks match no category</p>
         <p>{{ report.matchedByMultiple }} match more than one</p>
+        <p>{{ report.total }} is the pool after value limits, not the raw source size.</p>
       </div>
     </template>
   </div>

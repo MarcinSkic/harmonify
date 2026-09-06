@@ -165,3 +165,52 @@ describe('importCategories', () => {
     expect(stored.find(c => c.displayName === 'Anime OP')!.points).toBe(10)
   })
 })
+
+describe('setCategorySetValueLimitations', () => {
+  beforeEach(async () => {
+    await db.categorySets.clear()
+  })
+
+  it('rejects a duplicate name with an error and leaves the stored row unchanged', async () => {
+    const id = await LibraryService.addCategorySet('Konkurs')
+
+    await expect(LibraryService.setCategorySetValueLimitations(id, [
+      { name: 'work', selfLimit: 3 },
+      { name: 'work', selfLimit: 1 },
+    ])).rejects.toThrow(/work/)
+
+    const stored = (await db.categorySets.get(id))!
+    expect(stored.valueLimitations).toEqual([])
+  })
+
+  it('rejects a duplicate pair limit name inside one entry and leaves the stored row unchanged', async () => {
+    const id = await LibraryService.addCategorySet('Konkurs')
+
+    await expect(LibraryService.setCategorySetValueLimitations(id, [
+      {
+        name: 'work',
+        selfLimit: 3,
+        otherValuesLimit: [
+          { name: 'grouping', limit: 1 },
+          { name: 'grouping', limit: 2 },
+        ],
+      },
+    ])).rejects.toThrow(/grouping/)
+
+    const stored = (await db.categorySets.get(id))!
+    expect(stored.valueLimitations).toEqual([])
+  })
+
+  it('sorts the stored entries by name regardless of input order', async () => {
+    const id = await LibraryService.addCategorySet('Konkurs')
+
+    await LibraryService.setCategorySetValueLimitations(id, [
+      { name: 'work', selfLimit: 3 },
+      { name: 'album', selfLimit: 2 },
+      { name: 'grouping', selfLimit: 1 },
+    ])
+
+    const stored = (await db.categorySets.get(id))!
+    expect(stored.valueLimitations.map(l => l.name)).toEqual(['album', 'grouping', 'work'])
+  })
+})

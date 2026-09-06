@@ -1,4 +1,4 @@
-import type { Category, CategorySet } from '@/db/schemas'
+import type { Category, CategorySet, FieldLimitation } from '@/db/schemas'
 import { describe, expect, it } from 'vitest'
 import {
   parseCategoriesJSON,
@@ -18,7 +18,7 @@ function makeCategory(overrides: Partial<Category> = {}): Category {
 }
 
 function makeSet(name: string): CategorySet {
-  return { id: `set-${name}`, name, createdAt: 1 }
+  return { id: `set-${name}`, name, valueLimitations: [], createdAt: 1 }
 }
 
 describe('serializeCategoriesJSON', () => {
@@ -150,12 +150,12 @@ describe('category sets', () => {
     }])
 
     expect(JSON.parse(json)).toEqual([
-      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'] },
+      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [] },
     ])
 
     const { rows, errors } = parseCategorySetsJSON(json)
     expect(errors).toEqual([])
-    expect(rows).toEqual([{ name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'] }])
+    expect(rows).toEqual([{ name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [] }])
   })
 
   it('uses the same shape for one set and for many', () => {
@@ -201,5 +201,142 @@ describe('category sets', () => {
 
     expect(rows).toHaveLength(1)
     expect(errors).toEqual([{ index: 1, message: 'Duplicate set "Twin" in the file' }])
+  })
+})
+
+describe('category set value limitations', () => {
+  it('reads a Phase 2 file without the field as an empty list', () => {
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      { name: 'Pre-Phase-3', categories: ['A'] },
+    ]))
+
+    expect(errors).toEqual([])
+    expect(rows[0].valueLimitations).toEqual([])
+  })
+
+  it('survives a round trip with exceptions and multiValue intact', () => {
+    const limitations: FieldLimitation[] = [
+      {
+        name: 'work',
+        selfLimit: 3,
+        multiValue: 'first',
+        otherValuesLimit: [
+          { name: 'grouping', limit: 1, multiValue: 'all' },
+        ],
+        exceptions: [
+          { value: 'Puella Magi Madoka Magica', selfLimit: 4 },
+        ],
+      },
+    ]
+
+    const original = serializeCategorySetsJSON([{
+      set: { ...makeSet('Konkurs 2026'), valueLimitations: limitations },
+      members: [],
+    }])
+    const { rows, errors } = parseCategorySetsJSON(original)
+
+    expect(errors).toEqual([])
+    expect(rows[0].valueLimitations).toEqual(limitations)
+  })
+
+  it('reports a duplicate limitation name inside one set as a row error', () => {
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      {
+        name: 'Konkurs',
+        categories: [],
+        valueLimitations: [
+          { name: 'work', selfLimit: 3 },
+          { name: 'work', selfLimit: 1 },
+        ],
+      },
+      { name: 'Also good', categories: [] },
+    ]))
+
+    expect(rows.map(r => r.name)).toEqual(['Also good'])
+    expect(errors).toEqual([{ index: 0, message: 'Duplicate value limitation "work" in set "Konkurs"' }])
+  })
+
+  it('reports a duplicate pair limit name inside one entry as a row error', () => {
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      {
+        name: 'Konkurs',
+        categories: [],
+        valueLimitations: [
+          {
+            name: 'work',
+            selfLimit: 3,
+            otherValuesLimit: [
+              { name: 'grouping', limit: 1 },
+              { name: 'grouping', limit: 2 },
+            ],
+          },
+        ],
+      },
+      { name: 'Also good', categories: [] },
+    ]))
+
+    expect(rows.map(r => r.name)).toEqual(['Also good'])
+    expect(errors).toEqual([
+      { index: 0, message: 'Duplicate pair limit "grouping" in value limitation "work" of set "Konkurs"' },
+    ])
+  })
+
+  it('rejects an unknown key inside a limitation as a row error, importing the rest of the sets', () => {
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      {
+        name: 'Broken',
+        categories: [],
+        valueLimitations: [
+          { name: 'work', selfLimit: 3, typo: true },
+        ],
+      },
+      { name: 'Good', categories: [] },
+    ]))
+
+    expect(rows.map(r => r.name)).toEqual(['Good'])
+    expect(errors).toHaveLength(1)
+    expect(errors[0].index).toBe(0)
+  })
+
+  it('loads the human-written v5 example structure without error — the format contract', () => {
+    // Pasted from `.claude/.plans/Harmonify v5 - human written base.md`, key `valuesLimitations`.
+    const exampleFromDoc = [
+      {
+        name: 'work',
+        selfLimit: 3,
+        otherValuesLimit: [
+          {
+            name: 'grouping',
+            limit: 1,
+            exceptions: [
+              { value: 'op', limit: 2 },
+            ],
+          },
+        ],
+        exceptions: [
+          { value: 'Urusei Yatsura', selfLimit: 2 },
+          {
+            value: 'Puella Magi Madoka Magica',
+            selfLimit: 4,
+            otherValuesLimit: [
+              {
+                name: 'grouping',
+                limit: 2,
+                exceptions: [
+                  { value: 'ost', limit: 1 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      { name: 'From the doc', categories: [], valueLimitations: exampleFromDoc },
+    ]))
+
+    expect(errors).toEqual([])
+    expect(rows[0].valueLimitations).toEqual(exampleFromDoc)
   })
 })

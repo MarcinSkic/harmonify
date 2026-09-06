@@ -1,6 +1,7 @@
 import type { Category, CategoryPoolState } from '@/db/schemas'
 import type { FieldBag } from '@/lib/categoryPredicate'
 import { matchesCategory } from '@/lib/categoryPredicate'
+import { shuffle } from '@/lib/shuffle'
 
 /** Since Phase 2 a pool is built from predicate categories and nothing else. */
 export type EngineCategory = Category
@@ -13,15 +14,6 @@ export type EngineCategory = Category
 export interface CategoryPoolTrack {
   id: string
   fields: FieldBag
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }
 
 export function createCategoryPool(

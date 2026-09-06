@@ -6,12 +6,12 @@ export type { CategoryMatch, Condition }
 export type FieldBag = Record<string, string[]>
 
 /** A value counts as absent when it is empty or whitespace-only. */
-function isBlank(value: string): boolean {
+export function isBlank(value: string): boolean {
   return value.trim() === ''
 }
 
 /** Ordinal (culture-invariant) lower-casing — `ToLowerInvariant`, never a locale-aware fold. */
-function foldCase(value: string): string {
+export function foldCase(value: string): string {
   return value.toLowerCase()
 }
 

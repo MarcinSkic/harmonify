@@ -14,6 +14,8 @@ import CoverageReport from './CoverageReport.vue'
 
 defineProps<{
   totalTracks: number
+  /** Pool size before `valueLimitations` trims it — same as `totalTracks` when no limits apply. */
+  poolBeforeLimits: number
   coverageReport: CoverageReportData | null
   tagsUnavailable: boolean
   poolUnavailable: boolean
@@ -95,6 +97,29 @@ function toggleUnlimitedRounds() {
           <InfinityIcon class="size-4" />
         </Button>
       </div>
+
+      <p
+        v-if="poolBeforeLimits > totalTracks"
+        class="
+          -mt-1 mb-2 text-xs text-muted-foreground
+          sm:col-span-2
+          lg:col-span-1
+        "
+      >
+        {{ poolBeforeLimits }} → {{ totalTracks }} tracks after value limits
+      </p>
+
+      <p
+        v-if="poolBeforeLimits > 0 && settings.maxRounds !== null && totalTracks < settings.maxRounds"
+        class="
+          mb-2 flex items-start gap-1.5 text-xs text-destructive
+          sm:col-span-2
+          lg:col-span-1
+        "
+      >
+        <TriangleAlert class="mt-0.5 size-3.5 shrink-0" />
+        Pool holds fewer tracks than the planned number of rounds.
+      </p>
 
       <p
         v-if="poolUnavailable"

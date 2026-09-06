@@ -1,4 +1,4 @@
-import type { CategorySet, CategorySetMember } from '@/db/schemas'
+import type { CategorySet, CategorySetMember, FieldLimitation } from '@/db/schemas'
 import { defineStore } from 'pinia'
 import { useLiveQuery } from '@/composables/useLiveQuery'
 import { db } from '@/db'
@@ -29,6 +29,10 @@ export const useCategorySetsStore = defineStore('categorySets', () => {
     return LibraryService.updateCategorySet(id, { name })
   }
 
+  async function setValueLimitations(setId: string, limitations: FieldLimitation[]) {
+    return LibraryService.setCategorySetValueLimitations(setId, limitations)
+  }
+
   async function remove(id: string) {
     return LibraryService.deleteCategorySet(id)
   }
@@ -55,6 +59,7 @@ export const useCategorySetsStore = defineStore('categorySets', () => {
     getMembersForSet,
     create,
     update,
+    setValueLimitations,
     remove,
     addCategory,
     removeCategory,

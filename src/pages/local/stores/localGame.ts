@@ -1,5 +1,5 @@
 import type { Category, CategoryLimit, CategoryPoolState, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
-import type { NavidromeGameSourceRef } from '@/services/navidromeGameSource'
+import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
@@ -14,7 +14,6 @@ import {
 } from '@/pages/local/engine/categoryPool'
 import { toDisplayTrack } from '@/pages/local/engine/navidromeTrack'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
-import { NavidromeGameSourceService } from '@/services'
 import { useCategoriesStore } from '@/stores'
 
 export interface AmbiguousResult { type: 'ambiguous', candidates: string[] }
@@ -207,12 +206,15 @@ export const useLocalGameStore = defineStore('localGame', () => {
     teams: { name: string }[],
     settings: LocalGameSettings,
     sources: NavidromeGameSourceRef[],
-    categories: Category[] = [],
+    categories: Category[],
+    pool: FrozenNavidromeTrack[],
   ): Promise<string> {
-    // The pool is materialized here rather than handed over by the setup view: the view's preview
-    // is debounced and may still be in flight when "Play!" is pressed, so accepting it would risk
-    // freezing a stale pool. The price is one extra pair of requests per source.
-    const { tracks: pool } = await NavidromeGameSourceService.materializePool(sources)
+    // The pool is handed over by the setup view rather than materialized again here: the view already
+    // ran `applyValuesLimitations` on it (main plan §7), and a second, independent materialization
+    // could disagree with it — a different random cut, or a source that changed between the two
+    // fetches — leaving the round count shown on setup out of sync with what actually gets played.
+    // The setup view's own `poolPending` gate is what guarantees this pool is fresh, not a second
+    // fetch here, and skipping that fetch also halves the Navidrome requests per game start.
     const navidromeTracks = Object.fromEntries(pool.map(t => [t.id, t]))
 
     const isCategory = settings.gameMode === 'category'
@@ -221,9 +223,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     let categoryPoolState: CategoryPoolState | undefined
     if (isCategory) {
       categoryPoolState = createCategoryPool(pool, categories)
-      // The setup screen gates on its own preview, but this is a *second* materialization: if
-      // Navidrome stopped serving tags in between, every pool is empty and `startRound` would drop
-      // the host into a game that can never advance. Fail loudly so the caller stays on setup.
+      // The setup screen gates on `hasPlayableCategories` computed from this very pool, but this
+      // stays as a defense against a caller that skips that gate: an empty pool here must not drop
+      // the host into a game that `startRound` can never advance.
       if (isCategoryPoolExhausted(categoryPoolState))
         throw new Error('No track in the selected sources matches any of the chosen categories')
     }

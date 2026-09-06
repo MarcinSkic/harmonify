@@ -1,6 +1,7 @@
-import type { Category, CategorySet, CategorySetMember, Playlist, Track, TrackAnnotation } from '@/db/schemas'
+import type { Category, CategorySet, CategorySetMember, FieldLimitation, Playlist, Track, TrackAnnotation } from '@/db/schemas'
 import type { ParsedCategory, ParsedCategorySet } from '@/lib/categoryJson'
 import { db } from '@/db'
+import { findDuplicateLimitationName, findLimitationWithDuplicatePair } from '@/lib/categoryJson'
 
 type NewPlaylist = Omit<Playlist, 'id' | 'createdAt'>
 type NewTrack = Omit<Track, 'id' | 'createdAt'>
@@ -229,12 +230,30 @@ export async function importCategories(
 
 export async function addCategorySet(name: string): Promise<string> {
   const id = crypto.randomUUID()
-  await db.categorySets.add({ id, name, createdAt: Date.now() })
+  await db.categorySets.add({ id, name, valueLimitations: [], createdAt: Date.now() })
   return id
 }
 
 export async function updateCategorySet(id: string, data: Partial<Omit<CategorySet, 'id' | 'createdAt'>>): Promise<void> {
   await db.categorySets.update(id, data)
+}
+
+/**
+ * Sorts by `name` before writing so the exported JSON is stable across saves. Rejects a duplicate
+ * `name` with an error — the UI is expected to catch this earlier, but this is the last line of
+ * defense before the array is trusted as one entry per field.
+ */
+export async function setCategorySetValueLimitations(setId: string, limitations: FieldLimitation[]): Promise<void> {
+  const duplicateName = findDuplicateLimitationName(limitations)
+  if (duplicateName)
+    throw new Error(`Duplicate value limitation "${duplicateName}"`)
+
+  const duplicatePair = findLimitationWithDuplicatePair(limitations)
+  if (duplicatePair)
+    throw new Error(`Duplicate pair limit "${duplicatePair.duplicate}" in value limitation "${duplicatePair.limitation.name}"`)
+
+  const sorted = [...limitations].sort((a, b) => a.name.localeCompare(b.name))
+  await db.categorySets.update(setId, { valueLimitations: sorted })
 }
 
 export async function deleteCategorySet(id: string): Promise<void> {
@@ -386,11 +405,12 @@ export async function importCategorySets(
         setId = existingSet.id
         const members = await db.categorySetMembers.where('categorySetId').equals(setId).toArray()
         await db.categorySetMembers.bulkDelete(members.map(m => m.id))
+        await db.categorySets.update(setId, { valueLimitations: row.valueLimitations })
         updated++
       }
       else {
         setId = crypto.randomUUID()
-        await db.categorySets.add({ id: setId, name: row.name, createdAt: Date.now() })
+        await db.categorySets.add({ id: setId, name: row.name, valueLimitations: row.valueLimitations, createdAt: Date.now() })
         created++
       }
 

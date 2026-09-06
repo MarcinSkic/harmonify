@@ -1,6 +1,6 @@
-import type { Category, CategorySet } from '@/db/schemas'
+import type { Category, CategorySet, FieldLimitation } from '@/db/schemas'
 import { z } from 'zod'
-import { categoryMatchSchema } from '@/db/schemas'
+import { categoryMatchSchema, fieldLimitationSchema } from '@/db/schemas'
 
 /**
  * Categories and category sets are exchanged as JSON, not CSV: a predicate is a nested structure
@@ -27,6 +27,7 @@ export type ParsedCategory = z.infer<typeof categoryJsonSchema>
 const categorySetJsonSchema = z.object({
   name: z.string().min(1),
   categories: z.array(z.string().min(1)),
+  valueLimitations: z.array(fieldLimitationSchema).default([]),
 })
 export type ParsedCategorySet = z.infer<typeof categorySetJsonSchema>
 
@@ -118,10 +119,53 @@ export function serializeCategorySetsJSON(
       categories: [...members]
         .sort((a, b) => a.order - b.order)
         .map(member => member.category.displayName),
+      // `exceptions` is carried through untouched — the engine ignores it, the format does not.
+      // Rows written before this field existed have no `valueLimitations` at all: schemas are never
+      // used as parsers on read from Dexie, so `?? []` is the fallback, not `.default([])`.
+      valueLimitations: set.valueLimitations ?? [],
     })),
     null,
     2,
   )
+}
+
+/** A limitation's `name` is its identity within one set — a repeat is a row error, not a merge. */
+export function findDuplicateLimitationName(limitations: FieldLimitation[]): string | undefined {
+  const seen = new Set<string>()
+  for (const limitation of limitations) {
+    if (seen.has(limitation.name))
+      return limitation.name
+    seen.add(limitation.name)
+  }
+  return undefined
+}
+
+/**
+ * A pair limit's `name` is the Y field it counts against. A repeat within one entry's
+ * `otherValuesLimit` would resolve to the same (X, Y) counter through two separate limits — the
+ * engine (`valuesLimitations.ts`) charges it once per limit, i.e. more than once per admitted
+ * track, silently doubling the cut. Rejected here, not merged or summed.
+ */
+export function findDuplicatePairLimitationName(otherValuesLimit: Array<{ name: string }>): string | undefined {
+  const seen = new Set<string>()
+  for (const pair of otherValuesLimit) {
+    if (seen.has(pair.name))
+      return pair.name
+    seen.add(pair.name)
+  }
+  return undefined
+}
+
+/** First entry (if any) whose own `otherValuesLimit` repeats a pair `name`, with the repeated name. */
+export function findLimitationWithDuplicatePair(
+  limitations: FieldLimitation[],
+): { limitation: FieldLimitation, duplicate: string } | undefined {
+  for (const limitation of limitations) {
+    const duplicate = findDuplicatePairLimitationName(limitation.otherValuesLimit ?? [])
+    if (duplicate)
+      return { limitation, duplicate }
+  }
+  return undefined
 }
 
 export function parseCategorySetsJSON(text: string): { rows: ParsedCategorySet[], errors: JsonRowError[] } {
@@ -133,6 +177,19 @@ export function parseCategorySetsJSON(text: string): { rows: ParsedCategorySet[]
   for (const { index, value } of rows) {
     if (seen.has(value.name)) {
       errors.push({ index, message: `Duplicate set "${value.name}" in the file` })
+      continue
+    }
+    const duplicateLimitation = findDuplicateLimitationName(value.valueLimitations)
+    if (duplicateLimitation) {
+      errors.push({ index, message: `Duplicate value limitation "${duplicateLimitation}" in set "${value.name}"` })
+      continue
+    }
+    const duplicatePair = findLimitationWithDuplicatePair(value.valueLimitations)
+    if (duplicatePair) {
+      errors.push({
+        index,
+        message: `Duplicate pair limit "${duplicatePair.duplicate}" in value limitation "${duplicatePair.limitation.name}" of set "${value.name}"`,
+      })
       continue
     }
     seen.add(value.name)
