@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useNavidromeTagIndex } from '@/composables/useNavidromeTagIndex'
+import { LibraryOverlayService } from '@/services'
 import { useOverlayFieldsStore } from '@/stores'
 import {
   ALL_OPERATORS,
@@ -22,7 +23,15 @@ import {
   TEXT_OPERATORS,
 } from './categoryMatchRows'
 
-/** `null` while the rows do not form a valid predicate — the dialog refuses to save then. */
+/**
+ * `null` while the rows do not form a valid predicate — the dialog refuses to save then.
+ *
+ * The model is written, never read back: the rows are seeded from it once, here at setup. A parent
+ * that needs to load a different predicate remounts the editor with a `:key` instead. Syncing the
+ * incoming model into the rows cannot work — `ref()` deep-wraps on assignment, so the value that
+ * comes back as a prop is a reactive proxy of the emitted object and never identical to it, which
+ * left the two watchers rebuilding each other's sources until Vue aborted the flush.
+ */
 const model = defineModel<CategoryMatch | null>({ required: true })
 
 const overlayFieldsStore = useOverlayFieldsStore()
@@ -30,15 +39,33 @@ const { tagNames, valuesFor, load: loadTagIndex } = useNavidromeTagIndex()
 
 const mode = ref<'all' | 'any'>(model.value && 'any' in model.value ? 'any' : 'all')
 const rows = ref<ConditionRow[]>(rowsFromMatch(model.value))
-
-// Identity of the last value this editor produced: an incoming model that is not it comes from the
-// outside (the dialog loading a category) and rebuilds the rows.
-let lastEmitted: CategoryMatch | null = model.value
+const overlayValueFieldNames = ref<string[]>([])
 
 loadTagIndex()
+loadOverlayValueFieldNames()
+
+/**
+ * Field names that only the values know about: a column imported from a CSV writes
+ * `customFields.popularity` on every overlay while the registry stays empty, and the predicate can
+ * read it all the same. Read once on mount, like the tag index — the registry is small, but this
+ * scans a row per track.
+ */
+async function loadOverlayValueFieldNames() {
+  try {
+    overlayValueFieldNames.value = await LibraryOverlayService.listCustomFieldNames()
+  }
+  catch (error) {
+    // Background load behind a suggestion list: without it the editor still takes free text.
+    console.error('Failed to read overlay field names', error)
+  }
+}
 
 const fieldSuggestions = computed(() => {
-  const names = new Set([...tagNames.value, ...overlayFieldsStore.overlayFields.map(field => field.name)])
+  const names = new Set([
+    ...tagNames.value,
+    ...overlayFieldsStore.overlayFields.map(field => field.name),
+    ...overlayValueFieldNames.value,
+  ])
   return [...names].sort((a, b) => a.localeCompare(b))
 })
 
@@ -86,22 +113,10 @@ function handleFieldChange(row: ConditionRow) {
 
 watch([rows, mode], () => {
   const conditions = conditionsFromRows(rows.value)
-  const next = conditions === null
+  model.value = conditions === null
     ? null
     : (mode.value === 'all' ? { all: conditions } : { any: conditions })
-
-  lastEmitted = next
-  model.value = next
 }, { deep: true })
-
-watch(model, (value) => {
-  if (value === lastEmitted)
-    return
-
-  lastEmitted = value
-  mode.value = value && 'any' in value ? 'any' : 'all'
-  rows.value = rowsFromMatch(value)
-})
 </script>
 
 <template>

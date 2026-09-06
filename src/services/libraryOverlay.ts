@@ -73,6 +73,23 @@ export async function getAllOverlays(): Promise<TrackOverlay[]> {
   return db.trackOverlays.toArray()
 }
 
+/**
+ * Every `customFields` key some overlay carries, whether or not the registry knows it: a CSV column
+ * writes values without ever registering a name, so the registry alone does not list the fields a
+ * category predicate can read. Casing is kept as written — `parseOverlayCSV` preserves the header's
+ * case, so `Popularity` and `popularity` are different fields and folding them would suggest a
+ * spelling that matches nothing.
+ */
+export async function listCustomFieldNames(): Promise<string[]> {
+  const names = new Set<string>()
+  // `each` rather than `toArray`: only the keys are wanted, and the table has a row per track.
+  await db.trackOverlays.each((overlay) => {
+    for (const name of Object.keys(overlay.customFields))
+      names.add(name)
+  })
+  return [...names]
+}
+
 // Overlay field registry — the dictionary of field names a category predicate may read. It only
 // names and types fields; the values themselves live in each track's `customFields`.
 

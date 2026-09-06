@@ -39,12 +39,21 @@ const description = ref('')
 const points = ref<number | null>(null)
 /** `null` while the predicate editor holds an incomplete condition — saving is refused then. */
 const match = ref<CategoryMatch | null>(null)
+/**
+ * The predicate editor seeds its rows from `match` at mount and never reads the model again, so it
+ * is remounted to load another category. A counter, not the category id: two consecutive
+ * "Add category" opens are both `null` and must still start from an empty row.
+ */
+const editorKey = ref(0)
 
 watch(
   () => [open.value, props.category] as const,
   ([isOpen, category]) => {
     if (!isOpen)
       return
+
+    editorKey.value++
+
     if (category) {
       displayName.value = category.displayName
       description.value = category.description ?? ''
@@ -142,7 +151,7 @@ async function handleSubmit() {
 
         <div class="grid gap-2">
           <Label>Conditions</Label>
-          <CategoryMatchEditor v-model="match" />
+          <CategoryMatchEditor :key="editorKey" v-model="match" />
         </div>
 
         <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3">
