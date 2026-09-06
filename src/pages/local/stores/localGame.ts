@@ -1,11 +1,11 @@
-import type { Category, CategoryLimit, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
-import type { EngineCategory } from '@/pages/local/engine/categoryPool'
+import type { Category, CategoryLimit, CategoryPoolState, GameResult, LocalGame, LocalGameGameMode, LocalGameSettings, PlaylistBasedCategory, RoundResult, Track } from '@/db/schemas'
 import type { NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import type { LocalGuessLevel } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { db } from '@/db'
 import { gameResultSchema } from '@/db/schemas'
+import { matchesCategory } from '@/lib/categoryPredicate'
 import {
   createCategoryPool,
   getCategoryCounts,
@@ -140,21 +140,24 @@ export const useLocalGameStore = defineStore('localGame', () => {
 
   const currentTrackMatchingCategories = computed<Array<{ displayName: string }>>(() => {
     const track = currentTrack.value
-    if (!track || !game.value?.categoryPoolState)
+    const g = game.value
+    if (!track || !g?.categoryPoolState)
       return []
-    if (!game.value.settings.showTrackCategories)
+    if (!g.settings.showTrackCategories)
       return []
 
-    const currentCategoryId = game.value.currentCategory
+    const currentCategoryId = g.currentCategory
+    // Games frozen before Phase 2 carry no `fields`: they are read straight out of Dexie, so the
+    // schema default never fires. Such a game simply matches nothing here.
+    const fields = g.navidromeTracks?.[track.id]?.fields ?? {}
 
     return allCategories.value
       .filter(({ category }) => {
         if (category.id === currentCategoryId)
           return false
-        if ('type' in category && category.type === 'playlist-based')
+        if ('type' in category)
           return track.playlistIds.includes(category.playlistId)
-        const filter = new Set((category as Category).tagFilter)
-        return track.tags.some(tag => filter.has(tag))
+        return matchesCategory(fields, category.match)
       })
       .map(({ category }) => ({ displayName: category.displayName }))
   })
@@ -200,44 +203,29 @@ export const useLocalGameStore = defineStore('localGame', () => {
     currentTrack.value = await db.tracks.get(trackId) ?? null
   }
 
-  async function createGame(
+  async function createNavidromeGame(
     teams: { name: string }[],
     settings: LocalGameSettings,
-    selectedPlaylistIds: string[],
-    enabledCategories: Category[] = [],
+    sources: NavidromeGameSourceRef[],
+    categories: Category[] = [],
   ): Promise<string> {
-    const tracks = selectedPlaylistIds.length > 0
-      ? await db.tracks.where('playlistIds').anyOf(selectedPlaylistIds).toArray()
-      : await db.tracks.toArray()
-
-    const playableTracks = tracks.filter(t =>
-      t.audioUrl && selectedPlaylistIds.some(pid => t.enabledByPlaylist[pid] !== false),
-    )
+    // The pool is materialized here rather than handed over by the setup view: the view's preview
+    // is debounced and may still be in flight when "Play!" is pressed, so accepting it would risk
+    // freezing a stale pool. The price is one extra pair of requests per source.
+    const { tracks: pool } = await NavidromeGameSourceService.materializePool(sources)
+    const navidromeTracks = Object.fromEntries(pool.map(t => [t.id, t]))
 
     const isCategory = settings.gameMode === 'category'
-    const trackPoolState = createPool(isCategory ? [] : playableTracks.map(t => t.id))
+    const trackPoolState = createPool(isCategory ? [] : pool.map(t => t.id))
 
-    let ephemeralCategories: PlaylistBasedCategory[] | undefined
-    let categoryPoolState
-
+    let categoryPoolState: CategoryPoolState | undefined
     if (isCategory) {
-      const allEngineCategories: EngineCategory[] = [...enabledCategories]
-
-      if (settings.generatePlaylistCategories && selectedPlaylistIds.length > 0) {
-        const playlists = await db.playlists.bulkGet(selectedPlaylistIds)
-        ephemeralCategories = playlists
-          .filter((p): p is NonNullable<typeof p> => p != null)
-          .map(p => ({
-            id: `playlist-${p.id}`,
-            type: 'playlist-based' as const,
-            displayName: p.name,
-            playlistId: p.id,
-            points: settings.generatedCategoryPoints,
-          }))
-        allEngineCategories.push(...ephemeralCategories)
-      }
-
-      categoryPoolState = createCategoryPool(playableTracks, allEngineCategories)
+      categoryPoolState = createCategoryPool(pool, categories)
+      // The setup screen gates on its own preview, but this is a *second* materialization: if
+      // Navidrome stopped serving tags in between, every pool is empty and `startRound` would drop
+      // the host into a game that can never advance. Fail loudly so the caller stays on setup.
+      if (isCategoryPoolExhausted(categoryPoolState))
+        throw new Error('No track in the selected sources matches any of the chosen categories')
     }
 
     const id = crypto.randomUUID()
@@ -259,44 +247,6 @@ export const useLocalGameStore = defineStore('localGame', () => {
       currentRound: 0,
       trackPoolState,
       categoryPoolState,
-      selectedPlaylistIds,
-      currentTeamId: createdTeams[0]?.id,
-      roundPhase: 'playing',
-      rounds: [],
-      ephemeralCategories,
-    }
-
-    await _persist()
-    return id
-  }
-
-  async function createNavidromeGame(
-    teams: { name: string }[],
-    settings: LocalGameSettings,
-    sources: NavidromeGameSourceRef[],
-  ): Promise<string> {
-    const pool = await NavidromeGameSourceService.materializePool(sources)
-    const navidromeTracks = Object.fromEntries(pool.map(t => [t.id, t]))
-    const trackPoolState = createPool(pool.map(t => t.id))
-
-    const id = crypto.randomUUID()
-
-    const createdTeams = teams.map(t => ({
-      id: crypto.randomUUID(),
-      name: t.name,
-      score: 0,
-      roundScores: [],
-      disabled: false,
-    }))
-
-    game.value = {
-      id,
-      createdAt: Date.now(),
-      status: 'playing',
-      teams: createdTeams,
-      settings,
-      currentRound: 0,
-      trackPoolState,
       selectedPlaylistIds: [],
       currentTeamId: createdTeams[0]?.id,
       roundPhase: 'playing',
@@ -681,7 +631,6 @@ export const useLocalGameStore = defineStore('localGame', () => {
     currentTrackMatchingCategories,
     currentTeam,
     lastRoundTeamScores,
-    createGame,
     createNavidromeGame,
     resumeGame,
     findUnfinishedGame,

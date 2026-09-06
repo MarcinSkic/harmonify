@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import type { LocalGameSettings } from '@/db/schemas'
-import type { NavidromeGameSourceRef } from '@/services/navidromeGameSource'
+import type { Category, LocalGameSettings } from '@/db/schemas'
+import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import { useWindowSize, watchDebounced } from '@vueuse/core'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Breakpoint } from '@/consts'
+import { buildCoverageReport } from '@/lib/categoryCoverage'
+import { reportNavidromeError } from '@/lib/navidrome'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
 import { NavidromeGameSourceService } from '@/services'
-import { useSettingsStore } from '@/stores'
+import { useCategoriesStore, useCategorySetsStore, useSettingsStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
 import NavidromeGameSourcePicker from './components/NavidromeGameSourcePicker.vue'
 import TeamManager from './components/TeamManager.vue'
@@ -20,6 +21,8 @@ const router = useRouter()
 const localGameStore = useLocalGameStore()
 const musicPlayerStore = useMusicPlayerStore()
 const settingsStore = useSettingsStore()
+const categoriesStore = useCategoriesStore()
+const categorySetsStore = useCategorySetsStore()
 const { width: screenWidth } = useWindowSize()
 
 const isDesktop = computed(() => screenWidth.value >= Breakpoint.LG)
@@ -28,8 +31,6 @@ const isLoading = ref(false)
 const teams = ref([{ name: '' }])
 const settings = reactive<LocalGameSettings>({
   trackDuration: 20,
-  // Defaults to random: category mode only starts working again once Phase 2 sources categories
-  // from Navidrome tags. The mode switch itself stays in the form.
   gameMode: 'random',
   hostSeesAnswer: false,
   maxRounds: null,
@@ -47,36 +48,79 @@ const settings = reactive<LocalGameSettings>({
 })
 
 const selectedSources = ref<NavidromeGameSourceRef[]>([])
+const categorySetId = ref<string | null>(null)
 
 // Mirrors what createNavidromeGame will actually pool at start (dedup + overlay-disabled tracks
-// excluded), so the round count shown next to "Rounds" is not a lie. Debounced because
-// materializePool re-fetches every selected source from scratch — without it, picking sources one
-// after another would refetch already-fetched ones on every single click (O(n^2) requests).
-const totalTracks = ref(0)
+// excluded), so the round count shown next to "Rounds" is not a lie, and so the coverage report is
+// computed on exactly those field bags — no extra request. Debounced because materializePool
+// re-fetches every selected source from scratch — without it, picking sources one after another
+// would refetch already-fetched ones on every single click (O(n^2) requests).
+const pool = ref<FrozenNavidromeTrack[]>([])
+const tagsUnavailable = ref(false)
+const poolUnavailable = ref(false)
 let poolPreviewRequest = 0
 
 watchDebounced(selectedSources, async (sources) => {
   const request = ++poolPreviewRequest
 
   if (sources.length === 0) {
-    totalTracks.value = 0
+    pool.value = []
+    tagsUnavailable.value = false
+    poolUnavailable.value = false
     return
   }
 
   try {
-    const pool = await NavidromeGameSourceService.materializePool(sources)
-    if (request === poolPreviewRequest)
-      totalTracks.value = pool.length
+    const materialized = await NavidromeGameSourceService.materializePool(sources)
+    if (request !== poolPreviewRequest)
+      return
+    pool.value = materialized.tracks
+    tagsUnavailable.value = materialized.tagsUnavailable
+    poolUnavailable.value = false
   }
   catch {
-    if (request === poolPreviewRequest)
-      totalTracks.value = 0
+    if (request !== poolPreviewRequest)
+      return
+    // The report must not present zeros as facts when the fetch itself failed.
+    pool.value = []
+    tagsUnavailable.value = false
+    poolUnavailable.value = true
   }
 }, { immediate: true, debounce: 500 })
 
+const totalTracks = computed(() => pool.value.length)
+
+const selectedCategories = computed<Category[]>(() => {
+  if (!categorySetId.value)
+    return []
+  return categorySetsStore.getMembersForSet(categorySetId.value)
+    .map(member => categoriesStore.categories.find(c => c.id === member.categoryId))
+    .filter((category): category is Category => category !== undefined)
+})
+
+// Recomputed locally from the already-fetched pool — changing the set or the round count costs no
+// network traffic, so this needs no debounce of its own.
+const coverageReport = computed(() =>
+  selectedCategories.value.length === 0
+    ? null
+    : buildCoverageReport(pool.value, selectedCategories.value, settings.maxRounds),
+)
+
+const isCategoryMode = computed(() => settings.gameMode === 'category')
 const hasSourcesSelected = computed(() => selectedSources.value.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
+)
+const hasPlayableCategories = computed(() =>
+  coverageReport.value?.perCategory.some(row => row.count > 0) ?? false,
+)
+
+const canStart = computed(() =>
+  musicPlayerStore.ready
+  && hasSourcesSelected.value
+  && hasValidTeams.value
+  && !isLoading.value
+  && (!isCategoryMode.value || hasPlayableCategories.value),
 )
 
 const startButtonText = computed(() => {
@@ -86,13 +130,17 @@ const startButtonText = computed(() => {
     return 'Select an album or playlist'
   if (!hasValidTeams.value)
     return 'Fill in team names'
+  if (isCategoryMode.value && selectedCategories.value.length === 0)
+    return 'Select a category set'
+  if (isCategoryMode.value && !hasPlayableCategories.value)
+    return 'No tracks match these categories'
   if (isLoading.value)
     return 'Loading...'
   return 'Play!'
 })
 
 async function handleGameStart() {
-  if (!hasValidTeams.value || !hasSourcesSelected.value)
+  if (!canStart.value)
     return
 
   isLoading.value = true
@@ -104,14 +152,15 @@ async function handleGameStart() {
       teams.value.map(t => ({ name: t.name.trim() })),
       settings,
       selectedSources.value,
+      selectedCategories.value,
     )
 
     await localGameStore.startRound()
 
     router.push({ name: 'localRound', params: { id } })
   }
-  catch {
-    toast.error('Failed to create game')
+  catch (error) {
+    reportNavidromeError(error, 'Failed to create game')
     isLoading.value = false
   }
 }
@@ -149,7 +198,14 @@ async function handleGameStart() {
         flex min-h-0 flex-1 flex-col overflow-y-auto
       "
       >
-        <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" />
+        <LocalGameSettingsForm
+          v-model="settings"
+          v-model:category-set-id="categorySetId"
+          :total-tracks="totalTracks"
+          :coverage-report="coverageReport"
+          :tags-unavailable="tagsUnavailable"
+          :pool-unavailable="poolUnavailable"
+        />
       </TabsContent>
     </Tabs>
     <template v-else>
@@ -158,9 +214,14 @@ async function handleGameStart() {
       "
       />
       <TeamManager v-model="teams" class="min-h-0" />
-      <LocalGameSettingsForm v-model="settings" :total-tracks="totalTracks" class="
-        min-h-0
-      "
+      <LocalGameSettingsForm
+        v-model="settings"
+        v-model:category-set-id="categorySetId"
+        :total-tracks="totalTracks"
+        :coverage-report="coverageReport"
+        :tags-unavailable="tagsUnavailable"
+        :pool-unavailable="poolUnavailable"
+        class="min-h-0"
       />
     </template>
     <Button
@@ -168,12 +229,7 @@ async function handleGameStart() {
         min-w-32 place-self-center
         lg:col-span-3
       "
-      :disabled="
-        !musicPlayerStore.ready
-          || !hasSourcesSelected
-          || !hasValidTeams
-          || isLoading
-      "
+      :disabled="!canStart"
       type="submit"
     >
       {{ startButtonText }}

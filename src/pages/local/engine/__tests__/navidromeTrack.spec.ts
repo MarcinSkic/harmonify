@@ -20,6 +20,7 @@ function makeFrozenTrack(overrides: Partial<FrozenNavidromeTrack> = {}): FrozenN
     overlayKey: 'key-1',
     title: 'Song One',
     playbackRange: null,
+    fields: {},
     ...overrides,
   }
 }

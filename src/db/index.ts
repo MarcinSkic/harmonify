@@ -1,5 +1,5 @@
 import type { EntityTable } from 'dexie'
-import type { Category, CategorySet, CategorySetMember, GameResult, LinkPreview, LocalGame, Playlist, Track, TrackOverlay } from './schemas'
+import type { Category, CategorySet, CategorySetMember, GameResult, LinkPreview, LocalGame, OverlayField, Playlist, Track, TrackOverlay } from './schemas'
 import Dexie from 'dexie'
 
 export const db = new Dexie('harmonifyLibrary') as Dexie & {
@@ -12,6 +12,7 @@ export const db = new Dexie('harmonifyLibrary') as Dexie & {
   categorySets: EntityTable<CategorySet, 'id'>
   categorySetMembers: EntityTable<CategorySetMember, 'id'>
   trackOverlays: EntityTable<TrackOverlay, 'id'>
+  overlayFields: EntityTable<OverlayField, 'name'>
 }
 
 db.version(1).stores({
@@ -82,3 +83,23 @@ db.version(5)
 db.version(6).stores({
   trackOverlays: 'id',
 })
+
+db.version(7)
+  .stores({
+    categories: 'id, &displayName', // *tagFilter dropped — the field itself is gone
+    overlayFields: 'name',
+  })
+  .upgrade(async (tx) => {
+    // Clean start: `tagFilter` held tags of the old Harmonify library, not Navidrome field names,
+    // so there is nothing to derive a `<field> <operator> <value>` predicate from. Category rows go,
+    // and with them the set members pointing at them — named sets survive, empty.
+    // Games are deliberately left alone: an unfinished category game from before the migration stops
+    // resolving its categories, which is a changelog entry, not a reason for a destructive migration.
+    const categoryIds = (await tx.table('categories').toArray()).map((c: { id: string }) => c.id)
+    if (categoryIds.length === 0)
+      return
+
+    const orphanedMembers = await tx.table('categorySetMembers').where('categoryId').anyOf(categoryIds).toArray()
+    await tx.table('categorySetMembers').bulkDelete(orphanedMembers.map((m: { id: string }) => m.id))
+    await tx.table('categories').bulkDelete(categoryIds)
+  })

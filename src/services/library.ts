@@ -1,5 +1,5 @@
 import type { Category, CategorySet, CategorySetMember, Playlist, Track, TrackAnnotation } from '@/db/schemas'
-import type { CsvCategoryRow, CsvSetRow } from '@/lib/csv'
+import type { ParsedCategory, ParsedCategorySet } from '@/lib/categoryJson'
 import { db } from '@/db'
 
 type NewPlaylist = Omit<Playlist, 'id' | 'createdAt'>
@@ -188,46 +188,40 @@ export async function getAllCategories(): Promise<Category[]> {
   return db.categories.toArray()
 }
 
-export async function countTracksMatchingTagFilter(
-  tagFilter: string[],
-): Promise<number> {
-  if (tagFilter.length === 0)
-    return 0
-  const matchedIds = new Set<string>()
-  const tracks = await db.tracks.where('tags').anyOf(tagFilter).toArray()
-  for (const track of tracks) {
-    if (track.playlistIds.some(pid => track.enabledByPlaylist[pid] !== false))
-      matchedIds.add(track.id)
-  }
-  return matchedIds.size
-}
-
-export async function importCategories(rows: CsvCategoryRow[]): Promise<{ created: number, updated: number }> {
+/**
+ * Upsert keyed by `displayName` (unique in the database): the file is the source of truth and the
+ * library its working copy, so a category already stored under that name is overwritten with what
+ * the file says. Every writable field is passed explicitly — `undefined` deletes the key in Dexie,
+ * which is what makes a file that dropped `points` actually clear it instead of keeping the old
+ * value. A name repeated inside one file is a parse error, caught before this point.
+ */
+export async function importCategories(
+  rows: ParsedCategory[],
+): Promise<{ created: number, updated: number }> {
   let created = 0
   let updated = 0
+
   await db.transaction('rw', db.categories, async () => {
-    const existing = await db.categories.toArray()
-    const byName = new Map(existing.map(c => [c.displayName, c]))
+    const byName = new Map((await db.categories.toArray()).map(c => [c.displayName, c]))
+
     for (const row of rows) {
-      const match = byName.get(row.displayName)
-      if (match) {
-        await db.categories.update(match.id, {
+      const existing = byName.get(row.displayName)
+
+      if (existing) {
+        await db.categories.update(existing.id, {
+          match: row.match,
           description: row.description,
-          tagFilter: row.tagFilter,
           points: row.points,
         })
         updated++
+        continue
       }
-      else {
-        await db.categories.add({
-          ...row,
-          id: crypto.randomUUID(),
-          createdAt: Date.now(),
-        })
-        created++
-      }
+
+      await db.categories.add({ ...row, id: crypto.randomUUID(), createdAt: Date.now() })
+      created++
     }
   })
+
   return { created, updated }
 }
 
@@ -350,46 +344,76 @@ export async function getCategoriesForPlaylists(playlistIds: string[]): Promise<
   return result
 }
 
-// Category Set CSV
+// Category Set exchange
 
-export async function importCategorySet(rows: CsvSetRow[]): Promise<{ created: number, updated: number }> {
-  const groupedBySet = new Map<string, CsvSetRow[]>()
-  for (const row of rows) {
-    if (!groupedBySet.has(row.setName))
-      groupedBySet.set(row.setName, [])
-    groupedBySet.get(row.setName)!.push(row)
-  }
-
-  const allCategories = await db.categories.toArray()
-  const categoryByName = new Map(allCategories.map(c => [c.displayName, c]))
-
-  const allSets = await db.categorySets.toArray()
-  const setByName = new Map(allSets.map(s => [s.name, s]))
-
+/**
+ * Categories are addressed by `displayName`, so a set file only means something next to the
+ * category file it was exported with.
+ *
+ * A set whose every name resolves is written exactly as the file has it — membership replaced,
+ * order taken from the array position, which is what makes reordering the file show up in the UI.
+ * A set with an unresolvable name is only ever built up, never rebuilt: a new set gets the members
+ * that do resolve, an existing one is left exactly as it was and reported in `unchangedSets`.
+ * Rebuilding it would silently empty the user's set when the sets file is imported before the
+ * categories file.
+ */
+export async function importCategorySets(
+  rows: ParsedCategorySet[],
+): Promise<{ created: number, updated: number, unchangedSets: string[], unknownCategories: string[] }> {
   let created = 0
   let updated = 0
+  const unchangedSets: string[] = []
+  const unknownCategories: string[] = []
 
-  for (const [setName, setRows] of groupedBySet) {
-    let setId: string
-    if (setByName.has(setName)) {
-      setId = setByName.get(setName)!.id
-      updated++
-    }
-    else {
-      setId = await addCategorySet(setName)
-      created++
-    }
+  await db.transaction('rw', db.categorySets, db.categorySetMembers, db.categories, async () => {
+    const categoryByName = new Map((await db.categories.toArray()).map(c => [c.displayName, c]))
+    const setByName = new Map((await db.categorySets.toArray()).map(s => [s.name, s]))
 
-    const sortedRows = [...setRows].sort((a, b) => a.order - b.order)
-    for (const row of sortedRows) {
-      const category = categoryByName.get(row.categoryName)
-      if (!category)
+    for (const row of rows) {
+      const unknown = row.categories.filter(name => !categoryByName.has(name))
+      unknownCategories.push(...unknown)
+
+      const existingSet = setByName.get(row.name)
+
+      if (existingSet && unknown.length > 0) {
+        unchangedSets.push(row.name)
         continue
-      await addCategoryToSet(setId, category.id)
-    }
-  }
+      }
 
-  return { created, updated }
+      let setId: string
+
+      if (existingSet) {
+        setId = existingSet.id
+        const members = await db.categorySetMembers.where('categorySetId').equals(setId).toArray()
+        await db.categorySetMembers.bulkDelete(members.map(m => m.id))
+        updated++
+      }
+      else {
+        setId = crypto.randomUUID()
+        await db.categorySets.add({ id: setId, name: row.name, createdAt: Date.now() })
+        created++
+      }
+
+      let order = 0
+      const added = new Set<string>()
+
+      for (const categoryName of row.categories) {
+        const category = categoryByName.get(categoryName)
+        if (!category || added.has(category.id))
+          continue
+
+        added.add(category.id)
+        await db.categorySetMembers.add({
+          id: crypto.randomUUID(),
+          categorySetId: setId,
+          categoryId: category.id,
+          order: order++,
+        })
+      }
+    }
+  })
+
+  return { created, updated, unchangedSets, unknownCategories }
 }
 
 export async function exportCategorySet(setId: string): Promise<Array<{ category: Category, order: number }>> {

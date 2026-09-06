@@ -63,10 +63,12 @@ Shared stores live in `src/stores/`, re-exported via `src/stores/index.ts` — a
 | `result`         | Round + game scoring, sorted leaderboards                      |
 | `settings`       | User preferences (autoplay, animations, visualizer, hide scores)|
 | `library`        | Local library: playlists, tracks, selection, tags               |
-| `categories`     | Categories (tag-filter based)                                  |
+| `categories`     | Categories (metadata predicates, `match`)                      |
 | `categorySets`   | Ordered sets of categories                                     |
+| `overlayFields`  | Registry of custom overlay field names + their declared type   |
 | `serverLibrary`  | Music-server playlists + load state                            |
 | `spotifyLibrary` | Spotify playlist/album selection and track fetching            |
+| `navidrome`      | Navidrome connection status, reading its session off the service |
 
 **Slice-local:** `src/pages/game/stores/` (`musicPlayer`), `src/pages/local/stores/` (`localGame`), `src/pages/cover/stores/` (`covers`).
 
@@ -81,7 +83,7 @@ Both styles exist. **Setup style (`defineStore('name', () => {...})`) is the dir
 The single-device game (`src/pages/local/`) is architecturally distinct from the multiplayer game: there is no server, so round logic lives in the client as **pure, state-in/state-out functions**.
 
 - `src/pages/local/engine/trackPool.ts` — `createPool(trackIds)`, `pickRandom(state)` returning `{ trackId, newState }`, `isExhausted(state)`.
-- `src/pages/local/engine/categoryPool.ts` — the same shape for category mode, plus `getCategoryCounts` and the `EngineCategory` union (a stored `Category` or a `PlaylistBasedCategory`).
+- `src/pages/local/engine/categoryPool.ts` — the same shape for category mode, plus `getCategoryCounts`. `EngineCategory` is a stored `Category` and nothing else: a pool is built by evaluating each category's `match` predicate (`src/lib/categoryPredicate.ts`) against a track's field bag. `PlaylistBasedCategory` no longer builds pools — it survives only so games frozen before the predicate model still show their category names.
 - Engine functions never touch Dexie, Pinia, or Vue. They are unit-tested directly in `src/pages/local/engine/__tests__/`.
 - `src/pages/local/stores/localGame.ts` is the only orchestrator: it calls the engine, holds the current `LocalGame`, and persists pool state (`TrackPoolState` / `CategoryPoolState` are themselves schemas in `src/db/schemas.ts`) into the `localGames` table, so a game survives a reload.
 - Finished games are validated with `gameResultSchema` and written to the `gameResults` table. The `results` slice (`src/pages/results/`) reads them back through `localGameStore.findAllGameResults()`.
@@ -152,7 +154,7 @@ Three ways tracks and metadata enter the local library, all converging on `Libra
 
 - **Spotify** — `LibraryImportService.importFromSpotify()`, with `spotifyTrackToTrack` / `trackToSpotifyTrack` bridging the wire type and the persisted entity.
 - **Music server** — `MusicServerService.getTracks()` feeding the same conversion path.
-- **CSV** — `parseCSV()` in `src/lib/csv.ts` produces `TrackAnnotation[]`, applied by `LibraryService.applyCSVToPlaylist()`, which reports `{ updated, notFound, previewUrls }`. Categories and category sets have their own serialize/parse pairs in the same file.
+- **CSV** — `parseCSV()` in `src/lib/csv.ts` produces `TrackAnnotation[]`, applied by `LibraryService.applyCSVToPlaylist()`, which reports `{ updated, notFound, previewUrls }`. `csv.ts` also holds the track-overlay pair (`parseOverlayCSV` / `serializeOverlayCSV`) — flat tables stay CSV. Categories and category sets are exchanged as **JSON** instead (`src/lib/categoryJson.ts`): a predicate is nested and a set is an ordered list, neither of which a flat table expresses without inventing a grammar.
 
 Deduplication on insert is `LibraryService.addTracksDeduplicating()`. After an import that yields preview URLs, `LinkPreviewService.triggerForUrls()` kicks off the background preview queue.
 
@@ -163,6 +165,7 @@ Deduplication on insert is `LibraryService.addTracksDeduplicating()`. After an i
 - `useLiveQuery` — Dexie → Vue reactivity (see above)
 - `useLinkPreview` — resolves a preview image for a URL, driving the `linkPreviews` table
 - `useLoadServerLibrary`, `useLoadSpotifyLibrary` — `onMounted` loaders that fill the corresponding store once, toast on failure, and are safe to call from multiple views
+- `useNavidromeTagIndex` — Navidrome's tag names and values, fetched once per scope on demand; suggests fields and operands in the `library` slice (`CategoryMatchEditor.vue`) and the `navidrome` one (`NavidromeOverlayFieldsDialog.vue`)
 
 ## shadcn-vue UI Components
 

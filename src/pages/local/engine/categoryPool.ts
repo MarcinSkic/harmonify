@@ -1,6 +1,19 @@
-import type { Category, CategoryPoolState, PlaylistBasedCategory, Track } from '@/db/schemas'
+import type { Category, CategoryPoolState } from '@/db/schemas'
+import type { FieldBag } from '@/lib/categoryPredicate'
+import { matchesCategory } from '@/lib/categoryPredicate'
 
-export type EngineCategory = Category | PlaylistBasedCategory
+/** Since Phase 2 a pool is built from predicate categories and nothing else. */
+export type EngineCategory = Category
+
+/**
+ * All the pool needs off a track: an id to play and the metadata bag its predicate is tested
+ * against. `PlaylistBasedCategory` no longer builds pools — it read `playlistIds`, which this shape
+ * does not carry — and survives only so games frozen in Phase 1 still show their category names.
+ */
+export interface CategoryPoolTrack {
+  id: string
+  fields: FieldBag
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const result = [...arr]
@@ -11,28 +24,15 @@ function shuffle<T>(arr: T[]): T[] {
   return result
 }
 
-function isPlaylistBased(category: EngineCategory): category is PlaylistBasedCategory {
-  return 'type' in category && category.type === 'playlist-based'
-}
-
 export function createCategoryPool(
-  tracks: Track[],
+  tracks: CategoryPoolTrack[],
   categories: EngineCategory[],
 ): CategoryPoolState {
   const categoryPools: Record<string, string[]> = {}
   for (const category of categories) {
-    let matchingIds: string[]
-    if (isPlaylistBased(category)) {
-      matchingIds = tracks
-        .filter(t => t.playlistIds.includes(category.playlistId))
-        .map(t => t.id)
-    }
-    else {
-      const filter = new Set(category.tagFilter)
-      matchingIds = tracks
-        .filter(t => t.tags.some(tag => filter.has(tag)))
-        .map(t => t.id)
-    }
+    const matchingIds = tracks
+      .filter(track => matchesCategory(track.fields, category.match))
+      .map(track => track.id)
     categoryPools[category.id] = shuffle(matchingIds)
   }
 

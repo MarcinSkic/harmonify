@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CategoryLimit, LocalGameSettings } from '@/db/schemas'
-import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash, Star } from '@lucide/vue'
+import type { CoverageReport as CoverageReportData } from '@/lib/categoryCoverage'
+import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash, Star, TriangleAlert } from '@lucide/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -8,12 +9,18 @@ import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncre
 import { Slider } from '@/components/ui/slider'
 import Switch from '@/components/ui/switch/Switch.vue'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import CategorySetPicker from './CategorySetPicker.vue'
+import CoverageReport from './CoverageReport.vue'
 
 defineProps<{
   totalTracks: number
+  coverageReport: CoverageReportData | null
+  tagsUnavailable: boolean
+  poolUnavailable: boolean
 }>()
 
 const settings = defineModel<LocalGameSettings>({ required: true })
+const categorySetId = defineModel<string | null>('categorySetId', { required: true })
 
 const isUnlimitedRounds = computed(() => settings.value.maxRounds === null)
 
@@ -88,6 +95,18 @@ function toggleUnlimitedRounds() {
           <InfinityIcon class="size-4" />
         </Button>
       </div>
+
+      <p
+        v-if="poolUnavailable"
+        class="
+          mb-2 flex items-start gap-1.5 text-sm text-destructive
+          sm:col-span-2
+          lg:col-span-1
+        "
+      >
+        <TriangleAlert class="mt-0.5 size-4 shrink-0" />
+        Could not load the selected sources from Navidrome.
+      </p>
 
       <Label for="trackDuration" class="text-base">Track duration</Label>
       <NumberField
@@ -165,6 +184,27 @@ function toggleUnlimitedRounds() {
       </template>
 
       <template v-if="settings.gameMode === 'category'">
+        <Label class="text-base">Category set</Label>
+        <CategorySetPicker
+          v-model="categorySetId"
+          class="
+            mb-2
+            sm:w-56
+            lg:w-full
+          "
+        />
+
+        <Label class="text-base">Coverage</Label>
+        <CoverageReport
+          :report="coverageReport"
+          :tags-unavailable="tagsUnavailable"
+          class="
+            mb-2
+            sm:col-span-2
+            lg:col-span-1
+          "
+        />
+
         <Label class="text-base">Category limits</Label>
         <ToggleGroup
           type="single"

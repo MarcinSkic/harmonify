@@ -17,6 +17,12 @@ const props = defineProps<{
   teams: LocalGameTeam[]
   currentTeamId: string | undefined
   disabledCategoryIds?: Set<string>
+  /**
+   * Off for Navidrome-sourced games: `playSpecificTrack` searches `db.tracks`, the old library
+   * table, which a frozen Navidrome pool has nothing to do with. Bringing it back means searching
+   * `game.navidromeTracks` instead — a feature, not part of Phase 2.
+   */
+  showCheatInput?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -80,7 +86,7 @@ function handleClick(categoryId: string, count: number) {
         @toggle-disabled="(id: string) => emit('toggleTeamDisabled', id)"
       />
       <AddTeamInline @add="emit('addTeam', $event)" />
-      <CheatInput />
+      <CheatInput v-if="showCheatInput" />
     </div>
 
     <h2

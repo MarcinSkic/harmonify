@@ -5,32 +5,17 @@ import { computed, ref, shallowRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useCategoriesStore, useLibraryStore } from '@/stores'
+import { useCategoriesStore } from '@/stores'
 import CategoryCard from './components/CategoryCard.vue'
-import CategoryCsvExportButton from './components/CategoryCsvExportButton.vue'
-import CategoryCsvImportButton from './components/CategoryCsvImportButton.vue'
 import CategoryEditDialog from './components/CategoryEditDialog.vue'
+import CategoryJsonExportButton from './components/CategoryJsonExportButton.vue'
+import CategoryJsonImportButton from './components/CategoryJsonImportButton.vue'
 
 const categoriesStore = useCategoriesStore()
-const libraryStore = useLibraryStore()
 
 const search = ref('')
 const editOpen = ref(false)
 const editing = shallowRef<Category | null>(null)
-
-const trackCounts = computed(() => {
-  const map = new Map<string, number>()
-  for (const category of categoriesStore.categories) {
-    const tagSet = new Set(category.tagFilter)
-    const ids = new Set<string>()
-    for (const track of libraryStore.tracks) {
-      if (track.tags.some(tag => tagSet.has(tag)))
-        ids.add(track.id)
-    }
-    map.set(category.id, ids.size)
-  }
-  return map
-})
 
 const filteredCategories = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -45,9 +30,6 @@ const filteredCategories = computed(() => {
     const pointsDiff = aHasPoints ? (a.points! - b.points!) : 0
     if (pointsDiff !== 0)
       return pointsDiff
-    const tracksDiff = (trackCounts.value.get(b.id) ?? 0) - (trackCounts.value.get(a.id) ?? 0)
-    if (tracksDiff !== 0)
-      return tracksDiff
     return a.displayName.localeCompare(b.displayName)
   })
 })
@@ -97,8 +79,8 @@ async function handleDelete(id: string) {
           >Manage Sets</span>
         </Button>
       </RouterLink>
-      <CategoryCsvImportButton />
-      <CategoryCsvExportButton />
+      <CategoryJsonImportButton />
+      <CategoryJsonExportButton />
       <Button class="gap-2" @click="openCreate">
         <Plus class="size-4" />
         Add category
@@ -130,8 +112,8 @@ async function handleDelete(id: string) {
         >
           <p>No categories yet.</p>
           <p class="text-sm">
-            Create one to decorate a group of tags with a display name, points,
-            and ordering.
+            Create one to match tracks by their metadata and give the match a
+            display name and points.
           </p>
           <Button class="mt-2 gap-2" @click="openCreate">
             <Plus class="size-4" />
@@ -162,7 +144,6 @@ async function handleDelete(id: string) {
             v-for="category in filteredCategories"
             :key="category.id"
             :category="category"
-            :track-count="trackCounts.get(category.id) ?? 0"
             @edit="openEdit(category)"
             @delete="handleDelete(category.id)"
           />

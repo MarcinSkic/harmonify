@@ -3,18 +3,18 @@ import { Download } from '@lucide/vue'
 import { saveAs } from 'file-saver'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
-import { serializeCategoriesCSV } from '@/lib/csv'
+import { serializeCategoriesJSON } from '@/lib/categoryJson'
 import { useCategoriesStore } from '@/stores'
 
 const categoriesStore = useCategoriesStore()
 
 function handleExport() {
   try {
-    const csv = serializeCategoriesCSV(categoriesStore.categories)
-    saveAs(new Blob([csv], { type: 'text/csv' }), 'categories.csv')
+    const json = serializeCategoriesJSON(categoriesStore.categories)
+    saveAs(new Blob([json], { type: 'application/json' }), 'categories.json')
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'CSV export failed')
+    toast.error(e instanceof Error ? e.message : 'JSON export failed')
   }
 }
 </script>
@@ -27,6 +27,6 @@ function handleExport() {
         hidden
         sm:inline
       "
-    >Export CSV</span>
+    >Export JSON</span>
   </Button>
 </template>

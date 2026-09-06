@@ -1,4 +1,5 @@
-import type { Category, Track } from '@/db/schemas'
+import type { CategoryPoolTrack } from '../categoryPool'
+import type { Category } from '@/db/schemas'
 import { describe, expect, it } from 'vitest'
 import {
   createCategoryPool,
@@ -7,49 +8,39 @@ import {
   pickFromCategory,
 } from '../categoryPool'
 
-function makeTrack(id: string, tags: string[]): Track {
-  return {
-    id,
-    sourceId: id,
-    name: `Track ${id}`,
-    artists: ['Artist'],
-    albumName: 'Album',
-    durationMs: 1000,
-    audioUrl: `https://example.com/${id}`,
-    playbackRange: null,
-    tags,
-    playlistIds: [],
-    metadataSource: 'manual',
-    enabledByPlaylist: {},
-    createdAt: 0,
-  }
+function makeTrack(id: string, genres: string[]): CategoryPoolTrack {
+  return { id, fields: genres.length > 0 ? { genre: genres } : {} }
 }
 
-function makeCategory(id: string, tagFilter: string[]): Category {
+function genreIs(genre: string): Category['match'] {
+  return { all: [{ is: { genre } }] }
+}
+
+function makeCategory(id: string, match: Category['match']): Category {
   return {
     id,
-    tagFilter,
+    match,
     displayName: id,
     createdAt: 0,
   }
 }
 
 describe('categoryPool', () => {
-  const tracks: Track[] = [
+  const tracks: CategoryPoolTrack[] = [
     makeTrack('t1', ['rock']),
     makeTrack('t2', ['rock', 'pop']),
     makeTrack('t3', ['pop']),
     makeTrack('t4', ['jazz']),
-    makeTrack('t5', []), // untagged, should be excluded
+    makeTrack('t5', []), // no fields at all, matched by no positive predicate
   ]
 
-  const rockCategory = makeCategory('cat-rock', ['rock'])
-  const popCategory = makeCategory('cat-pop', ['pop'])
-  const jazzCategory = makeCategory('cat-jazz', ['jazz'])
+  const rockCategory = makeCategory('cat-rock', genreIs('rock'))
+  const popCategory = makeCategory('cat-pop', genreIs('pop'))
+  const jazzCategory = makeCategory('cat-jazz', genreIs('jazz'))
   const categories = [rockCategory, popCategory, jazzCategory]
 
   describe('createCategoryPool', () => {
-    it('groups tracks by category using tagFilter', () => {
+    it('groups tracks by category using the predicate', () => {
       const pool = createCategoryPool(tracks, categories)
 
       expect(pool.categoryPools[rockCategory.id]).toEqual(
@@ -64,8 +55,10 @@ describe('categoryPool', () => {
       expect(pool.playedTrackIds).toHaveLength(0)
     })
 
-    it('supports categories that union multiple tags', () => {
-      const ostCategory = makeCategory('cat-ost', ['rock', 'jazz'])
+    it('supports categories that union several values with any', () => {
+      const ostCategory = makeCategory('cat-ost', {
+        any: [{ is: { genre: 'rock' } }, { is: { genre: 'jazz' } }],
+      })
       const pool = createCategoryPool(tracks, [ostCategory])
 
       expect(pool.categoryPools[ostCategory.id]).toEqual(
@@ -74,15 +67,33 @@ describe('categoryPool', () => {
       expect(pool.categoryPools[ostCategory.id]).toHaveLength(3)
     })
 
-    it('excludes tracks without matching tags', () => {
+    it('leaves a track matched by no predicate out of every pool', () => {
       const pool = createCategoryPool(tracks, categories)
       const allIds = Object.values(pool.categoryPools).flat()
 
       expect(allIds).not.toContain('t5')
     })
 
+    it('pools the tracks a predicate matches on an absent field', () => {
+      const untaggedCategory = makeCategory('cat-untagged', {
+        all: [{ isMissing: { genre: true } }],
+      })
+      const pool = createCategoryPool(tracks, [untaggedCategory])
+
+      expect(pool.categoryPools[untaggedCategory.id]).toEqual(['t5'])
+    })
+
+    it('matches field values regardless of case', () => {
+      const pool = createCategoryPool(
+        [makeTrack('loud', ['ROCK'])],
+        [rockCategory],
+      )
+
+      expect(pool.categoryPools[rockCategory.id]).toEqual(['loud'])
+    })
+
     it('creates empty pool for category with no matching tracks', () => {
-      const orphanCategory = makeCategory('cat-orphan', ['metal'])
+      const orphanCategory = makeCategory('cat-orphan', genreIs('metal'))
       const pool = createCategoryPool(tracks, [orphanCategory])
 
       expect(pool.categoryPools[orphanCategory.id]).toEqual([])
@@ -117,7 +128,7 @@ describe('categoryPool', () => {
 
     it('removes the picked track from ALL categories it belonged to', () => {
       const pool = createCategoryPool(tracks, categories)
-      // t2 has tags [rock, pop], so it's in both rockCategory and popCategory.
+      // t2 carries genre [rock, pop], so it sits in both rockCategory and popCategory.
       // Force-pick by deterministic ordering.
       const forcedState = {
         ...pool,
@@ -135,7 +146,7 @@ describe('categoryPool', () => {
     })
 
     it('keeps empty categories in the map (for UI display)', () => {
-      const soloCategory = makeCategory('cat-solo', ['solo'])
+      const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
         [makeTrack('only', ['solo'])],
         [soloCategory],
@@ -157,7 +168,7 @@ describe('categoryPool', () => {
     })
 
     it('throws when the category is empty', () => {
-      const soloCategory = makeCategory('cat-solo', ['solo'])
+      const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
         [makeTrack('only', ['solo'])],
         [soloCategory],
@@ -187,7 +198,7 @@ describe('categoryPool', () => {
     })
 
     it('includes exhausted categories with count 0', () => {
-      const soloCategory = makeCategory('cat-solo', ['solo'])
+      const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
         [makeTrack('only', ['solo'])],
         [soloCategory],
@@ -207,7 +218,7 @@ describe('categoryPool', () => {
     })
 
     it('returns true when all categories are empty', () => {
-      const soloCategory = makeCategory('cat-solo', ['solo'])
+      const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
         [makeTrack('only', ['solo'])],
         [soloCategory],
@@ -225,8 +236,8 @@ describe('categoryPool', () => {
 
     it('returns true when the last multi-category track is played', () => {
       // One track in two categories — playing from either drains both.
-      const catA = makeCategory('cat-a', ['x'])
-      const catB = makeCategory('cat-b', ['x'])
+      const catA = makeCategory('cat-a', genreIs('x'))
+      const catB = makeCategory('cat-b', genreIs('x'))
       const pool = createCategoryPool([makeTrack('a', ['x'])], [catA, catB])
       const drained = pickFromCategory(pool, catA.id).newState
 

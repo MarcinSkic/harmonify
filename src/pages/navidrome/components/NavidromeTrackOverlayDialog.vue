@@ -4,6 +4,7 @@ import type { SubsonicSong } from '@/services/navidrome'
 import { Plus, X } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
+import SuggestInput from '@/components/SuggestInput.vue'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { formatPlaybackRange, parsePlaybackRange } from '@/lib/csv'
 import { deriveOverlayKey } from '@/lib/trackOverlayKey'
 import { LibraryOverlayService } from '@/services'
+import { useOverlayFieldsStore } from '@/stores'
 
 const props = defineProps<{
   song: SubsonicSong | null
@@ -29,6 +31,9 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { required: true })
+
+const overlayFieldsStore = useOverlayFieldsStore()
+const registeredFieldNames = computed(() => overlayFieldsStore.overlayFields.map(field => field.name))
 
 const playbackStart = ref('')
 const playbackEnd = ref('')
@@ -195,7 +200,12 @@ async function handleSubmit() {
             :key="index"
             class="flex items-center gap-2"
           >
-            <Input v-model="field.name" placeholder="Field name" class="flex-1" autocomplete="off" />
+            <SuggestInput
+              v-model="field.name"
+              :suggestions="registeredFieldNames"
+              placeholder="Field name"
+              class="flex-1"
+            />
             <Input v-model="field.value" placeholder="Value" class="flex-1" autocomplete="off" />
             <Button
               type="button"

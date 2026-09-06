@@ -97,3 +97,30 @@ describe('getOverlaysByKeys / getAllOverlays', () => {
     expect(overlays).toHaveLength(2)
   })
 })
+
+describe('listCustomFieldNames', () => {
+  it('collects the field names an import wrote without registering them', async () => {
+    await LibraryOverlayService.setCustomField({ musicBrainzId: 'mbid-1', title: 'A' }, 'popularity', '3')
+    await LibraryOverlayService.setCustomField({ musicBrainzId: 'mbid-2', title: 'B' }, 'popularity', '5')
+    await LibraryOverlayService.setCustomField({ musicBrainzId: 'mbid-2', title: 'B' }, 'decade', '2020')
+
+    const names = await LibraryOverlayService.listCustomFieldNames()
+
+    expect([...names].sort()).toEqual(['decade', 'popularity'])
+  })
+
+  it('keeps names that differ only in case apart', async () => {
+    await LibraryOverlayService.setCustomField({ musicBrainzId: 'mbid-1', title: 'A' }, 'Popularity', '3')
+    await LibraryOverlayService.setCustomField({ musicBrainzId: 'mbid-2', title: 'B' }, 'popularity', '5')
+
+    const names = await LibraryOverlayService.listCustomFieldNames()
+
+    expect([...names].sort()).toEqual(['Popularity', 'popularity'])
+  })
+
+  it('returns nothing when no overlay carries a custom field', async () => {
+    await LibraryOverlayService.upsertOverlay({ musicBrainzId: 'mbid-1', title: 'A' }, {})
+
+    expect(await LibraryOverlayService.listCustomFieldNames()).toEqual([])
+  })
+})

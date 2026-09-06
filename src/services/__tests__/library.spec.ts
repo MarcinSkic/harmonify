@@ -132,3 +132,36 @@ describe('tags', () => {
     expect(tags).toEqual([])
   })
 })
+
+describe('importCategories', () => {
+  beforeEach(async () => {
+    await db.categories.clear()
+  })
+
+  it('overwrites a category stored under the same display name and clears fields the file drops', async () => {
+    await db.categories.add({
+      id: crypto.randomUUID(),
+      displayName: 'OST',
+      match: { all: [{ is: { grouping: 'ost' } }] },
+      description: 'old',
+      points: 5,
+      createdAt: 1,
+    })
+
+    const result = await LibraryService.importCategories([
+      { displayName: 'OST', match: { any: [{ gt: { popularity: 2 } }] } },
+      { displayName: 'Anime OP', match: { all: [{ is: { grouping: 'op' } }] }, points: 10 },
+    ])
+
+    expect(result).toEqual({ created: 1, updated: 1 })
+
+    const stored = await LibraryService.getAllCategories()
+    const overwritten = stored.find(c => c.displayName === 'OST')!
+    expect(overwritten.match).toEqual({ any: [{ gt: { popularity: 2 } }] })
+    expect(overwritten.points).toBeUndefined()
+    expect(overwritten.description).toBeUndefined()
+    // The row keeps its identity, so category set members still point at it.
+    expect(overwritten.createdAt).toBe(1)
+    expect(stored.find(c => c.displayName === 'Anime OP')!.points).toBe(10)
+  })
+})

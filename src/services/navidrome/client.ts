@@ -202,6 +202,18 @@ export async function nativeFetch<Schema extends z.ZodType>(
   schema: Schema,
   options: NativeRequestOptions = {},
 ): Promise<z.infer<Schema>> {
+  return (await nativeFetchWithHeaders(path, schema, options)).data
+}
+
+/**
+ * Same request as `nativeFetch`, plus the response headers — collection endpoints report the full
+ * row count in `x-total-count` and need it to tell a complete answer from a paginated one.
+ */
+export async function nativeFetchWithHeaders<Schema extends z.ZodType>(
+  path: string,
+  schema: Schema,
+  options: NativeRequestOptions = {},
+): Promise<{ data: z.infer<Schema>, headers: Headers }> {
   const { method = 'GET', body } = options
   const { baseUrl, jwt, authenticated } = resolveNativeTarget(options)
 
@@ -229,7 +241,7 @@ export async function nativeFetch<Schema extends z.ZodType>(
   if (!parsed.success)
     throw new NavidromeError('unsupportedShape', `${path}: ${parsed.error.issues[0]?.message ?? 'unknown validation error'}`)
 
-  return parsed.data
+  return { data: parsed.data, headers: response.headers }
 }
 
 /** Navidrome hands back a refreshed JWT on every native response, so an active session never expires. */

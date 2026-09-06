@@ -2,10 +2,13 @@ import type { TrackOverlay } from '@/db/schemas'
 import type { SubsonicSong } from '@/services/navidrome'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { deriveOverlayKey } from '@/lib/trackOverlayKey'
+import { NavidromeError } from '@/services/navidrome'
 import { materializePool } from '../navidromeGameSource'
 
 const getAlbum = vi.fn()
 const getPlaylist = vi.fn()
+const getAlbumSongTags = vi.fn()
+const getPlaylistSongTags = vi.fn()
 const getOverlaysByKeys = vi.fn()
 
 vi.mock('@/services', async (importOriginal) => {
@@ -16,6 +19,8 @@ vi.mock('@/services', async (importOriginal) => {
       ...actual.NavidromeService,
       getAlbum: (id: string) => getAlbum(id),
       getPlaylist: (id: string) => getPlaylist(id),
+      getAlbumSongTags: (id: string) => getAlbumSongTags(id),
+      getPlaylistSongTags: (id: string) => getPlaylistSongTags(id),
     },
     LibraryOverlayService: {
       ...actual.LibraryOverlayService,
@@ -54,6 +59,8 @@ function makeOverlay(overrides: Partial<TrackOverlay> = {}): TrackOverlay {
 beforeEach(() => {
   vi.clearAllMocks()
   getOverlaysByKeys.mockResolvedValue(new Map())
+  getAlbumSongTags.mockResolvedValue(new Map())
+  getPlaylistSongTags.mockResolvedValue(new Map())
 })
 
 describe('materializePool', () => {
@@ -62,7 +69,7 @@ describe('materializePool', () => {
     getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [song] })
     getPlaylist.mockResolvedValue({ playlist: { id: 'playlist-1', name: 'Playlist' }, songs: [song] })
 
-    const pool = await materializePool([
+    const { tracks: pool } = await materializePool([
       { type: 'album', id: 'album-1', name: 'Album' },
       { type: 'playlist', id: 'playlist-1', name: 'Playlist' },
     ])
@@ -87,7 +94,7 @@ describe('materializePool', () => {
       [disabledKey, makeOverlay({ id: disabledKey, title: 'Disabled Song', enabled: false })],
     ]))
 
-    const pool = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+    const { tracks: pool } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
 
     expect(pool.map(t => t.id)).toEqual(['song-1'])
   })
@@ -112,7 +119,7 @@ describe('materializePool', () => {
       })],
     ]))
 
-    const pool = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+    const { tracks: pool } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
 
     expect(pool[0].playbackRange).toEqual({ startMs: 5000, endMs: 15000 })
     expect(pool[0].previewImageUrl).toBe('https://example.com/preview.png')
@@ -122,10 +129,82 @@ describe('materializePool', () => {
     const song = makeSong({ id: 'song-1' })
     getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [song] })
 
-    const pool = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+    const { tracks: pool } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
 
     expect(pool).toHaveLength(1)
     expect(pool[0].playbackRange).toBeNull()
     expect(pool[0].previewImageUrl).toBeUndefined()
+  })
+})
+
+describe('materializePool — field bags', () => {
+  it('joins album tags by song id', async () => {
+    const song = makeSong({ id: 'song-1' })
+    getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [song] })
+    getAlbumSongTags.mockResolvedValue(new Map([['song-1', { grouping: ['op'], genre: ['Anime', 'J-Pop'] }]]))
+
+    const { tracks, tagsUnavailable } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+
+    expect(tagsUnavailable).toBe(false)
+    expect(tracks[0].fields).toEqual({ grouping: ['op'], genre: ['Anime', 'J-Pop'] })
+  })
+
+  it('joins playlist tags by the song id the service keys them with (mediaFileId, not entry id)', async () => {
+    const song = makeSong({ id: 'song-42' })
+    getPlaylist.mockResolvedValue({ playlist: { id: 'playlist-1', name: 'Playlist' }, songs: [song] })
+    // getPlaylistSongTags keys by mediaFileId; an entry-id keyed map ("1") would join against nothing.
+    getPlaylistSongTags.mockResolvedValue(new Map([['song-42', { grouping: ['ed'] }]]))
+
+    const { tracks } = await materializePool([{ type: 'playlist', id: 'playlist-1', name: 'Playlist' }])
+
+    expect(tracks[0].fields).toEqual({ grouping: ['ed'] })
+  })
+
+  it('leaves the field bag empty for a song the tag map does not cover', async () => {
+    getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [makeSong({ id: 'song-1' })] })
+    getAlbumSongTags.mockResolvedValue(new Map([['other-song', { grouping: ['op'] }]]))
+
+    const { tracks } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+
+    expect(tracks[0].fields).toEqual({})
+  })
+
+  it('lets an overlay custom field win over a Navidrome tag of the same name', async () => {
+    const song = makeSong({ id: 'song-1' })
+    getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [song] })
+    getAlbumSongTags.mockResolvedValue(new Map([['song-1', { grouping: ['op'], popularity: ['1'] }]]))
+
+    const key = deriveOverlayKey({
+      musicBrainzId: song.musicBrainzId,
+      albumId: song.albumId,
+      discNumber: song.discNumber,
+      track: song.track,
+      title: song.title,
+    })
+    getOverlaysByKeys.mockResolvedValue(new Map([
+      [key, makeOverlay({ id: key, title: song.title, customFields: { popularity: '5' } })],
+    ]))
+
+    const { tracks } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+
+    expect(tracks[0].fields).toEqual({ grouping: ['op'], popularity: ['5'] })
+  })
+
+  it('reports tagsUnavailable and keeps the pool when the native API fails', async () => {
+    getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [makeSong({ id: 'song-1' })] })
+    getAlbumSongTags.mockRejectedValue(new NavidromeError('unsupportedShape'))
+
+    const { tracks, tagsUnavailable } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+
+    expect(tagsUnavailable).toBe(true)
+    expect(tracks.map(t => t.id)).toEqual(['song-1'])
+    expect(tracks[0].fields).toEqual({})
+  })
+
+  it('propagates a failure that is not a Navidrome error', async () => {
+    getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [makeSong({ id: 'song-1' })] })
+    getAlbumSongTags.mockRejectedValue(new TypeError('bug'))
+
+    await expect(materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])).rejects.toThrow(TypeError)
   })
 })
