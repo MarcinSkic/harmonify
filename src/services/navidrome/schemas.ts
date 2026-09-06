@@ -103,3 +103,23 @@ export const nativeSongSchema = z.object({
   tags: z.record(z.string(), nativeTagValuesSchema).default({}),
 }).loose()
 export type NativeSong = z.infer<typeof nativeSongSchema>
+
+/**
+ * Native `/api/playlist/<id>/tracks`. Deliberately **not** `nativeSongSchema`: a playlist entry's
+ * `id` is the position of the entry in the playlist (`"1"`, `"2"`, …) and the song id lives in
+ * `mediaFileId` (verified on a live instance). Reusing `nativeSongSchema` here would parse without
+ * a single error, join against nothing, and leave every field bag empty — a silent failure.
+ */
+export const nativePlaylistTrackSchema = z.object({
+  mediaFileId: z.string(),
+  tags: z.record(z.string(), nativeTagValuesSchema).default({}),
+}).loose()
+export type NativePlaylistTrack = z.infer<typeof nativePlaylistTrackSchema>
+
+/** Native `/api/tag` — one row per (tag name, tag value) pair; it carries no track counts. */
+export const nativeTagSchema = z.object({
+  id: z.string(),
+  tagName: z.string(),
+  tagValue: z.string(),
+}).loose()
+export type NativeTag = z.infer<typeof nativeTagSchema>

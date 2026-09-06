@@ -43,10 +43,14 @@ src/
 ├── db/                   # Dexie/IndexedDB: db instance + migrations (index.ts), persisted schemas (schemas.ts)
 ├── consts.ts             # LocalStorage keys, animation durations, responsive breakpoints
 ├── stores/               # Shared Pinia stores (connection, gameData, result, settings, library,
-│                         #   categories, categorySets, serverLibrary, spotifyLibrary)
-├── services/             # Shared services (library, library-import, link-preview, music-server, spotify)
-├── lib/                  # Shared utilities (spotify fetch wrapper, csv, track utils, cn())
-├── composables/          # Shared composables (useLiveQuery, useLinkPreview, library loaders)
+│                         #   categories, categorySets, serverLibrary, spotifyLibrary, navidrome,
+│                         #   overlayFields)
+├── services/             # Shared services (library, library-import, libraryOverlay, link-preview,
+│                         #   music-server, spotify, navidrome/, navidromeGameSource)
+├── lib/                  # Shared utilities (spotify fetch wrapper, csv, track utils, cn(),
+│                         #   categoryPredicate + categoryCoverage = pure engine rules, categoryJson)
+├── composables/          # Shared composables (useLiveQuery, useLinkPreview, useNavidromeTagIndex,
+│                         #   library loaders)
 ├── router/index.ts       # Routes + beforeGameEnter / beforeLocalGameEnter guards
 ├── components/           # Shared components; components/ui = shadcn-vue primitives (generated)
 ├── pages/
@@ -63,7 +67,8 @@ src/
 │   ├── results/          # Saved game results slice
 │   ├── cover/            # Cover Creator slice (own stores, types, components)
 │   ├── home/             # Home slice
-│   ├── library/          # Library slice
+│   ├── library/          # Library slice (categories/ = predicate categories + sets)
+│   ├── navidrome/        # Navidrome connection + library browsing, local overlay editing
 │   └── disclaimer/       # Disclaimer slice
 e2e/                      # Playwright specs
 api/

@@ -71,7 +71,7 @@ These numbers describe where the codebase is, not where it has to stay.
 
 - Recurring animation/delay timings belong in the `AnimationDuration` enum in `src/consts.ts`
   (see `GameResults.vue`, `ResultView.vue`). A one-off delay with a comment explaining it is
-  fine — e.g. the 150 ms blur delay in `TagMultiSelect.vue`.
+  fine — e.g. the 150 ms blur delay in `SuggestInput.vue`.
 - Responsive pixel values belong in the `Breakpoint` enum; localStorage keys in the
   `LOCAL_STORAGE` object. Inline literals for either are a finding.
 

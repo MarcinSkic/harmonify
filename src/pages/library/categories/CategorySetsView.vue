@@ -6,9 +6,9 @@ import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { useCategorySetsStore } from '@/stores'
 import CategorySetCard from './components/CategorySetCard.vue'
-import CategorySetCsvExportButton from './components/CategorySetCsvExportButton.vue'
-import CategorySetCsvImportButton from './components/CategorySetCsvImportButton.vue'
 import CategorySetEditDialog from './components/CategorySetEditDialog.vue'
+import CategorySetJsonExportButton from './components/CategorySetJsonExportButton.vue'
+import CategorySetJsonImportButton from './components/CategorySetJsonImportButton.vue'
 
 const categorySetsStore = useCategorySetsStore()
 
@@ -49,8 +49,8 @@ async function handleDelete(id: string) {
         </p>
       </div>
 
-      <CategorySetCsvImportButton />
-      <CategorySetCsvExportButton />
+      <CategorySetJsonImportButton />
+      <CategorySetJsonExportButton />
       <Button class="gap-2" @click="openCreate">
         <Plus class="size-4" />
         New set

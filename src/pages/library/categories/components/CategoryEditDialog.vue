@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category } from '@/db/schemas'
+import type { Category, CategoryMatch } from '@/db/schemas'
 import { computed, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
@@ -21,9 +21,8 @@ import {
   NumberFieldInput,
 } from '@/components/ui/number-field'
 import { categorySchema } from '@/db/schemas'
-import { LibraryService } from '@/services'
-import { useCategoriesStore, useLibraryStore } from '@/stores'
-import TagMultiSelect from './TagMultiSelect.vue'
+import { useCategoriesStore } from '@/stores'
+import CategoryMatchEditor from './CategoryMatchEditor.vue'
 
 const props = defineProps<{
   category: Category | null
@@ -32,15 +31,14 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { required: true })
 
 const categoriesStore = useCategoriesStore()
-const libraryStore = useLibraryStore()
 
 const isEditMode = computed(() => props.category !== null)
 
 const displayName = ref('')
 const description = ref('')
 const points = ref<number | null>(null)
-const tagFilter = ref<string[]>([])
-const matchCount = ref(0)
+/** `null` while the predicate editor holds an incomplete condition — saving is refused then. */
+const match = ref<CategoryMatch | null>(null)
 
 watch(
   () => [open.value, props.category] as const,
@@ -51,32 +49,29 @@ watch(
       displayName.value = category.displayName
       description.value = category.description ?? ''
       points.value = category.points ?? null
-      tagFilter.value = [...category.tagFilter]
+      match.value = category.match
     }
     else {
       displayName.value = ''
       description.value = ''
       points.value = null
-      tagFilter.value = []
+      match.value = null
     }
   },
   { immediate: true },
 )
 
-watch(
-  tagFilter,
-  async (tags) => {
-    matchCount.value = await LibraryService.countTracksMatchingTagFilter(tags)
-  },
-  { immediate: true },
-)
-
 async function handleSubmit() {
+  if (!match.value) {
+    toast.error('Add at least one complete condition')
+    return
+  }
+
   const payload = {
     displayName: displayName.value.trim(),
     description: description.value.trim() || undefined,
     points: points.value ?? undefined,
-    tagFilter: tagFilter.value,
+    match: match.value,
   }
 
   if (!payload.displayName) {
@@ -120,7 +115,7 @@ async function handleSubmit() {
       <DialogHeader>
         <DialogTitle>{{ isEditMode ? 'Edit category' : 'Add category' }}</DialogTitle>
         <DialogDescription>
-          Group one or more tags into a category with display metadata.
+          Define which tracks belong to the category by matching their metadata.
         </DialogDescription>
       </DialogHeader>
 
@@ -146,14 +141,8 @@ async function handleSubmit() {
         </div>
 
         <div class="grid gap-2">
-          <Label>Tags</Label>
-          <TagMultiSelect
-            v-model="tagFilter"
-            :available-tags="libraryStore.allTags"
-          />
-          <p class="text-xs text-muted-foreground">
-            {{ matchCount }} {{ matchCount === 1 ? 'track matches' : 'tracks match' }} these tags
-          </p>
+          <Label>Conditions</Label>
+          <CategoryMatchEditor v-model="match" />
         </div>
 
         <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3">

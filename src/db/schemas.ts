@@ -55,6 +55,16 @@ export const trackOverlaySchema = z.object({
 })
 export type TrackOverlay = z.infer<typeof trackOverlaySchema>
 
+// Overlay field registry — the user-defined metadata fields a category predicate can read
+// alongside Navidrome tags. Name + type only: no aliases, no value validation rules.
+
+export const overlayFieldSchema = z.object({
+  name: z.string().min(1),
+  type: z.enum(['text', 'number']),
+  createdAt: z.number(),
+})
+export type OverlayField = z.infer<typeof overlayFieldSchema>
+
 export const playlistSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -65,9 +75,46 @@ export const playlistSchema = z.object({
 })
 export type Playlist = z.infer<typeof playlistSchema>
 
+// Category predicate schemas — the grammar a category matches metadata with. One level only:
+// no nesting, no `z.lazy`. Semantics of every operator live in `src/lib/categoryPredicate.ts`.
+
+/**
+ * Operand map of a single condition: exactly one field name → operand. An empty map (nothing to
+ * test) or several fields (an implicit, unwritten conjunction) are parse errors, never silently
+ * accepted — the evaluator reads one pair and one pair only.
+ */
+function conditionOperandMap<TOperand extends z.ZodType>(operand: TOperand) {
+  return z.record(z.string().min(1), operand)
+    .refine(map => Object.keys(map).length === 1, { message: 'Condition must name exactly one field' })
+}
+
+/**
+ * `z.strictObject` on every variant is deliberate and accepted at the plan level: a condition that
+ * names two operators (`{ is: …, gt: … }`) is **rejected**, not parsed as the first one with the
+ * rest silently dropped. The JSON import of §8 inherits that — such an element is a row error.
+ * Do not relax it to `z.object` to make an import "more forgiving".
+ */
+export const conditionSchema = z.union([
+  z.strictObject({ is: conditionOperandMap(z.string()) }),
+  z.strictObject({ isNot: conditionOperandMap(z.string()) }),
+  z.strictObject({ gt: conditionOperandMap(z.number()) }),
+  z.strictObject({ lt: conditionOperandMap(z.number()) }),
+  z.strictObject({ contains: conditionOperandMap(z.string()) }),
+  z.strictObject({ inTheRange: conditionOperandMap(z.tuple([z.number(), z.number()])) }),
+  z.strictObject({ isMissing: conditionOperandMap(z.boolean()) }),
+  z.strictObject({ isPresent: conditionOperandMap(z.boolean()) }),
+])
+export type Condition = z.infer<typeof conditionSchema>
+
+export const categoryMatchSchema = z.union([
+  z.strictObject({ all: z.array(conditionSchema).min(1) }),
+  z.strictObject({ any: z.array(conditionSchema).min(1) }),
+])
+export type CategoryMatch = z.infer<typeof categoryMatchSchema>
+
 export const categorySchema = z.object({
   id: z.uuid(),
-  tagFilter: z.array(z.string()).min(1),
+  match: categoryMatchSchema,
   displayName: z.string(),
   description: z.string().optional(),
   points: z.number().optional(),
@@ -207,8 +254,8 @@ export const localGameSettingsSchema = z.object({
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
 
-// Navidrome game source schemas (mirror the TS interfaces in `src/services/navidromeGameSource.ts`,
-// needed here so `localGameSchema` can freeze a Navidrome-sourced pool inside a `LocalGame`)
+// Navidrome game source schemas, needed here so `localGameSchema` can freeze a Navidrome-sourced
+// pool inside a `LocalGame`
 
 export const navidromeGameSourceRefSchema = z.object({
   type: z.enum(['album', 'playlist']),
@@ -219,6 +266,8 @@ export const navidromeGameSourceRefSchema = z.object({
 export type NavidromeGameSourceRef = z.infer<typeof navidromeGameSourceRefSchema>
 
 export const frozenNavidromeTrackSchema = z.object({
+  // song.id — an ephemeral handle, only valid for the lifetime of this frozen game (see the note on
+  // `materializePool` in `src/services/navidromeGameSource.ts`)
   id: z.string(),
   overlayKey: z.string(),
   title: z.string(),
@@ -229,6 +278,14 @@ export const frozenNavidromeTrackSchema = z.object({
   durationMs: z.number().optional(),
   playbackRange: playbackRangeSchema.nullable(),
   previewImageUrl: z.string().optional(),
+  /**
+   * Navidrome tags ∪ overlay fields — what a category predicate is evaluated against.
+   *
+   * Games frozen before this field existed have **no** `fields` at all: `localGameSchema` is never
+   * used as a parser (games are read straight out of Dexie), so this `.default({})` does not fire on
+   * read. Anything reading `fields` off a stored game must write `track.fields ?? {}`.
+   */
+  fields: z.record(z.string(), z.array(z.string())).default({}),
 })
 export type FrozenNavidromeTrack = z.infer<typeof frozenNavidromeTrackSchema>
 

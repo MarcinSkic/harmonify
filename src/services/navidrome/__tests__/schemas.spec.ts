@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nativeSongSchema, subsonicAlbumListSchema, subsonicPlaylistsSchema } from '../schemas'
+import { nativePlaylistTrackSchema, nativeSongSchema, nativeTagSchema, subsonicAlbumListSchema, subsonicPlaylistsSchema } from '../schemas'
 
 describe('nativeSongSchema', () => {
   it('should normalize a missing tags field to an empty map', () => {
@@ -44,5 +44,34 @@ describe('subsonic collection schemas', () => {
     const parsed = subsonicPlaylistsSchema.parse({ playlists: {} })
 
     expect(parsed.playlists.playlist).toBeUndefined()
+  })
+})
+
+describe('nativePlaylistTrackSchema', () => {
+  it('reads the song id from mediaFileId, ignoring the entry position in id', () => {
+    const entry = nativePlaylistTrackSchema.parse({ id: '1', mediaFileId: 'song-42', tags: { grouping: 'ed' } })
+
+    expect(entry.mediaFileId).toBe('song-42')
+    expect(entry.tags).toEqual({ grouping: ['ed'] })
+  })
+
+  it('defaults tags to an empty map for a track with none', () => {
+    expect(nativePlaylistTrackSchema.parse({ id: '1', mediaFileId: 'song-42' }).tags).toEqual({})
+  })
+
+  it('rejects a row without mediaFileId rather than joining against nothing', () => {
+    expect(nativePlaylistTrackSchema.safeParse({ id: '1', tags: { grouping: 'ed' } }).success).toBe(false)
+  })
+})
+
+describe('nativeTagSchema', () => {
+  it('parses a tag row and keeps unknown fields', () => {
+    const tag = nativeTagSchema.parse({ id: 'tag-1', tagName: 'grouping', tagValue: 'op', somethingNew: 42 })
+
+    expect(tag).toMatchObject({ id: 'tag-1', tagName: 'grouping', tagValue: 'op' })
+  })
+
+  it('rejects a row missing tagValue', () => {
+    expect(nativeTagSchema.safeParse({ id: 'tag-1', tagName: 'grouping' }).success).toBe(false)
   })
 })

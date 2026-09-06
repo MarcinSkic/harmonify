@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Category } from '@/db/schemas'
-import { Music, Pencil, Trash2 } from '@lucide/vue'
+import { Pencil, Trash2 } from '@lucide/vue'
+import { computed } from 'vue'
 import PointsDisplay from '@/components/PointsDisplay.vue'
 import {
   AlertDialog,
@@ -16,16 +17,19 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { formatMatch } from '@/lib/categoryPredicate'
 
-defineProps<{
+const props = defineProps<{
   category: Category
-  trackCount: number
 }>()
 
 const emit = defineEmits<{
   edit: []
   delete: []
 }>()
+
+const conditions = computed(() => formatMatch(props.category.match))
+const connective = computed(() => 'all' in props.category.match ? 'and' : 'or')
 </script>
 
 <template>
@@ -84,20 +88,15 @@ const emit = defineEmits<{
         </div>
       </div>
 
-      <div class="flex items-end justify-between gap-2">
-        <div class="flex flex-wrap gap-1.5">
-          <Badge
-            v-for="tag in category.tagFilter"
-            :key="tag"
-            variant="outline"
-          >
-            {{ tag }}
+      <div class="flex flex-wrap items-center gap-1.5">
+        <template v-for="(condition, index) in conditions" :key="index">
+          <span v-if="index > 0" class="text-xs text-muted-foreground">
+            {{ connective }}
+          </span>
+          <Badge variant="outline" class="font-mono">
+            {{ condition }}
           </Badge>
-        </div>
-        <div class="flex shrink-0 items-center gap-1 text-muted-foreground">
-          <span class="text-2xl leading-none font-bold">{{ trackCount }}</span>
-          <Music class="size-5" />
-        </div>
+        </template>
       </div>
     </CardContent>
   </Card>

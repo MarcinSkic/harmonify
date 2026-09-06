@@ -1,4 +1,4 @@
-import type { TrackOverlay } from '@/db/schemas'
+import type { OverlayField, TrackOverlay } from '@/db/schemas'
 import type { OverlayKeySource } from '@/lib/trackOverlayKey'
 import { db } from '@/db'
 import { deriveOverlayKey } from '@/lib/trackOverlayKey'
@@ -71,4 +71,24 @@ export async function removeCustomField(key: string, fieldName: string): Promise
 
 export async function getAllOverlays(): Promise<TrackOverlay[]> {
   return db.trackOverlays.toArray()
+}
+
+// Overlay field registry — the dictionary of field names a category predicate may read. It only
+// names and types fields; the values themselves live in each track's `customFields`.
+
+export async function listOverlayFields(): Promise<OverlayField[]> {
+  return db.overlayFields.orderBy('name').toArray()
+}
+
+export async function upsertOverlayField(name: string, type: OverlayField['type']): Promise<void> {
+  const existing = await db.overlayFields.get(name)
+  await db.overlayFields.put({ name, type, createdAt: existing?.createdAt ?? Date.now() })
+}
+
+/**
+ * Values already written into `customFields` are left alone — the registry is a dictionary, not the
+ * owner of the data, so removing an entry only stops suggesting the name.
+ */
+export async function deleteOverlayField(name: string): Promise<void> {
+  await db.overlayFields.delete(name)
 }

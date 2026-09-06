@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum, SubsonicPlaylist, SubsonicSong } from '@/services/navidrome'
-import { ArrowLeft, Home } from '@lucide/vue'
+import { ArrowLeft, Home, Tags } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -14,6 +14,7 @@ import NavidromeAlbumGrid from './components/NavidromeAlbumGrid.vue'
 import NavidromeAudioPreview from './components/NavidromeAudioPreview.vue'
 import NavidromeOverlayCsvExportButton from './components/NavidromeOverlayCsvExportButton.vue'
 import NavidromeOverlayCsvImportButton from './components/NavidromeOverlayCsvImportButton.vue'
+import NavidromeOverlayFieldsDialog from './components/NavidromeOverlayFieldsDialog.vue'
 import NavidromePlaylistGrid from './components/NavidromePlaylistGrid.vue'
 import NavidromeTrackTable from './components/NavidromeTrackTable.vue'
 import NavidromeTrackTags from './components/NavidromeTrackTags.vue'
@@ -52,6 +53,7 @@ const isLoadingSelection = ref(false)
 const previewedSong = ref<SubsonicSong | null>(null)
 const tagsSong = ref<SubsonicSong | null>(null)
 const tagsDialogOpen = ref(false)
+const overlayFieldsDialogOpen = ref(false)
 
 // A slower earlier response must not replace the album the user opened afterwards.
 let selectionRequest = 0
@@ -174,6 +176,15 @@ function showTags(song: SubsonicSong) {
             </TabsTrigger>
           </TabsList>
           <div class="flex gap-2">
+            <Button variant="outline" class="gap-2" @click="overlayFieldsDialogOpen = true">
+              <Tags class="size-4" />
+              <span
+                class="
+                  hidden
+                  sm:inline
+                "
+              >Manage fields</span>
+            </Button>
             <NavidromeOverlayCsvImportButton />
             <NavidromeOverlayCsvExportButton />
           </div>
@@ -214,5 +225,6 @@ function showTags(song: SubsonicSong) {
     </template>
 
     <NavidromeTrackTags v-model:open="tagsDialogOpen" :song="tagsSong" />
+    <NavidromeOverlayFieldsDialog v-model:open="overlayFieldsDialogOpen" />
   </div>
 </template>
