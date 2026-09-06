@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { FieldLimitation } from '@/db/schemas'
 import { computed } from 'vue'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCategorySetsStore } from '@/stores'
@@ -12,6 +13,25 @@ const sets = computed(() => categorySetsStore.categorySets.map(set => ({
   name: set.name,
   size: categorySetsStore.getMembersForSet(set.id).length,
 })))
+
+/** "work ≤3, grouping ≤1" — every `selfLimit` and every `otherValuesLimit` pair, flattened in order. */
+function describeLimitations(limitations: FieldLimitation[]): string {
+  const parts: string[] = []
+  for (const limitation of limitations) {
+    if (limitation.selfLimit !== undefined)
+      parts.push(`${limitation.name} ≤${limitation.selfLimit}`)
+    for (const pair of limitation.otherValuesLimit ?? [])
+      parts.push(`${pair.name} ≤${pair.limit}`)
+  }
+  return parts.join(', ')
+}
+
+// So the host sees what trims the pool without leaving setup to check the library.
+const limitationsCaption = computed(() => {
+  const set = categorySetsStore.categorySets.find(s => s.id === categorySetId.value)
+  const description = describeLimitations(set?.valueLimitations ?? [])
+  return description === '' ? null : `Trims the pool: ${description}`
+})
 </script>
 
 <template>
@@ -34,6 +54,9 @@ const sets = computed(() => categorySetsStore.categorySets.map(set => ({
     </Select>
     <p v-if="sets.length === 0" class="text-sm text-muted-foreground">
       No category sets yet — create one in Library → Category Sets.
+    </p>
+    <p v-else-if="limitationsCaption" class="text-xs text-muted-foreground">
+      {{ limitationsCaption }}
     </p>
   </div>
 </template>

@@ -122,9 +122,49 @@ export const categorySchema = z.object({
 })
 export type Category = z.infer<typeof categorySchema>
 
+// Value limitation schemas — deduplication rules carried by a category set (v5 §4.3). A
+// `FieldLimitation` is a value object living inside a set's `valueLimitations` array, not a table
+// row: no `id`, no `createdAt` — its identity is its `name` within one set.
+
+export const multiValueModeSchema = z.enum(['all', 'first'])
+export type MultiValueMode = z.infer<typeof multiValueModeSchema>
+
+/** Per-value overrides: validated and stored, deliberately ignored by the engine (v5.x). */
+export const otherValueExceptionSchema = z.strictObject({
+  value: z.string().min(1),
+  limit: z.number().int().min(0),
+})
+export type OtherValueException = z.infer<typeof otherValueExceptionSchema>
+
+export const otherValueLimitSchema = z.strictObject({
+  name: z.string().min(1),
+  limit: z.number().int().min(0),
+  multiValue: multiValueModeSchema.optional(),
+  exceptions: z.array(otherValueExceptionSchema).optional(),
+})
+export type OtherValueLimit = z.infer<typeof otherValueLimitSchema>
+
+export const fieldExceptionSchema = z.strictObject({
+  value: z.string().min(1),
+  selfLimit: z.number().int().min(0).optional(),
+  otherValuesLimit: z.array(otherValueLimitSchema).optional(),
+})
+export type FieldException = z.infer<typeof fieldExceptionSchema>
+
+export const fieldLimitationSchema = z.strictObject({
+  name: z.string().min(1),
+  selfLimit: z.number().int().min(0).optional(),
+  multiValue: multiValueModeSchema.optional(),
+  otherValuesLimit: z.array(otherValueLimitSchema).optional(),
+  exceptions: z.array(fieldExceptionSchema).optional(),
+})
+export type FieldLimitation = z.infer<typeof fieldLimitationSchema>
+
 export const categorySetSchema = z.object({
   id: z.uuid(),
   name: z.string(),
+  /** Deduplication rules trimming the pool of this play-through. Duplicating one across sets is OK. */
+  valueLimitations: z.array(fieldLimitationSchema).default([]),
   createdAt: z.number(),
 })
 export type CategorySet = z.infer<typeof categorySetSchema>

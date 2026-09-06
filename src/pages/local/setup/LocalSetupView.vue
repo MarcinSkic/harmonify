@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import type { Category, LocalGameSettings } from '@/db/schemas'
+import type { Category, FieldLimitation, LocalGameSettings } from '@/db/schemas'
 import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import { useWindowSize, watchDebounced } from '@vueuse/core'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Breakpoint } from '@/consts'
 import { buildCoverageReport } from '@/lib/categoryCoverage'
 import { reportNavidromeError } from '@/lib/navidrome'
+import { shuffle } from '@/lib/shuffle'
+import { applyValuesLimitations } from '@/lib/valuesLimitations'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
 import { NavidromeGameSourceService } from '@/services'
@@ -50,15 +52,22 @@ const settings = reactive<LocalGameSettings>({
 const selectedSources = ref<NavidromeGameSourceRef[]>([])
 const categorySetId = ref<string | null>(null)
 
-// Mirrors what createNavidromeGame will actually pool at start (dedup + overlay-disabled tracks
-// excluded), so the round count shown next to "Rounds" is not a lie, and so the coverage report is
-// computed on exactly those field bags — no extra request. Debounced because materializePool
-// re-fetches every selected source from scratch — without it, picking sources one after another
-// would refetch already-fetched ones on every single click (O(n^2) requests).
+// Raw, pre-limits pool from the selected sources (dedup by overlay-disabled tracks still applies —
+// those never existed as far as the game is concerned). Debounced because materializePool re-fetches
+// every selected source from scratch — without it, picking sources one after another would refetch
+// already-fetched ones on every single click (O(n^2) requests).
 const pool = ref<FrozenNavidromeTrack[]>([])
 const tagsUnavailable = ref(false)
 const poolUnavailable = ref(false)
 let poolPreviewRequest = 0
+
+// True the instant sources change, false only once the debounced materialization below actually
+// lands. Without this gate, "Play!" could freeze whatever stale `limitedPool` happens to be sitting
+// around while a fresher fetch is still in flight (decision 1, main plan §7).
+const poolPending = ref(false)
+watch(selectedSources, () => {
+  poolPending.value = true
+}, { immediate: true })
 
 watchDebounced(selectedSources, async (sources) => {
   const request = ++poolPreviewRequest
@@ -67,6 +76,7 @@ watchDebounced(selectedSources, async (sources) => {
     pool.value = []
     tagsUnavailable.value = false
     poolUnavailable.value = false
+    poolPending.value = false
     return
   }
 
@@ -86,9 +96,39 @@ watchDebounced(selectedSources, async (sources) => {
     tagsUnavailable.value = false
     poolUnavailable.value = true
   }
+  finally {
+    if (request === poolPreviewRequest)
+      poolPending.value = false
+  }
 }, { immediate: true, debounce: 500 })
 
-const totalTracks = computed(() => pool.value.length)
+const poolBeforeLimits = computed(() => pool.value.length)
+
+const isCategoryMode = computed(() => settings.gameMode === 'category')
+
+const selectedCategorySet = computed(() =>
+  categorySetId.value
+    ? categorySetsStore.categorySets.find(set => set.id === categorySetId.value)
+    : undefined,
+)
+
+// Random mode carries no category set — gated on the mode, not just on `categorySetId`, because a
+// set picked before switching to Random must stop cutting the pool the moment it does (decision 3,
+// main plan §7).
+const activeLimitations = computed<FieldLimitation[]>(() =>
+  isCategoryMode.value ? (selectedCategorySet.value?.valueLimitations ?? []) : [],
+)
+
+// `ref` + `watch`, not `computed`: the cut depends on `Math.random()` (via `shuffle`), so it must be
+// computed once per change of input and stay stable across re-reads, not reshuffled on every access.
+const limitedPool = ref<FrozenNavidromeTrack[]>([])
+watch([pool, activeLimitations], ([currentPool, limitations]) => {
+  limitedPool.value = applyValuesLimitations(shuffle(currentPool), limitations).admitted
+}, { immediate: true })
+
+// Mirrors what createNavidromeGame will actually pool at start, so the round count shown next to
+// "Rounds" is not a lie, and so the coverage report is computed on exactly those field bags.
+const totalTracks = computed(() => limitedPool.value.length)
 
 const selectedCategories = computed<Category[]>(() => {
   if (!categorySetId.value)
@@ -98,15 +138,16 @@ const selectedCategories = computed<Category[]>(() => {
     .filter((category): category is Category => category !== undefined)
 })
 
-// Recomputed locally from the already-fetched pool — changing the set or the round count costs no
-// network traffic, so this needs no debounce of its own.
+// Recomputed locally from the already-materialized, already-limited pool — changing the set or the
+// round count costs no network traffic, so this needs no debounce of its own. Built on `limitedPool`
+// rather than `pool`: from this phase on, coverage counts what a game can actually deal (main plan
+// §4.2).
 const coverageReport = computed(() =>
   selectedCategories.value.length === 0
     ? null
-    : buildCoverageReport(pool.value, selectedCategories.value, settings.maxRounds),
+    : buildCoverageReport(limitedPool.value, selectedCategories.value, settings.maxRounds),
 )
 
-const isCategoryMode = computed(() => settings.gameMode === 'category')
 const hasSourcesSelected = computed(() => selectedSources.value.length > 0)
 const hasValidTeams = computed(() =>
   teams.value.length >= 1 && teams.value.every(t => t.name.trim() !== ''),
@@ -120,6 +161,7 @@ const canStart = computed(() =>
   && hasSourcesSelected.value
   && hasValidTeams.value
   && !isLoading.value
+  && !poolPending.value
   && (!isCategoryMode.value || hasPlayableCategories.value),
 )
 
@@ -128,6 +170,8 @@ const startButtonText = computed(() => {
     return 'Connecting...'
   if (!hasSourcesSelected.value)
     return 'Select an album or playlist'
+  if (poolPending.value)
+    return 'Loading pool…'
   if (!hasValidTeams.value)
     return 'Fill in team names'
   if (isCategoryMode.value && selectedCategories.value.length === 0)
@@ -145,6 +189,11 @@ async function handleGameStart() {
 
   isLoading.value = true
 
+  // Snapshot before the await below: `limitedPool` can still change while `turnOn()` is in flight
+  // (e.g. the category sets liveQuery ticks and re-shuffles the cut), and what gets played must be
+  // exactly what "Play!" showed at click time (decision 1, main plan §7).
+  const gamePool = limitedPool.value
+
   try {
     await musicPlayerStore.turnOn()
 
@@ -153,6 +202,7 @@ async function handleGameStart() {
       settings,
       selectedSources.value,
       selectedCategories.value,
+      gamePool,
     )
 
     await localGameStore.startRound()
@@ -202,6 +252,7 @@ async function handleGameStart() {
           v-model="settings"
           v-model:category-set-id="categorySetId"
           :total-tracks="totalTracks"
+          :pool-before-limits="poolBeforeLimits"
           :coverage-report="coverageReport"
           :tags-unavailable="tagsUnavailable"
           :pool-unavailable="poolUnavailable"
@@ -218,6 +269,7 @@ async function handleGameStart() {
         v-model="settings"
         v-model:category-set-id="categorySetId"
         :total-tracks="totalTracks"
+        :pool-before-limits="poolBeforeLimits"
         :coverage-report="coverageReport"
         :tags-unavailable="tagsUnavailable"
         :pool-unavailable="poolUnavailable"

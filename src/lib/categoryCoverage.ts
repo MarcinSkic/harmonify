@@ -34,8 +34,9 @@ export interface CoverageReport {
  * Counts how the materialized pool spreads over a set of categories, so the host sees before the
  * game how many tracks land where.
  *
- * The numbers are **before deduplication**: from Phase 3 on, `valuesLimitations` prunes the pool and
- * these counts get smaller. That is correct behaviour, not a regression (main plan §4.2).
+ * The numbers are **after `valueLimitations`**: the caller (`LocalSetupView`) runs
+ * `applyValuesLimitations` on the pool before it ever reaches this function, so a category's count
+ * reflects what a game can actually deal, not the raw, untrimmed library (main plan §4.2).
  *
  * `plannedRounds === null` means unlimited rounds, so nothing can be "too few".
  */
