@@ -214,3 +214,80 @@ describe('setCategorySetValueLimitations', () => {
     expect(stored.valueLimitations.map(l => l.name)).toEqual(['album', 'grouping', 'work'])
   })
 })
+
+describe('setCategorySetMinDistances', () => {
+  beforeEach(async () => {
+    await db.categorySets.clear()
+  })
+
+  it('rejects a duplicate name with an error and leaves the stored row unchanged', async () => {
+    const id = await LibraryService.addCategorySet('Konkurs')
+
+    await expect(LibraryService.setCategorySetMinDistances(id, [
+      { name: 'work', distance: 5 },
+      { name: 'work', distance: 2 },
+    ])).rejects.toThrow(/work/)
+
+    const stored = (await db.categorySets.get(id))!
+    expect(stored.minDistances).toEqual([])
+  })
+
+  it('sorts the stored entries by name regardless of input order', async () => {
+    const id = await LibraryService.addCategorySet('Konkurs')
+
+    await LibraryService.setCategorySetMinDistances(id, [
+      { name: 'work', distance: 5 },
+      { name: 'album', distance: 2 },
+      { name: 'grouping', distance: 4 },
+    ])
+
+    const stored = (await db.categorySets.get(id))!
+    expect(stored.minDistances.map(d => d.name)).toEqual(['album', 'grouping', 'work'])
+  })
+})
+
+describe('importCategorySets', () => {
+  beforeEach(async () => {
+    await db.categorySets.clear()
+    await db.categorySetMembers.clear()
+  })
+
+  it('replaces both rule arrays of an existing set with what the file says', async () => {
+    // An import is an overwrite, and it has to overwrite both arrays: replacing only the
+    // proportions would leave the set as a mix of the file's limits and the spacing it had before.
+    const id = await LibraryService.addCategorySet('Konkurs')
+    await LibraryService.setCategorySetValueLimitations(id, [{ name: 'work', selfLimit: 3 }])
+    await LibraryService.setCategorySetMinDistances(id, [{ name: 'work', distance: 5 }])
+
+    // No category names in the row, so this cannot land in the "unknown category, leave the set
+    // alone" branch — the set really is rewritten here.
+    const result = await LibraryService.importCategorySets([{
+      name: 'Konkurs',
+      categories: [],
+      valueLimitations: [{ name: 'album', selfLimit: 1 }],
+      minDistances: [{ name: 'album', distance: 3 }],
+    }])
+
+    expect(result.created).toBe(0)
+    expect(result.updated).toBe(1)
+    expect(result.unchangedSets).toEqual([])
+
+    const stored = (await db.categorySets.get(id))!
+    expect(stored.valueLimitations).toEqual([{ name: 'album', selfLimit: 1 }])
+    expect(stored.minDistances).toEqual([{ name: 'album', distance: 3 }])
+  })
+
+  it('carries the distances of a new set in from the file', async () => {
+    const result = await LibraryService.importCategorySets([{
+      name: 'Fresh',
+      categories: [],
+      valueLimitations: [],
+      minDistances: [{ name: 'work', distance: 5 }],
+    }])
+
+    expect(result.created).toBe(1)
+
+    const stored = (await db.categorySets.where('name').equals('Fresh').first())!
+    expect(stored.minDistances).toEqual([{ name: 'work', distance: 5 }])
+  })
+})

@@ -1,7 +1,7 @@
-import type { Category, CategorySet, CategorySetMember, FieldLimitation, Playlist, Track, TrackAnnotation } from '@/db/schemas'
+import type { Category, CategorySet, CategorySetMember, FieldLimitation, FieldMinDistance, Playlist, Track, TrackAnnotation } from '@/db/schemas'
 import type { ParsedCategory, ParsedCategorySet } from '@/lib/categoryJson'
 import { db } from '@/db'
-import { findDuplicateLimitationName, findLimitationWithDuplicatePair } from '@/lib/categoryJson'
+import { findDuplicateLimitationName, findDuplicateMinDistanceName, findLimitationWithDuplicatePair } from '@/lib/categoryJson'
 
 type NewPlaylist = Omit<Playlist, 'id' | 'createdAt'>
 type NewTrack = Omit<Track, 'id' | 'createdAt'>
@@ -230,7 +230,7 @@ export async function importCategories(
 
 export async function addCategorySet(name: string): Promise<string> {
   const id = crypto.randomUUID()
-  await db.categorySets.add({ id, name, valueLimitations: [], createdAt: Date.now() })
+  await db.categorySets.add({ id, name, valueLimitations: [], minDistances: [], createdAt: Date.now() })
   return id
 }
 
@@ -254,6 +254,20 @@ export async function setCategorySetValueLimitations(setId: string, limitations:
 
   const sorted = [...limitations].sort((a, b) => a.name.localeCompare(b.name))
   await db.categorySets.update(setId, { valueLimitations: sorted })
+}
+
+/**
+ * Same contract as `setCategorySetValueLimitations`: sorted by `name` so the exported JSON is
+ * stable across saves, and a repeated `name` is rejected rather than merged — the engine reads the
+ * array as one entry per field (see `src/lib/minDistance.ts`).
+ */
+export async function setCategorySetMinDistances(setId: string, distances: FieldMinDistance[]): Promise<void> {
+  const duplicateName = findDuplicateMinDistanceName(distances)
+  if (duplicateName)
+    throw new Error(`Duplicate minimum distance "${duplicateName}"`)
+
+  const sorted = [...distances].sort((a, b) => a.name.localeCompare(b.name))
+  await db.categorySets.update(setId, { minDistances: sorted })
 }
 
 export async function deleteCategorySet(id: string): Promise<void> {
@@ -405,12 +419,17 @@ export async function importCategorySets(
         setId = existingSet.id
         const members = await db.categorySetMembers.where('categorySetId').equals(setId).toArray()
         await db.categorySetMembers.bulkDelete(members.map(m => m.id))
-        await db.categorySets.update(setId, { valueLimitations: row.valueLimitations })
+        // Both rule arrays are replaced by what the file says: leaving one of them behind would
+        // reimport a set as a mix of the file's proportions and the old spacing.
+        await db.categorySets.update(setId, {
+          valueLimitations: row.valueLimitations,
+          minDistances: row.minDistances,
+        })
         updated++
       }
       else {
         setId = crypto.randomUUID()
-        await db.categorySets.add({ id: setId, name: row.name, valueLimitations: row.valueLimitations, createdAt: Date.now() })
+        await db.categorySets.add({ id: setId, name: row.name, valueLimitations: row.valueLimitations, minDistances: row.minDistances, createdAt: Date.now() })
         created++
       }
 

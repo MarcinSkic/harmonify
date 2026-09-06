@@ -1,4 +1,4 @@
-import type { CategorySet, CategorySetMember, FieldLimitation } from '@/db/schemas'
+import type { CategorySet, CategorySetMember, FieldLimitation, FieldMinDistance } from '@/db/schemas'
 import { defineStore } from 'pinia'
 import { useLiveQuery } from '@/composables/useLiveQuery'
 import { db } from '@/db'
@@ -33,6 +33,10 @@ export const useCategorySetsStore = defineStore('categorySets', () => {
     return LibraryService.setCategorySetValueLimitations(setId, limitations)
   }
 
+  async function setMinDistances(setId: string, distances: FieldMinDistance[]) {
+    return LibraryService.setCategorySetMinDistances(setId, distances)
+  }
+
   async function remove(id: string) {
     return LibraryService.deleteCategorySet(id)
   }
@@ -60,6 +64,7 @@ export const useCategorySetsStore = defineStore('categorySets', () => {
     create,
     update,
     setValueLimitations,
+    setMinDistances,
     remove,
     addCategory,
     removeCategory,

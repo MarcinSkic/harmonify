@@ -160,11 +160,29 @@ export const fieldLimitationSchema = z.strictObject({
 })
 export type FieldLimitation = z.infer<typeof fieldLimitationSchema>
 
+// Minimum distance schemas — spacing rules carried by a category set (v5 §4.4). Like
+// `FieldLimitation`, a `FieldMinDistance` is a value object living inside a set's `minDistances`
+// array, not a table row: its identity is its `name` within one set.
+//
+// The minimum is 2, not 1: two tracks can never stand closer than one round apart, so `distance: 1`
+// would be a rule that blocks nothing. 2 — "not back to back" — is the tightest rule that does
+// anything, so a rule below it is a mistake rather than a preference, and is refused on the way in.
+
+export const fieldMinDistanceSchema = z.strictObject({
+  name: z.string().min(1),
+  distance: z.number().int().min(2, {
+    message: 'Distance must be at least 2 — two tracks are never closer than one round apart, so 1 would block nothing',
+  }),
+})
+export type FieldMinDistance = z.infer<typeof fieldMinDistanceSchema>
+
 export const categorySetSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   /** Deduplication rules trimming the pool of this play-through. Duplicating one across sets is OK. */
   valueLimitations: z.array(fieldLimitationSchema).default([]),
+  /** How many rounds must separate two tracks sharing a value in the named field. */
+  minDistances: z.array(fieldMinDistanceSchema).default([]),
   createdAt: z.number(),
 })
 export type CategorySet = z.infer<typeof categorySetSchema>
@@ -356,5 +374,12 @@ export const localGameSchema = z.object({
   source: z.enum(['library', 'navidrome']).optional(), // missing = pre-migration game
   navidromeTracks: z.record(z.string(), frozenNavidromeTrackSchema).optional(), // keyed by song.id
   navidromeSources: z.array(navidromeGameSourceRefSchema).optional(),
+  /**
+   * Spacing rules frozen from the category set when the game started, so editing the set mid-game
+   * does not change the running match. Games frozen before this field existed simply lack it —
+   * `localGameSchema` is never used as a parser (games are read straight out of Dexie), so readers
+   * must write `game.minDistances ?? []` instead of relying on a default.
+   */
+  minDistances: z.array(fieldMinDistanceSchema).optional(),
 })
 export type LocalGame = z.infer<typeof localGameSchema>

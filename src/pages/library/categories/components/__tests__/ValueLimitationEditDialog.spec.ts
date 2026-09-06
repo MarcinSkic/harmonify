@@ -92,6 +92,7 @@ describe('editing an entry that carries exceptions', () => {
       id: crypto.randomUUID(),
       name: 'Konkurs',
       valueLimitations: [workLimitation, albumLimitation],
+      minDistances: [],
       createdAt: 1,
     }
     await db.categorySets.add(categorySet)

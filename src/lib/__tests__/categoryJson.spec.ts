@@ -1,4 +1,4 @@
-import type { Category, CategorySet, FieldLimitation } from '@/db/schemas'
+import type { Category, CategorySet, FieldLimitation, FieldMinDistance } from '@/db/schemas'
 import { describe, expect, it } from 'vitest'
 import {
   parseCategoriesJSON,
@@ -18,7 +18,7 @@ function makeCategory(overrides: Partial<Category> = {}): Category {
 }
 
 function makeSet(name: string): CategorySet {
-  return { id: `set-${name}`, name, valueLimitations: [], createdAt: 1 }
+  return { id: `set-${name}`, name, valueLimitations: [], minDistances: [], createdAt: 1 }
 }
 
 describe('serializeCategoriesJSON', () => {
@@ -150,12 +150,14 @@ describe('category sets', () => {
     }])
 
     expect(JSON.parse(json)).toEqual([
-      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [] },
+      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [], minDistances: [] },
     ])
 
     const { rows, errors } = parseCategorySetsJSON(json)
     expect(errors).toEqual([])
-    expect(rows).toEqual([{ name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [] }])
+    expect(rows).toEqual([
+      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [], minDistances: [] },
+    ])
   })
 
   it('uses the same shape for one set and for many', () => {
@@ -338,5 +340,67 @@ describe('category set value limitations', () => {
 
     expect(errors).toEqual([])
     expect(rows[0].valueLimitations).toEqual(exampleFromDoc)
+  })
+})
+
+describe('category set minimum distances', () => {
+  it('reads a file written before the field existed as an empty list', () => {
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      { name: 'Pre-Phase-4', categories: ['A'] },
+    ]))
+
+    expect(errors).toEqual([])
+    expect(rows[0].minDistances).toEqual([])
+  })
+
+  it('survives a round trip', () => {
+    const minDistances: FieldMinDistance[] = [
+      { name: 'album', distance: 3 },
+      { name: 'work', distance: 5 },
+    ]
+
+    const original = serializeCategorySetsJSON([{
+      set: { ...makeSet('Konkurs 2026'), minDistances },
+      members: [],
+    }])
+    const { rows, errors } = parseCategorySetsJSON(original)
+
+    expect(errors).toEqual([])
+    expect(rows[0].minDistances).toEqual(minDistances)
+  })
+
+  it('reports a duplicate field name inside one set as a row error', () => {
+    // Two entries for `work` are two answers to one question, not a sum — the same reading a
+    // repeated value limitation gets.
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      {
+        name: 'Konkurs',
+        categories: [],
+        minDistances: [
+          { name: 'work', distance: 5 },
+          { name: 'work', distance: 2 },
+        ],
+      },
+      { name: 'Also good', categories: [] },
+    ]))
+
+    expect(rows.map(r => r.name)).toEqual(['Also good'])
+    expect(errors).toEqual([{ index: 0, message: 'Duplicate minimum distance "work" in set "Konkurs"' }])
+  })
+
+  it('rejects a distance below two as a row error, importing the rest of the sets', () => {
+    // `distance: 1` blocks nothing at all, so it is as much of a mistake as 0 — the file must not
+    // carry a rule that cannot do anything.
+    const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
+      { name: 'Zero', categories: [], minDistances: [{ name: 'work', distance: 0 }] },
+      { name: 'One', categories: [], minDistances: [{ name: 'work', distance: 1 }] },
+      { name: 'Also good', categories: [] },
+    ]))
+
+    expect(rows.map(r => r.name)).toEqual(['Also good'])
+    expect(errors.map(e => e.index)).toEqual([0, 1])
+    // The row error has to name the field and say what is wrong, not just fail.
+    expect(errors[1].message).toContain('minDistances.0.distance')
+    expect(errors[1].message).toContain('at least 2')
   })
 })

@@ -13,6 +13,11 @@ export function createPool(trackIds: string[]): TrackPoolState {
   }
 }
 
+/**
+ * Deals the next track off the shuffled pool. Unlike `pickFromCategory`, this takes no minimum
+ * distance rules and never will: random mode is played without a category set, and the spacing
+ * rules live on the set (decisions F4.1 and F4.2). The absence is deliberate, not a gap to fill.
+ */
 export function pickRandom(state: TrackPoolState): { trackId: string, newState: TrackPoolState } {
   if (state.availableTrackIds.length === 0) {
     throw new Error('Track pool is exhausted')
