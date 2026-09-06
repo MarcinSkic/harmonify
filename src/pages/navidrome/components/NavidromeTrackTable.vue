@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TrackOverlay } from '@/db/schemas'
+import type { OverlayKeySource } from '@/lib/trackOverlayKey'
 import type { SubsonicSong } from '@/services/navidrome'
 import { Download, Music, Pencil, Play, Tags } from '@lucide/vue'
 import { saveAs } from 'file-saver'
@@ -43,21 +44,45 @@ const overlayDialogOpen = ref(false)
 // Guards against a slower earlier batch overwriting overlays of a list the user has since opened.
 let overlaysRequest = 0
 
-function overlayKeyFor(song: SubsonicSong): string {
-  return deriveOverlayKey({
+function overlaySourceFor(song: SubsonicSong): OverlayKeySource & { artist?: string } {
+  return {
     musicBrainzId: song.musicBrainzId,
     albumId: song.albumId,
     discNumber: song.discNumber,
     track: song.track,
     title: song.title,
-  })
+    artist: song.artist,
+  }
 }
 
+function overlayKeyFor(song: SubsonicSong): string {
+  return deriveOverlayKey(overlaySourceFor(song))
+}
+
+/**
+ * The rekey runs before the lookup on purpose: a track tagged with a MusicBrainz ID since the last
+ * visit has its overlay under the old composite key, and reading first would show it as annotation-
+ * less until the next manual refresh.
+ */
 async function loadOverlays(songs: SubsonicSong[]) {
   const request = ++overlaysRequest
-  const overlays = await LibraryOverlayService.getOverlaysByKeys(songs.map(overlayKeyFor))
-  if (request === overlaysRequest)
-    overlaysByKey.value = overlays
+
+  try {
+    const moved = await LibraryOverlayService.rekeyOverlays(songs.map(overlaySourceFor))
+    if (request !== overlaysRequest)
+      return
+    if (moved > 0)
+      toast.success(`Moved ${moved} annotations onto musicBrainzId`)
+
+    const overlays = await LibraryOverlayService.getOverlaysByKeys(songs.map(overlayKeyFor))
+    if (request === overlaysRequest)
+      overlaysByKey.value = overlays
+  }
+  catch (err) {
+    // The rekey writes, so this can fail on more than a read — and without the toast the list would
+    // just render as if no track had an annotation.
+    toast.error(`Failed to load overlays: ${err instanceof Error ? err.message : String(err)}`)
+  }
 }
 
 watch(() => props.songs, loadOverlays, { immediate: true })
@@ -74,17 +99,7 @@ async function refreshOverlay(song: SubsonicSong) {
 }
 
 async function toggleEnabled(song: SubsonicSong, value: boolean) {
-  await LibraryOverlayService.upsertOverlay(
-    {
-      musicBrainzId: song.musicBrainzId,
-      albumId: song.albumId,
-      discNumber: song.discNumber,
-      track: song.track,
-      title: song.title,
-      artist: song.artist,
-    },
-    { enabled: value },
-  )
+  await LibraryOverlayService.upsertOverlay(overlaySourceFor(song), { enabled: value })
   await refreshOverlay(song)
 }
 
