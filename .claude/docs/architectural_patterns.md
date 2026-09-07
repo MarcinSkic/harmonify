@@ -43,11 +43,10 @@ Services are modules of stateless functions, re-exported as namespaces from `src
 | `LibraryService`      | `library.ts`      | All Dexie CRUD: playlists, tracks, categories, category sets   |
 | `LibraryImportService`| `library-import.ts` | Track shape conversion + import from Spotify into the library |
 | `LinkPreviewService`  | `link-preview.ts` | Queued fetching of link preview images, with retry             |
-| `MusicServerService`  | `music-server.ts` | Local music server: playlists, tracks, audio/cover URLs, auth  |
 | `SpotifyService`      | `spotify.ts`      | Spotify Web API reads (playlists, albums, tracks)              |
 
 - Pattern in the barrel: `export * as LibraryService from './library'`.
-- **Accepted exception:** `export * as` does not re-export *types*, so a type-only deep import is allowed — `import type { ServerPlaylist } from '@/services/music-server'` in `src/stores/serverLibrary.ts`. Value imports must still go through the barrel.
+- **Accepted exception:** `export * as` does not re-export *types*, so a type-only deep import is allowed — `import type { FrozenNavidromeTrack } from '@/services/navidromeGameSource'`. Value imports must still go through the barrel.
 - **Accepted exception:** `NavidromeService` is **not** stateless — `src/services/navidrome/client.ts` owns the persisted session ref (`getSession` / `setSession` / `clearSession`, `useStorage` on `LOCAL_STORAGE.NAVIDROME_SESSION`) and rewrites the JWT from the `x-nd-authorization` header on every native response. The store (`src/stores/navidrome.ts`) reads it through `computed(() => NavidromeService.getSession())` instead of holding its own copy, for two reasons that are visible in the code: putting the ref in the store would close an import cycle (`stores/navidrome` → `@/services` → `navidrome/client` → `@/stores`), and components call the service directly (`getCoverArtUrl`, `getStreamUrl`, `getSongTags`), so the service has to see the refreshed token without going through Pinia.
 
 ## Pinia Store Organization
@@ -66,7 +65,6 @@ Shared stores live in `src/stores/`, re-exported via `src/stores/index.ts` — a
 | `categories`     | Categories (metadata predicates, `match`)                      |
 | `categorySets`   | Ordered sets of categories                                     |
 | `overlayFields`  | Registry of custom overlay field names + their declared type   |
-| `serverLibrary`  | Music-server playlists + load state                            |
 | `spotifyLibrary` | Spotify playlist/album selection and track fetching            |
 | `navidrome`      | Navidrome connection status, reading its session off the service |
 
@@ -76,7 +74,7 @@ Note that `settings` and `spotifyLibrary` used to be game-slice stores and were 
 
 ### Store definition style
 
-Both styles exist. **Setup style (`defineStore('name', () => {...})`) is the direction of travel** and what new stores use — it is required when the store holds `useLiveQuery` refs or computed values (`library`, `categories`, `categorySets`, `serverLibrary`, `spotifyLibrary`). Options style (`{ state, getters, actions }`) remains in the older multiplayer stores (`connection`, `gameData`, `result`, `settings`); leave them as they are unless you are rewriting one anyway.
+Both styles exist. **Setup style (`defineStore('name', () => {...})`) is the direction of travel** and what new stores use — it is required when the store holds `useLiveQuery` refs or computed values (`library`, `categories`, `categorySets`, `spotifyLibrary`). Options style (`{ state, getters, actions }`) remains in the older multiplayer stores (`connection`, `gameData`, `result`, `settings`); leave them as they are unless you are rewriting one anyway.
 
 ## The Local Game Engine — Pure Functions + Store Orchestration
 
@@ -146,16 +144,11 @@ All Spotify API calls go through `fetchFromSpotify()` (`src/lib/spotify.ts`), wh
 
 Paginated endpoints use `getAllPaginatedItems()` in the same file — a generic cursor-following loop that validates each page with a Zod schema.
 
-## Music Server Access
-
-`src/services/music-server.ts` talks to the bundled ASP.NET Core server. It reads its configuration from env at module scope with `?? ''` fallbacks and exposes `isConfigured()` so the UI can hide server features when unset. `needsAuth()` + `fetchAudioBlobUrl()` handle endpoints that require the basic-auth header; `getAudioUrl` / `getCoverUrl` / `getPlaylistCoverUrl` return plain URLs for the rest.
-
 ## Library Import Pipelines
 
-Three ways tracks and metadata enter the local library, all converging on `LibraryService`:
+Two ways tracks and metadata enter the local library, all converging on `LibraryService`:
 
 - **Spotify** — `LibraryImportService.importFromSpotify()`, with `spotifyTrackToTrack` / `trackToSpotifyTrack` bridging the wire type and the persisted entity.
-- **Music server** — `MusicServerService.getTracks()` feeding the same conversion path.
 - **CSV** — `parseCSV()` in `src/lib/csv.ts` produces `TrackAnnotation[]`, applied by `LibraryService.applyCSVToPlaylist()`, which reports `{ updated, notFound, previewUrls }`. `csv.ts` also holds the track-overlay pair (`parseOverlayCSV` / `serializeOverlayCSV`) — flat tables stay CSV. Categories and category sets are exchanged as **JSON** instead (`src/lib/categoryJson.ts`): a predicate is nested and a set is an ordered list, neither of which a flat table expresses without inventing a grammar.
 
 Deduplication on insert is `LibraryService.addTracksDeduplicating()`. After an import that yields preview URLs, `LinkPreviewService.triggerForUrls()` kicks off the background preview queue.
@@ -166,7 +159,7 @@ Deduplication on insert is `LibraryService.addTracksDeduplicating()`. After an i
 
 - `useLiveQuery` — Dexie → Vue reactivity (see above)
 - `useLinkPreview` — resolves a preview image for a URL, driving the `linkPreviews` table
-- `useLoadServerLibrary`, `useLoadSpotifyLibrary` — `onMounted` loaders that fill the corresponding store once, toast on failure, and are safe to call from multiple views
+- `useLoadSpotifyLibrary` — an `onMounted` loader that fills the corresponding store once, toasts on failure, and is safe to call from multiple views
 - `useNavidromeTagIndex` — Navidrome's tag names and values, fetched once per scope on demand; suggests fields and operands in the `library` slice (`CategoryMatchEditor.vue`) and the `navidrome` one (`NavidromeOverlayFieldsDialog.vue`)
 
 ## shadcn-vue UI Components
@@ -202,9 +195,6 @@ Client-side (`import.meta.env`, all optional — features degrade when unset):
 | ----------------------------- | -------------------------------------------------- |
 | `VITE_SPOTIFY_URL`            | `src/lib/spotify.ts`, `src/services/spotify.ts`    |
 | `VITE_WEB_SOCKET_URL`         | `src/stores/connection.ts`; also gates the multiplayer entry in `HomeView.vue` |
-| `VITE_MUSIC_SERVER_URL`       | `src/services/music-server.ts`                     |
-| `VITE_MUSIC_SERVER_USER`      | `src/services/music-server.ts` (basic auth)        |
-| `VITE_MUSIC_SERVER_PASSWORD`  | `src/services/music-server.ts` (basic auth)        |
 
 `env.d.ts` is only `/// <reference types="vite/client" />` — there is no typed `ImportMetaEnv`, so these are `string | undefined` and every read supplies a fallback.
 

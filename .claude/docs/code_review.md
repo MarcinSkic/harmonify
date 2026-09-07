@@ -53,10 +53,9 @@ These numbers describe where the codebase is, not where it has to stay.
   from `vue-sonner` is the established mechanism (most `catch` blocks in the repo do this).
   A silent `catch`, or one that only writes to `console`, is a finding for user-initiated work.
 - `console.error` alone is fine for internal/background failures where a toast would be noise —
-  audio load and volume in `PreviewPlayer.vue` / `musicPlayer.ts`, background library loads in
-  `useLoadServerLibrary.ts`.
-- A view that fetches should have both a loading and an empty state. `serverLibrary`'s
-  `isLoading` / `loadError` is the pattern to copy.
+  audio load and volume in `PreviewPlayer.vue` / `musicPlayer.ts`.
+- A view that fetches should have both a loading and an empty state — a store-level
+  `isLoading` / `loadError` pair driving the template is the pattern to copy.
 
 ## Naming
 

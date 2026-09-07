@@ -262,39 +262,6 @@ function toggleUnlimitedRounds() {
             <RotateCcw class="size-4" /> Once each
           </ToggleGroupItem>
         </ToggleGroup>
-
-        <Label class="text-base">Playlist categories</Label>
-        <Switch
-          v-model:model-value="settings.generatePlaylistCategories" class="mb-2"
-        />
-
-        <template v-if="settings.generatePlaylistCategories">
-          <Label for="generatedCategoryPoints" class="text-base">Playlist category points</Label>
-          <NumberField
-            id="generatedCategoryPoints"
-            v-model:model-value="settings.generatedCategoryPoints"
-            class="
-              mb-2 flex w-full items-stretch gap-0 justify-self-end
-              sm:w-40
-              lg:w-full
-            "
-            :min="1"
-          >
-            <NumberFieldContent>
-              <NumberFieldDecrement />
-              <NumberFieldInput class="rounded-r-none" />
-              <NumberFieldIncrement />
-            </NumberFieldContent>
-            <div
-              class="
-                flex w-max items-center rounded-r-md border border-l-0 bg-muted
-                px-3 text-muted-foreground
-              "
-            >
-              <Star class="size-4" />
-            </div>
-          </NumberField>
-        </template>
       </template>
 
       <Label class="text-base">Track start</Label>

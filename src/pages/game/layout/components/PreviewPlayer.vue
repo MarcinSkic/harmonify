@@ -2,13 +2,11 @@
 import type { MusicPlayData } from '@/types'
 import { onMounted, ref } from 'vue'
 import { useMusicPlayerStore } from '@/pages/game/stores'
-import { MusicServerService } from '@/services'
 
 const audioEl = ref<HTMLAudioElement | null>(null)
 const musicPlayerStore = useMusicPlayerStore()
 const audioContext = ref(new AudioContext())
 
-let currentBlobUrl: string | null = null
 let currentSrcUri: string | null = null
 let loadToken = 0
 // Counter (not boolean) so _preload's finally doesn't clear _play's in-flight status
@@ -38,36 +36,15 @@ function waitForMetadata(el: HTMLAudioElement): Promise<void> {
 // Returns false if superseded by a newer call, true on success.
 async function loadAudio(playData: MusicPlayData): Promise<boolean> {
   const myToken = ++loadToken
-  const previousBlobUrl = currentBlobUrl
-
-  const newSrc = MusicServerService.needsAuth(playData.uri)
-    ? await MusicServerService.fetchAudioBlobUrl(playData.uri)
-    : playData.uri
-
-  // A newer call superseded this one while we were fetching
-  if (myToken !== loadToken) {
-    if (newSrc.startsWith('blob:'))
-      URL.revokeObjectURL(newSrc)
-    return false
-  }
 
   const el = audioEl.value
-  if (!el) {
-    if (newSrc.startsWith('blob:'))
-      URL.revokeObjectURL(newSrc)
+  if (!el)
     return false
-  }
 
   el.pause()
-  el.src = newSrc
+  el.src = playData.uri
   currentSrcUri = playData.uri
-  currentBlobUrl = newSrc.startsWith('blob:') ? newSrc : null
   el.load()
-
-  // Revoke the previous blob only after the new src is assigned, so the
-  // element never points at a dead URL.
-  if (previousBlobUrl && previousBlobUrl !== newSrc)
-    URL.revokeObjectURL(previousBlobUrl)
 
   try {
     await waitForMetadata(el)

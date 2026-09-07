@@ -3,13 +3,11 @@ import { ref } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import LibraryHeader from './components/LibraryHeader.vue'
 import PlaylistSidebar from './components/PlaylistSidebar.vue'
-import ServerImportDialog from './components/ServerImportDialog.vue'
 import SpotifyImportDialog from './components/SpotifyImportDialog.vue'
 import TrackTable from './components/TrackTable.vue'
 
 const mobileTab = ref('tracks')
 const showSpotifyImport = ref(false)
-const showServerImport = ref(false)
 </script>
 
 <template>
@@ -25,7 +23,7 @@ const showServerImport = ref(false)
         <PlaylistSidebar />
       </aside>
       <div class="flex flex-1 flex-col overflow-hidden">
-        <LibraryHeader @spotify-import="showSpotifyImport = true" @server-import="showServerImport = true" />
+        <LibraryHeader @spotify-import="showSpotifyImport = true" />
         <div class="flex-1 overflow-auto">
           <TrackTable />
         </div>
@@ -39,7 +37,7 @@ const showServerImport = ref(false)
         md:hidden
       "
     >
-      <LibraryHeader @spotify-import="showSpotifyImport = true" @server-import="showServerImport = true" />
+      <LibraryHeader @spotify-import="showSpotifyImport = true" />
       <Tabs v-model="mobileTab" class="flex flex-1 flex-col overflow-hidden">
         <TabsList class="mx-4 mt-2 grid w-auto grid-cols-2">
           <TabsTrigger value="tracks">
@@ -59,6 +57,5 @@ const showServerImport = ref(false)
     </div>
 
     <SpotifyImportDialog v-model:open="showSpotifyImport" />
-    <ServerImportDialog v-model:open="showServerImport" />
   </div>
 </template>

@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { ArrowLeft, Download, Server, Tags } from '@lucide/vue'
+import { ArrowLeft, Download, Tags } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { MusicServerService } from '@/services'
 import { useLibraryStore } from '@/stores'
 import CsvImportButton from './CsvImportButton.vue'
 
 defineEmits<{
   spotifyImport: []
-  serverImport: []
 }>()
 
 const libraryStore = useLibraryStore()
-const serverConfigured = MusicServerService.isConfigured()
 </script>
 
 <template>
@@ -45,15 +42,6 @@ const serverConfigured = MusicServerService.isConfigured()
         </Button>
       </RouterLink>
       <CsvImportButton v-if="libraryStore.selectedPlaylistId !== null" />
-      <Button v-if="serverConfigured" variant="outline" class="gap-2" @click="$emit('serverImport')">
-        <Server class="size-4" />
-        <span
-          class="
-            hidden
-            sm:inline
-          "
-        >Music server</span>
-      </Button>
       <Button variant="outline" class="gap-2" @click="$emit('spotifyImport')">
         <Download class="size-4" />
         <span
