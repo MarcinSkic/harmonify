@@ -2,6 +2,7 @@ import type { PlaybackRange, TrackAnnotation, TrackOverlay } from '@/db/schemas'
 import type { SubsonicSong } from '@/services/navidrome'
 import Papa from 'papaparse'
 import z from 'zod'
+import { deriveOverlayKey } from '@/lib/trackOverlayKey'
 
 const PLAYBACK_RANGE_RE = /^(\d+):(\d+)\s*-\s*(\d+):(\d+)$/
 
@@ -52,16 +53,26 @@ export function formatPlaybackRange(range: PlaybackRange): string {
   return `${format(range.startMs)}-${format(range.endMs)}`
 }
 
-// Columns parseOverlayCSV actually reads into a row.
-const OVERLAY_INPUT_COLUMNS = ['musicbrainzid', 'title', 'artist', 'playbackrange', 'previewimageurl', 'enabled']
-// Identity columns serializeOverlayCSV writes for readability but that import never matches by them
-// (see the fallback-key decision in the plan) — recognized so a round-trip of our own export does not
-// dump them into customFields, but otherwise ignored.
-const OVERLAY_IDENTITY_COLUMNS = ['albumid', 'discnumber', 'track']
-const OVERLAY_RECOGNIZED_COLUMNS = [...OVERLAY_INPUT_COLUMNS, ...OVERLAY_IDENTITY_COLUMNS]
+// Columns parseOverlayCSV reads into a row — the same set serializeOverlayCSV writes, in that order.
+// `albumId/discNumber/track` are matching input, not decoration: a row without `musicBrainzId` is
+// matched by the composite key built from them plus `title`, exactly like a track loaded from
+// Navidrome (see `deriveOverlayKey`). Anything outside this set becomes a custom field.
+const OVERLAY_INPUT_COLUMNS = ['musicbrainzid', 'albumid', 'discnumber', 'track', 'title', 'artist', 'playbackrange', 'previewimageurl', 'enabled']
 
 export interface OverlayCsvRow {
-  musicBrainzId: string
+  /** `deriveOverlayKey(identity)` — the one place an imported row's overlay key is computed. */
+  key: string
+  /**
+   * Identity the row carries, written straight into the overlay so an import does not have to guess
+   * it. `title` is optional: a row keyed by `musicBrainzId` needs no `title` column at all.
+   */
+  identity: {
+    musicBrainzId?: string
+    albumId?: string
+    discNumber?: number
+    track?: number
+    title?: string
+  }
   artist?: string
   /**
    * Three-state like `previewImageUrl`/`enabled`: `undefined` when the `playbackRange` column is
@@ -72,6 +83,30 @@ export interface OverlayCsvRow {
   previewImageUrl?: string
   enabled?: boolean
   customFields: Record<string, string>
+}
+
+/**
+ * Key-bearing cells are kept exactly as written, `trim()` only decides whether a cell counts as
+ * empty: `deriveOverlayKey` does not trim either, and an overlay created in the app takes
+ * `song.title` straight from Navidrome, so trimming here would derive a different key for a
+ * sloppily tagged title and silently orphan the overlay instead of round-tripping it.
+ */
+function parseIdentityText(raw: string | undefined): string | undefined {
+  return raw?.trim() ? raw : undefined
+}
+
+/**
+ * `serializeOverlayCSV` writes an empty cell for a missing `discNumber`/`track`, and `Number('')` is
+ * `0` — so an empty cell must become `undefined`, or the composite key would silently drift from
+ * `album|||title` to `album|0|0|title` on a round trip. Kept as numbers, not strings: the value
+ * flows on into the overlay record, where it is typed as one.
+ */
+function parseIdentityNumber(raw: string | undefined): number | undefined {
+  const trimmed = raw?.trim()
+  if (!trimmed)
+    return undefined
+  const value = Number(trimmed)
+  return Number.isFinite(value) ? value : undefined
 }
 
 /**
@@ -106,19 +141,22 @@ export function parseOverlayCSV(text: string): { rows: OverlayCsvRow[], unmapped
       return header ? raw[header] : undefined
     }
 
-    const musicBrainzId = get('musicbrainzid')?.trim()
-    const title = get('title')?.trim() || undefined
+    const musicBrainzId = parseIdentityText(get('musicbrainzid'))
+    const albumId = parseIdentityText(get('albumid'))
+    const title = parseIdentityText(get('title'))
 
-    // musicBrainzId is the only matching key on import — no silent fallback to title/album/track.
-    if (!musicBrainzId) {
-      unmapped.push({ rowIndex: i + 1, title })
+    // Only rows no key can be derived from stay unmapped: without an MBID the composite key needs
+    // both `albumId` and `title`, so a hand-written list of titles is still reported, not guessed at.
+    if (!musicBrainzId && (!albumId || !title)) {
+      // Reported to the user rather than matched on, so here the surrounding whitespace goes.
+      unmapped.push({ rowIndex: i + 1, title: title?.trim() })
       return
     }
 
     const customFields: Record<string, string> = {}
     for (const [header, value] of Object.entries(raw)) {
       const normalized = header.trim().toLowerCase()
-      if (OVERLAY_RECOGNIZED_COLUMNS.includes(normalized))
+      if (OVERLAY_INPUT_COLUMNS.includes(normalized))
         continue
       const fieldName = header.trim()
       const fieldValue = value?.trim()
@@ -130,8 +168,18 @@ export function parseOverlayCSV(text: string): { rows: OverlayCsvRow[], unmapped
     const playbackRangeRaw = get('playbackrange')
     const enabledRaw = get('enabled')
 
-    rows.push({
+    const identity = {
       musicBrainzId,
+      albumId,
+      discNumber: parseIdentityNumber(get('discnumber')),
+      track: parseIdentityNumber(get('track')),
+      title,
+    }
+
+    rows.push({
+      // A row keyed by MBID may carry no title; the empty string never reaches the composite branch.
+      key: deriveOverlayKey({ ...identity, title: title ?? '' }),
+      identity,
       artist: get('artist')?.trim() || undefined,
       playbackRange: knownHeaderByColumn.has('playbackrange')
         ? (playbackRangeRaw?.trim() ? parsePlaybackRange(playbackRangeRaw) : null)
@@ -184,8 +232,11 @@ export function serializeTrackIdentityCSV(songs: SubsonicSong[]): string {
     songs.map((song, i) => ({
       index: String(i + 1),
       musicBrainzId: song.musicBrainzId ?? '',
+      albumId: song.albumId ?? '',
+      discNumber: song.discNumber != null ? String(song.discNumber) : '',
+      track: song.track != null ? String(song.track) : '',
       title: song.title,
     })),
-    { columns: ['index', 'musicBrainzId', 'title'] },
+    { columns: ['index', 'musicBrainzId', 'albumId', 'discNumber', 'track', 'title'] },
   )
 }

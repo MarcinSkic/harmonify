@@ -69,6 +69,79 @@ export async function removeCustomField(key: string, fieldName: string): Promise
   await db.trackOverlays.update(key, { customFields, updatedAt: Date.now() })
 }
 
+/**
+ * Tagging a file with a `musicbrainz_trackid` moves its track off the composite key onto the MBID
+ * one — orphaning the very overlay the fallback key existed to protect. Given the sources of a
+ * freshly loaded album/playlist, this carries such an overlay onto the new key and returns how many
+ * were moved.
+ *
+ * An overlay already stored under the MBID key blocks the move, and so does a second track in the
+ * list contending for either key: the rows stay untouched, because deciding between two annotations
+ * of one track is a repair screen, not a side effect of opening a list.
+ *
+ * Contention is counted among the tracks that could actually move, so a track already blocked by an
+ * overlay under its own MBID key does not count as a contender for the composite one — two copies
+ * of a file where only one is still unannotated do get their single overlay moved, deliberately.
+ */
+export async function rekeyOverlays(sources: OverlayKeySource[]): Promise<number> {
+  const candidates = sources
+    .filter(source => !!source.musicBrainzId)
+    .map(source => ({
+      musicBrainzId: source.musicBrainzId,
+      mbidKey: deriveOverlayKey(source),
+      compositeKey: deriveOverlayKey({ ...source, musicBrainzId: undefined }),
+    }))
+
+  if (candidates.length === 0)
+    return 0
+
+  const existing = await getOverlaysByKeys(candidates.flatMap(c => [c.mbidKey, c.compositeKey]))
+  const movable = candidates.filter(c => existing.has(c.compositeKey) && !existing.has(c.mbidKey))
+
+  // One list can name a key twice: two tagged copies of one file share a composite key (see the
+  // duplicate-key decision in the plan), and two entries of one recording share an MBID. Either way
+  // two annotations contend for one key — the same situation the rule above leaves alone, so every
+  // contending overlay stays put and the outcome does not depend on the order of the list.
+  const compositesPerMbid = new Map<string, Set<string>>()
+  const mbidsPerComposite = new Map<string, Set<string>>()
+  for (const { mbidKey, compositeKey } of movable) {
+    const composites = compositesPerMbid.get(mbidKey) ?? new Set<string>()
+    composites.add(compositeKey)
+    compositesPerMbid.set(mbidKey, composites)
+
+    const mbids = mbidsPerComposite.get(compositeKey) ?? new Set<string>()
+    mbids.add(mbidKey)
+    mbidsPerComposite.set(compositeKey, mbids)
+  }
+
+  const moves: Array<{ row: TrackOverlay, from: string }> = []
+  const moved = new Set<string>()
+
+  for (const { musicBrainzId, mbidKey, compositeKey } of movable) {
+    if (compositesPerMbid.get(mbidKey)!.size > 1 || mbidsPerComposite.get(compositeKey)!.size > 1)
+      continue
+    if (moved.has(mbidKey))
+      continue
+    moved.add(mbidKey)
+    // Without the identifier the row would export an empty MBID cell and fall straight back onto
+    // the composite key on the next import.
+    moves.push({
+      row: { ...existing.get(compositeKey)!, id: mbidKey, musicBrainzId, updatedAt: Date.now() },
+      from: compositeKey,
+    })
+  }
+
+  if (moves.length === 0)
+    return 0
+
+  await db.transaction('rw', db.trackOverlays, async () => {
+    await db.trackOverlays.bulkPut(moves.map(m => m.row))
+    await db.trackOverlays.bulkDelete(moves.map(m => m.from))
+  })
+
+  return moves.length
+}
+
 export async function getAllOverlays(): Promise<TrackOverlay[]> {
   return db.trackOverlays.toArray()
 }

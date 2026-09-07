@@ -11,20 +11,24 @@ import { LibraryOverlayService } from '@/services'
 const csvInput = ref<HTMLInputElement | null>(null)
 
 /**
- * A CSV row only carries `musicBrainzId` as the matching key (see the fallback-key decision in the
- * plan) — no `title`/`albumId`/`discNumber`/`track` to key by. Those identity fields are kept from
- * whatever overlay already exists for this key (falling back to the id itself for a brand-new row)
- * so importing a CSV never blanks out the identity snapshot used for readable exports.
+ * A row carries its own key and identity — `parseOverlayCSV` derives the key exactly the way the
+ * app does — so the import writes that identity straight from the file instead of guessing it.
+ * Fields the sheet leaves out keep the value of the overlay already stored under this key, so a
+ * narrow sheet (say, one custom field for a hundred tracks) never blanks the identity snapshot
+ * readable exports are built from. That existing overlay was looked up by the key its own identity
+ * produced, so those fallbacks can never move the row onto a different key.
  */
 async function importRow(row: OverlayCsvRow) {
-  const existing = await LibraryOverlayService.getOverlay(row.musicBrainzId)
+  const existing = await LibraryOverlayService.getOverlay(row.key)
 
   const source: OverlayKeySource & { artist?: string } = {
-    musicBrainzId: row.musicBrainzId,
-    albumId: existing?.albumId,
-    discNumber: existing?.discNumber,
-    track: existing?.track,
-    title: existing?.title ?? row.musicBrainzId,
+    musicBrainzId: row.identity.musicBrainzId,
+    albumId: row.identity.albumId ?? existing?.albumId,
+    discNumber: row.identity.discNumber ?? existing?.discNumber,
+    track: row.identity.track ?? existing?.track,
+    // An overlay must have a title; a row keyed by its MBID need not carry one. The key is the last
+    // resort — reachable only for a sheet with no title column, never for our own export.
+    title: row.identity.title ?? existing?.title ?? row.key,
     artist: row.artist ?? existing?.artist,
   }
 
@@ -50,12 +54,17 @@ async function onCSVFileSelected(event: Event) {
     for (const row of rows)
       await importRow(row)
 
-    toast.success(`Imported ${rows.length}, skipped ${unmapped.length} without musicBrainzId`)
+    // Two ways to match, so two counts: an MBID travels between instances, the composite key of
+    // album/disc/track/title only holds as long as those tags stay put.
+    const byMusicBrainzId = rows.filter(r => r.identity.musicBrainzId).length
+    toast.success(
+      `Imported ${byMusicBrainzId} by musicBrainzId, ${rows.length - byMusicBrainzId} by album/track, skipped ${unmapped.length}`,
+    )
 
     if (unmapped.length > 0) {
       const shown = unmapped.slice(0, 10).map(u => u.title ?? `row ${u.rowIndex}`)
       const more = unmapped.length > 10 ? ` and ${unmapped.length - 10} more` : ''
-      toast.warning(`Skipped rows without a musicBrainzId: ${shown.join(', ')}${more}`)
+      toast.warning(`Skipped rows with neither a musicBrainzId nor an albumId and title: ${shown.join(', ')}${more}`)
     }
   }
   catch (e) {
