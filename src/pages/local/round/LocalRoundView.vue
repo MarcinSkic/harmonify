@@ -161,7 +161,6 @@ async function handleContinueFromLeaderboard() {
         :teams="game.teams"
         :current-team-id="game.currentTeamId"
         :disabled-category-ids="localGameStore.disabledCategoryIdsForCurrentTeam"
-        :show-cheat-input="game.source !== 'navidrome'"
         @pick="handlePickCategory"
         @select-team="handleSelectTeam"
         @toggle-team-disabled="handleToggleTeamDisabled"

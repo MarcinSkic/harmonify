@@ -43,10 +43,9 @@ src/
 ├── db/                   # Dexie/IndexedDB: db instance + migrations (index.ts), persisted schemas (schemas.ts)
 ├── consts.ts             # LocalStorage keys, animation durations, responsive breakpoints
 ├── stores/               # Shared Pinia stores (connection, gameData, result, settings, library,
-│                         #   categories, categorySets, serverLibrary, spotifyLibrary, navidrome,
-│                         #   overlayFields)
+│                         #   categories, categorySets, spotifyLibrary, navidrome, overlayFields)
 ├── services/             # Shared services (library, library-import, libraryOverlay, link-preview,
-│                         #   music-server, spotify, navidrome/, navidromeGameSource)
+│                         #   spotify, navidrome/, navidromeGameSource)
 ├── lib/                  # Shared utilities (spotify fetch wrapper, csv, track utils, cn(),
 │                         #   categoryPredicate + categoryCoverage = pure engine rules, categoryJson)
 ├── composables/          # Shared composables (useLiveQuery, useLinkPreview, useNavidromeTagIndex,

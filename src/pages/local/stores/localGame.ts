@@ -13,10 +13,12 @@ import {
   isCategoryPoolExhausted,
   pickFromCategory,
 } from '@/pages/local/engine/categoryPool'
+import { describeFrozenTrack, findFrozenTracks } from '@/pages/local/engine/frozenTrackSearch'
 import { toDisplayTrack } from '@/pages/local/engine/navidromeTrack'
 import { createPool, isExhausted, pickRandom } from '@/pages/local/engine/trackPool'
 import { useCategoriesStore } from '@/stores'
 
+/** `candidates` are human-readable labels (title — artist — album), not identifiers. */
 export interface AmbiguousResult { type: 'ambiguous', candidates: string[] }
 
 function computeResult(
@@ -193,14 +195,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     await db.localGames.put(JSON.parse(JSON.stringify(game.value)) as LocalGame)
   }
 
-  async function _loadTrack(trackId: string) {
-    const g = game.value
-    if (g?.source === 'navidrome') {
-      const t = g.navidromeTracks?.[trackId]
-      currentTrack.value = t ? toDisplayTrack(t) : null
-      return
-    }
-    currentTrack.value = await db.tracks.get(trackId) ?? null
+  function _loadTrack(trackId: string) {
+    // The frozen pool is the only source of round tracks. Pre-v5 games sourced from the old library
+    // carry no `navidromeTracks`, so they no longer resume onto a track — accepted when `/local`
+    // became Navidrome-only (Phase 5).
+    const t = game.value?.navidromeTracks?.[trackId]
+    currentTrack.value = t ? toDisplayTrack(t) : null
   }
 
   async function createNavidromeGame(
@@ -275,7 +275,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     game.value = savedGame
 
     if (savedGame.currentTrackId)
-      await _loadTrack(savedGame.currentTrackId)
+      _loadTrack(savedGame.currentTrackId)
 
     return true
   }
@@ -313,7 +313,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
       g.currentTrackId = trackId
       g.roundPhase = 'playing'
 
-      await _loadTrack(trackId)
+      _loadTrack(trackId)
     }
     else {
       if (!g.categoryPoolState || isCategoryPoolExhausted(g.categoryPoolState))
@@ -369,33 +369,20 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (game.value.settings.categoryLimit === 'once' && game.value.currentTeamId)
       _trackOnceCategoryUsage(game.value.currentTeamId, categoryId)
 
-    await _loadTrack(trackId)
+    _loadTrack(trackId)
     await _persist()
   }
 
-  async function _findTracksInPool(input: string): Promise<Track[]> {
-    const trimmed = input.trim()
-    const g = game.value
-
-    const num = Number(trimmed)
-    if (Number.isInteger(num) && trimmed !== '') {
-      const suffix = `/${trimmed}`
-      const candidates = g && g.selectedPlaylistIds.length > 0
-        ? await db.tracks.where('playlistIds').anyOf(g.selectedPlaylistIds).toArray()
-        : await db.tracks.toArray()
-      return candidates.filter(t => t.sourceId.endsWith(suffix))
-    }
-
-    const track = await db.tracks.where('sourceId').equals(trimmed).first()
-    return track ? [track] : []
+  function _findTracksInPool(input: string): FrozenNavidromeTrack[] {
+    return findFrozenTracks(Object.values(game.value?.navidromeTracks ?? {}), input)
   }
 
-  async function checkSourceId(input: string): Promise<'available' | 'already-played' | 'not-found' | AmbiguousResult> {
-    const tracks = await _findTracksInPool(input)
+  function checkCheatQuery(input: string): 'available' | 'already-played' | 'not-found' | AmbiguousResult {
+    const tracks = _findTracksInPool(input)
     if (tracks.length === 0)
       return 'not-found'
     if (tracks.length > 1)
-      return { type: 'ambiguous', candidates: tracks.map(t => t.sourceId) }
+      return { type: 'ambiguous', candidates: tracks.map(describeFrozenTrack) }
     const track = tracks[0]
     if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
       return 'already-played'
@@ -408,11 +395,11 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (!game.value.categoryPoolState)
       return 'not-found'
 
-    const tracks = await _findTracksInPool(input)
+    const tracks = _findTracksInPool(input)
     if (tracks.length === 0)
       return 'not-found'
     if (tracks.length > 1)
-      return { type: 'ambiguous', candidates: tracks.map(t => t.sourceId) }
+      return { type: 'ambiguous', candidates: tracks.map(describeFrozenTrack) }
 
     const track = tracks[0]
     const poolState = game.value.categoryPoolState
@@ -420,9 +407,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
 
     // The host forcing a track bypasses the minimum distance rules — that is what the escape hatch
     // is for — but the track still lands in `playedTrackIds`, so it occupies a round in the history
-    // that every later pick measures its gaps against. Whether its own values also block anything
-    // depends on the game knowing its bag: ids here are resolved through `db.tracks`, so in a
-    // Navidrome game the forced track is absent from `navidromeTracks` and constrains nothing.
+    // that every later pick measures its gaps against. Since the pick is resolved inside
+    // `navidromeTracks`, the forced track brings its own field bag along, so later rounds do measure
+    // their minimum distances against it (decision W4).
 
     // Remove this track from all category pools
     const newCategoryPools: Record<string, string[]> = {}
@@ -438,7 +425,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     game.value.currentCategory = undefined
     game.value.roundPhase = 'playing'
 
-    await _loadTrack(track.id)
+    _loadTrack(track.id)
     await _persist()
     return alreadyPlayed ? 'already-played' : 'played'
   }
@@ -658,7 +645,7 @@ export const useLocalGameStore = defineStore('localGame', () => {
     findAllUnfinishedGames,
     startRound,
     pickCategory,
-    checkSourceId,
+    checkCheatQuery,
     playSpecificTrack,
     showAnswer,
     submitScores,

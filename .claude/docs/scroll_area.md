@@ -24,7 +24,6 @@ Używaj `max-h-full flex flex-col justify-start` na `ScrollArea`.
 
 **Przykłady w projekcie:**
 - `src/components/spotify/SpotifyLibraryDisplay.vue`
-- `src/pages/library/components/ServerLibraryDisplay.vue`
 
 ---
 

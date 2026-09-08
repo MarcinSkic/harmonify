@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { KeyRound } from '@lucide/vue'
 import { watchDebounced } from '@vueuse/core'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useLocalGameStore } from '@/pages/local/stores'
 
 const localGameStore = useLocalGameStore()
 
+// A short title fragment can match most of the pool; showing all of it would bury the round view.
+const MAX_SHOWN_CANDIDATES = 8
+
 const open = ref(false)
-const sourceId = ref('')
+const query = ref('')
 const status = ref<
   | { type: 'error', message: string }
   | { type: 'warning', message: string }
@@ -17,26 +20,32 @@ const status = ref<
   | null
 >(null)
 
-watchDebounced(sourceId, async (value) => {
+watchDebounced(query, (value) => {
   const trimmed = value.trim()
   if (!trimmed) {
     status.value = null
     return
   }
 
-  const result = await localGameStore.checkSourceId(trimmed)
+  const result = localGameStore.checkCheatQuery(trimmed)
   if (typeof result === 'object')
     status.value = { type: 'ambiguous', candidates: result.candidates }
   else if (result === 'not-found')
-    status.value = { type: 'error', message: `Track not found for sourceId: ${trimmed}` }
+    status.value = { type: 'error', message: `No track matches: ${trimmed}` }
   else if (result === 'already-played')
     status.value = { type: 'warning', message: 'This track was already played' }
   else
     status.value = null
 }, { debounce: 300 })
 
+const candidates = computed(() =>
+  status.value?.type === 'ambiguous' ? status.value.candidates : [],
+)
+const shownCandidates = computed(() => candidates.value.slice(0, MAX_SHOWN_CANDIDATES))
+const hiddenCandidateCount = computed(() => candidates.value.length - shownCandidates.value.length)
+
 async function handleSubmit() {
-  const value = sourceId.value.trim()
+  const value = query.value.trim()
   if (!value || status.value?.type === 'error' || status.value?.type === 'ambiguous')
     return
 
@@ -63,11 +72,11 @@ async function handleSubmit() {
         @submit.prevent="handleSubmit"
       >
         <Input
-          v-model="sourceId"
-          placeholder="Paste sourceId..."
+          v-model="query"
+          placeholder="Song id, MusicBrainz id or part of a title..."
           class="flex-1"
         />
-        <Button type="submit" size="sm" :disabled="!sourceId.trim() || status?.type === 'error' || status?.type === 'ambiguous'">
+        <Button type="submit" size="sm" :disabled="!query.trim() || status?.type === 'error' || status?.type === 'ambiguous'">
           Play
         </Button>
       </form>
@@ -79,12 +88,18 @@ async function handleSubmit() {
       >
         {{ status.message }}
       </p>
-      <p
+      <div
         v-else-if="status?.type === 'ambiguous'"
         class="text-sm text-yellow-500"
       >
-        Podaj pelny sourceId: {{ status.candidates.join(' lub ') }}
-      </p>
+        <p>Several tracks match — narrow the search:</p>
+        <p v-for="(candidate, index) of shownCandidates" :key="index">
+          {{ candidate }}
+        </p>
+        <p v-if="hiddenCandidateCount > 0">
+          ...and {{ hiddenCandidateCount }} more
+        </p>
+      </div>
     </template>
   </div>
 </template>

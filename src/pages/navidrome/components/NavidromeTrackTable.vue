@@ -125,7 +125,7 @@ function exportIds() {
   toast.success(`Exported ${props.songs.length} track IDs`)
 }
 
-/** Subsonic reports track length in seconds, unlike the music-server tracks kept in the library. */
+/** Subsonic reports track length in seconds, unlike the library's tracks which store milliseconds. */
 function formatDuration(seconds?: number): string {
   if (seconds === undefined)
     return '—'
