@@ -6,6 +6,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { usePreviewCoverage } from '@/composables/usePreviewCoverage'
 import { Breakpoint } from '@/consts'
 import { buildCoverageReport } from '@/lib/categoryCoverage'
 import { reportNavidromeError } from '@/lib/navidrome'
@@ -13,7 +14,7 @@ import { shuffle } from '@/lib/shuffle'
 import { applyValuesLimitations } from '@/lib/valuesLimitations'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
-import { NavidromeGameSourceService } from '@/services'
+import { LinkPreviewService, NavidromeGameSourceService } from '@/services'
 import { useCategoriesStore, useCategorySetsStore, useSettingsStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
 import NavidromeGameSourcePicker from './components/NavidromeGameSourcePicker.vue'
@@ -135,6 +136,30 @@ watch([pool, activeLimitations], ([currentPool, limitations]) => {
 // Mirrors what createNavidromeGame will actually pool at start, so the round count shown next to
 // "Rounds" is not a lie, and so the coverage report is computed on exactly those field bags.
 const totalTracks = computed(() => limitedPool.value.length)
+
+// Built on `limitedPool`, like the coverage report: the counter must speak about the tracks a game
+// can actually deal, not about ones the value limits already cut.
+const previewUrls = computed(() => [
+  ...new Set(
+    limitedPool.value
+      .map(track => track.previewImageUrl)
+      .filter((url): url is string => url !== undefined && url !== ''),
+  ),
+])
+
+const previewCoverage = usePreviewCoverage(previewUrls)
+
+// Fire-and-forget, and debounced for the same reason the pool materialization is: `limitedPool` is
+// re-shuffled on every change of the limits, and each run walks the URLs one `get` at a time.
+// Failures are logged rather than surfaced — the counter below already says what is missing.
+watchDebounced(previewUrls, (urls) => {
+  if (urls.length === 0)
+    return
+
+  LinkPreviewService.triggerForUrls(urls).catch((error) => {
+    console.error('Failed to queue cover previews for the selected pool', error)
+  })
+}, { immediate: true, debounce: 500 })
 
 const selectedCategories = computed<Category[]>(() => {
   if (!categorySetId.value)
@@ -263,6 +288,7 @@ async function handleGameStart() {
           :coverage-report="coverageReport"
           :tags-unavailable="tagsUnavailable"
           :pool-unavailable="poolUnavailable"
+          :preview-coverage="previewCoverage"
         />
       </TabsContent>
     </Tabs>
@@ -280,6 +306,7 @@ async function handleGameStart() {
         :coverage-report="coverageReport"
         :tags-unavailable="tagsUnavailable"
         :pool-unavailable="poolUnavailable"
+        :preview-coverage="previewCoverage"
         class="min-h-0"
       />
     </template>
