@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Category, FieldLimitation, FieldMinDistance, LocalGameSettings } from '@/db/schemas'
+import type { NavidromeError } from '@/services/navidrome'
 import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/services/navidromeGameSource'
 import { useWindowSize, watchDebounced } from '@vueuse/core'
 import { computed, reactive, ref, watch } from 'vue'
@@ -15,7 +16,7 @@ import { applyValuesLimitations } from '@/lib/valuesLimitations'
 import { useMusicPlayerStore } from '@/pages/game/stores'
 import { useLocalGameStore } from '@/pages/local/stores'
 import { LinkPreviewService, NavidromeGameSourceService } from '@/services'
-import { useCategoriesStore, useCategorySetsStore, useSettingsStore } from '@/stores'
+import { useCategoriesStore, useCategorySetsStore, useNavidromeStore, useSettingsStore } from '@/stores'
 import LocalGameSettingsForm from './components/LocalGameSettingsForm.vue'
 import NavidromeGameSourcePicker from './components/NavidromeGameSourcePicker.vue'
 import TeamManager from './components/TeamManager.vue'
@@ -26,6 +27,7 @@ const musicPlayerStore = useMusicPlayerStore()
 const settingsStore = useSettingsStore()
 const categoriesStore = useCategoriesStore()
 const categorySetsStore = useCategorySetsStore()
+const navidromeStore = useNavidromeStore()
 const { width: screenWidth } = useWindowSize()
 
 const isDesktop = computed(() => screenWidth.value >= Breakpoint.LG)
@@ -58,7 +60,7 @@ const categorySetId = ref<string | null>(null)
 // every selected source from scratch — without it, picking sources one after another would refetch
 // already-fetched ones on every single click (O(n^2) requests).
 const pool = ref<FrozenNavidromeTrack[]>([])
-const tagsUnavailable = ref(false)
+const tagsError = ref<NavidromeError | null>(null)
 const poolUnavailable = ref(false)
 let poolPreviewRequest = 0
 
@@ -70,12 +72,12 @@ watch(selectedSources, () => {
   poolPending.value = true
 }, { immediate: true })
 
-watchDebounced(selectedSources, async (sources) => {
+async function materializePreview(sources: NavidromeGameSourceRef[]): Promise<void> {
   const request = ++poolPreviewRequest
 
   if (sources.length === 0) {
     pool.value = []
-    tagsUnavailable.value = false
+    tagsError.value = null
     poolUnavailable.value = false
     poolPending.value = false
     return
@@ -86,22 +88,42 @@ watchDebounced(selectedSources, async (sources) => {
     if (request !== poolPreviewRequest)
       return
     pool.value = materialized.tracks
-    tagsUnavailable.value = materialized.tagsUnavailable
+    tagsError.value = materialized.tagsError
     poolUnavailable.value = false
+    // A JWT that died while the never-expiring Subsonic pair kept the badge green surfaces here
+    // first: without this the report would blame Navidrome for what one re-login fixes.
+    navidromeStore.reportSessionError(materialized.tagsError)
   }
-  catch {
+  catch (error) {
     if (request !== poolPreviewRequest)
       return
     // The report must not present zeros as facts when the fetch itself failed.
     pool.value = []
-    tagsUnavailable.value = false
+    tagsError.value = null
     poolUnavailable.value = true
+    // The Subsonic side can lose its credentials too (a password changed on the server), and that
+    // is the same dead end: a badge that keeps saying "connected" and no way back in.
+    navidromeStore.reportSessionError(error)
   }
   finally {
     if (request === poolPreviewRequest)
       poolPending.value = false
   }
-}, { immediate: true, debounce: 500 })
+}
+
+watchDebounced(selectedSources, materializePreview, { immediate: true, debounce: 500 })
+
+// A re-login is what the tags were waiting for, and nothing else refetches them: the sources did not
+// change, so the watcher above stays silent and the report would keep showing empty categories. The
+// status goes 'expired' → 'connecting' → 'connected', so the previous value says nothing useful —
+// what matters is that the last materialization came back incomplete.
+watch(() => navidromeStore.status, (status) => {
+  if (status !== 'connected' || (!tagsError.value && !poolUnavailable.value) || selectedSources.value.length === 0)
+    return
+
+  poolPending.value = true
+  materializePreview(selectedSources.value)
+})
 
 const poolBeforeLimits = computed(() => pool.value.length)
 
@@ -286,7 +308,7 @@ async function handleGameStart() {
           :total-tracks="totalTracks"
           :pool-before-limits="poolBeforeLimits"
           :coverage-report="coverageReport"
-          :tags-unavailable="tagsUnavailable"
+          :tags-error="tagsError"
           :pool-unavailable="poolUnavailable"
           :preview-coverage="previewCoverage"
         />
@@ -304,7 +326,7 @@ async function handleGameStart() {
         :total-tracks="totalTracks"
         :pool-before-limits="poolBeforeLimits"
         :coverage-report="coverageReport"
-        :tags-unavailable="tagsUnavailable"
+        :tags-error="tagsError"
         :pool-unavailable="poolUnavailable"
         :preview-coverage="previewCoverage"
         class="min-h-0"

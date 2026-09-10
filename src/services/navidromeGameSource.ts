@@ -1,6 +1,6 @@
 import type { FrozenNavidromeTrack, NavidromeGameSourceRef } from '@/db/schemas'
 import type { FieldBag } from '@/lib/categoryPredicate'
-import type { SubsonicSong } from '@/services/navidrome'
+import type { NavidromeError, SubsonicSong } from '@/services/navidrome'
 import { deriveOverlayKey } from '@/lib/trackOverlayKey'
 import { LibraryOverlayService, NavidromeService } from '@/services'
 
@@ -36,10 +36,10 @@ function mergeFields(tags: Record<string, string[]>, customFields: Record<string
  */
 export async function materializePool(
   sources: NavidromeGameSourceRef[],
-): Promise<{ tracks: FrozenNavidromeTrack[], tagsUnavailable: boolean }> {
+): Promise<{ tracks: FrozenNavidromeTrack[], tagsError: NavidromeError | null }> {
   const songsById = new Map<string, SubsonicSong>()
   const tagsBySongId = new Map<string, Record<string, string[]>>()
-  let tagsUnavailable = false
+  let tagsError: NavidromeError | null = null
 
   for (const source of sources) {
     // Two APIs per source: Subsonic for the song shape (stable contract, no field remapping) and
@@ -50,12 +50,14 @@ export async function materializePool(
         : NavidromeService.getPlaylist(source.id),
       fetchSourceTags(source).catch((error) => {
         // Missing tags degrade the game to "no categories match", they do not abort materialization
-        // — the caller decides what to tell the user. Anything that is not a Navidrome failure is a
-        // bug and still propagates.
+        // — the caller decides what to tell the user. The error itself is carried out rather than a
+        // flag, because an expired session has to reach the store to be actionable. Anything that is
+        // not a Navidrome failure is a bug and still propagates.
         if (!(error instanceof NavidromeService.NavidromeError))
           throw error
 
-        tagsUnavailable = true
+        // The first failure wins: with several sources the diagnosis is the same for all of them.
+        tagsError ??= error
         return new Map<string, Record<string, string[]>>()
       }),
     ])
@@ -101,5 +103,5 @@ export async function materializePool(
     })
   }
 
-  return { tracks: pool, tagsUnavailable }
+  return { tracks: pool, tagsError }
 }

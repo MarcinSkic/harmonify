@@ -3,7 +3,7 @@ export { computeSubsonicToken, deriveSubsonicCredentials, navidromeSessionSchema
 export type { NavidromeSession } from './credentials'
 export { isMixedContent, NavidromeError } from './errors'
 export type { NavidromeErrorKind } from './errors'
-export { getAlbumSongTags, getPlaylistSongTags, getSongTags, getTagIndex, login } from './native'
+export { getAlbumSongTags, getPlaylistSongTags, getSongTags, getTagIndex, login, verifyJwt } from './native'
 export type { NativePlaylistTrack, NativeSong, NativeTag, SubsonicAlbum, SubsonicPlaylist, SubsonicSong } from './schemas'
 export {
   getAlbum,

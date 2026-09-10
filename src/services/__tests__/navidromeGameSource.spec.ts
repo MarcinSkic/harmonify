@@ -143,9 +143,9 @@ describe('materializePool — field bags', () => {
     getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [song] })
     getAlbumSongTags.mockResolvedValue(new Map([['song-1', { grouping: ['op'], genre: ['Anime', 'J-Pop'] }]]))
 
-    const { tracks, tagsUnavailable } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+    const { tracks, tagsError } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
 
-    expect(tagsUnavailable).toBe(false)
+    expect(tagsError).toBeNull()
     expect(tracks[0].fields).toEqual({ grouping: ['op'], genre: ['Anime', 'J-Pop'] })
   })
 
@@ -190,15 +190,26 @@ describe('materializePool — field bags', () => {
     expect(tracks[0].fields).toEqual({ grouping: ['op'], popularity: ['5'] })
   })
 
-  it('reports tagsUnavailable and keeps the pool when the native API fails', async () => {
+  it('reports the tag failure and keeps the pool when the native API fails', async () => {
     getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [makeSong({ id: 'song-1' })] })
     getAlbumSongTags.mockRejectedValue(new NavidromeError('unsupportedShape'))
 
-    const { tracks, tagsUnavailable } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+    const { tracks, tagsError } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
 
-    expect(tagsUnavailable).toBe(true)
+    expect(tagsError?.kind).toBe('unsupportedShape')
     expect(tracks.map(t => t.id)).toEqual(['song-1'])
     expect(tracks[0].fields).toEqual({})
+  })
+
+  it('carries the expired-session kind out, so the caller can offer a re-login', async () => {
+    getAlbum.mockResolvedValue({ album: { id: 'album-1', name: 'Album' }, songs: [makeSong({ id: 'song-1' })] })
+    // The Subsonic pair that fetched the songs never expires, so only the native call fails here.
+    getAlbumSongTags.mockRejectedValue(new NavidromeError('sessionExpired'))
+
+    const { tracks, tagsError } = await materializePool([{ type: 'album', id: 'album-1', name: 'Album' }])
+
+    expect(tagsError?.kind).toBe('sessionExpired')
+    expect(tracks.map(t => t.id)).toEqual(['song-1'])
   })
 
   it('propagates a failure that is not a Navidrome error', async () => {

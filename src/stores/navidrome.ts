@@ -88,11 +88,11 @@ export const useNavidromeStore = defineStore('navidrome', () => {
   /**
    * Never throws: the caller decides what to show, and the reason stays available in `lastError`.
    *
-   * Deliberate gap: the ping goes through Subsonic, which authenticates with the salt + token pair,
-   * and that pair never expires — so a dead JWT still reports `connected`. It is not verified with
-   * a native call on purpose, because that would put the unstable API on every application start,
-   * against the risk mitigation in §1 of the plan. The JWT is needed for tags only, so a dead one
-   * surfaces on the first tag lookup and is handled there by `reportSessionError`.
+   * Two calls, because the two APIs fail independently: the Subsonic ping answers "is the server
+   * there, and does it still know this user" (its salt + token pair never expires), and only the
+   * native check that follows can tell whether the JWT is still alive. Without the second one a
+   * session whose JWT died overnight reports `connected` until the first tag lookup — the badge
+   * says green while categories come out empty.
    */
   async function runVerification(): Promise<NavidromeStatus> {
     const current = NavidromeService.getSession()
@@ -108,7 +108,7 @@ export const useNavidromeStore = defineStore('navidrome', () => {
     try {
       const { serverVersion: version } = await NavidromeService.ping()
       NavidromeService.setSession({ ...current, serverVersion: version })
-      status.value = 'connected'
+      status.value = await verifyJwt()
     }
     catch (error) {
       lastError.value = error instanceof Error ? error : new Error(String(error))
@@ -117,6 +117,30 @@ export const useNavidromeStore = defineStore('navidrome', () => {
     }
 
     return status.value
+  }
+
+  /**
+   * Only a rejected token demotes the session to `expired`. A native API that is unavailable or has
+   * changed its shape is not a credential problem and must not cost the user the library, the cover
+   * creator or playback — all of which run on Subsonic — so it is logged and the session kept.
+   *
+   * The risk this call was avoided for (§1 of the plan: keep the unstable API off the start-up path)
+   * is answered by that narrowing plus `verifyJwt` validating nothing but the HTTP status.
+   */
+  async function verifyJwt(): Promise<NavidromeStatus> {
+    try {
+      await NavidromeService.verifyJwt()
+      return 'connected'
+    }
+    catch (error) {
+      if (!isCredentialError(error)) {
+        console.warn('Navidrome native API did not answer the session check — keeping the session', error)
+        return 'connected'
+      }
+
+      lastError.value = error instanceof Error ? error : new Error(String(error))
+      return 'expired'
+    }
   }
 
   /**
