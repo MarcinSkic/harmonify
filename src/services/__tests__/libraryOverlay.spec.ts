@@ -1,9 +1,16 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '@/db'
 import { LibraryOverlayService } from '../.'
 
+const PREVIEW_URL = 'https://example.com/cover.jpg'
+
 beforeEach(async () => {
   await db.trackOverlays.clear()
+  await db.linkPreviews.clear()
+  // `upsertOverlay` queues a preview fetch and drains the queue without awaiting it; a promise that
+  // never settles parks that drain on `fetch` instead of letting it touch the network or race an
+  // assertion.
+  vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
 })
 
 describe('upsertOverlay', () => {
@@ -33,6 +40,34 @@ describe('upsertOverlay', () => {
     const overlay = await LibraryOverlayService.getOverlay('mbid-1')
     expect(overlay!.playbackRange).toEqual({ startMs: 1000, endMs: 2000 })
     expect(overlay!.enabled).toBe(false)
+  })
+
+  it('queues a preview fetch for a saved previewImageUrl', async () => {
+    await LibraryOverlayService.upsertOverlay(
+      { musicBrainzId: 'mbid-1', title: 'Track' },
+      { previewImageUrl: PREVIEW_URL },
+    )
+
+    const record = await db.linkPreviews.get(PREVIEW_URL)
+    expect(record).toBeDefined()
+    expect(record!.status).toBe('pending')
+  })
+
+  it('queues the preview of an existing overlay when only enabled is toggled', async () => {
+    await LibraryOverlayService.upsertOverlay(
+      { musicBrainzId: 'mbid-1', title: 'Track' },
+      { previewImageUrl: PREVIEW_URL },
+    )
+    await db.linkPreviews.clear()
+
+    await LibraryOverlayService.upsertOverlay(
+      { musicBrainzId: 'mbid-1', title: 'Track' },
+      { enabled: false },
+    )
+
+    const record = await db.linkPreviews.get(PREVIEW_URL)
+    expect(record).toBeDefined()
+    expect(record!.status).toBe('pending')
   })
 
   it('falls back to the composite key when musicBrainzId is missing', async () => {

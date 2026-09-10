@@ -14,4 +14,6 @@ app.use(router)
 
 app.mount('#app')
 
-LinkPreviewService.startupSync()
+LinkPreviewService.startupSync().catch((error) => {
+  console.error('Link preview reconciliation failed — previews were not reconciled this start', error)
+})

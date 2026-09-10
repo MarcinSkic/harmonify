@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { PreviewCoverage } from '@/composables/usePreviewCoverage'
 import type { CategoryLimit, LocalGameSettings } from '@/db/schemas'
 import type { CoverageReport as CoverageReportData } from '@/lib/categoryCoverage'
 import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash, Star, TriangleAlert } from '@lucide/vue'
@@ -19,6 +20,8 @@ defineProps<{
   coverageReport: CoverageReportData | null
   tagsUnavailable: boolean
   poolUnavailable: boolean
+  /** Cover preview progress for the pool — reported in both game modes, unlike `coverageReport`. */
+  previewCoverage: PreviewCoverage
 }>()
 
 const settings = defineModel<LocalGameSettings>({ required: true })
@@ -131,6 +134,30 @@ function toggleUnlimitedRounds() {
       >
         <TriangleAlert class="mt-0.5 size-4 shrink-0" />
         Could not load the selected sources from Navidrome.
+      </p>
+
+      <p
+        v-if="previewCoverage.pending > 0"
+        class="
+          mb-2 text-xs text-muted-foreground
+          sm:col-span-2
+          lg:col-span-1
+        "
+      >
+        Fetching cover previews… {{ previewCoverage.ready }} of {{ previewCoverage.total }} ready
+      </p>
+
+      <p
+        v-if="previewCoverage.failed > 0"
+        class="
+          mb-2 flex items-start gap-1.5 text-xs text-destructive
+          sm:col-span-2
+          lg:col-span-1
+        "
+      >
+        <TriangleAlert class="mt-0.5 size-3.5 shrink-0" />
+        Could not fetch {{ previewCoverage.failed }} of {{ previewCoverage.total }} cover previews —
+        those tracks will fall back to the album cover, fix their URLs in the library.
       </p>
 
       <Label for="trackDuration" class="text-base">Track duration</Label>

@@ -2,6 +2,7 @@ import type { OverlayField, TrackOverlay } from '@/db/schemas'
 import type { OverlayKeySource } from '@/lib/trackOverlayKey'
 import { db } from '@/db'
 import { deriveOverlayKey } from '@/lib/trackOverlayKey'
+import { triggerForUrls } from './link-preview'
 
 type OverlaySource = OverlayKeySource & { artist?: string }
 
@@ -25,7 +26,7 @@ export async function upsertOverlay(
 ): Promise<void> {
   const id = deriveOverlayKey(source)
   const existing = await db.trackOverlays.get(id)
-  await db.trackOverlays.put({
+  const row: TrackOverlay = {
     id,
     musicBrainzId: source.musicBrainzId,
     albumId: source.albumId,
@@ -39,7 +40,14 @@ export async function upsertOverlay(
     customFields: existing?.customFields ?? {},
     ...patch,
     updatedAt: Date.now(),
-  })
+  }
+  await db.trackOverlays.put(row)
+
+  // The queued URL comes from the saved row, not from `patch`: toggling `enabled` on an overlay
+  // that already carries a URL has to queue it too. Repeats are free — `ensurePreviewRecord`
+  // returns early on a record that exists.
+  if (row.previewImageUrl)
+    await triggerForUrls([row.previewImageUrl])
 }
 
 export async function setCustomField(source: OverlaySource, fieldName: string, value: string): Promise<void> {

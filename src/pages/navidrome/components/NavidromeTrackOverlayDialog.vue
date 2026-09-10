@@ -17,9 +17,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { useLinkPreview } from '@/composables/useLinkPreview'
 import { formatPlaybackRange, parsePlaybackRange } from '@/lib/csv'
 import { deriveOverlayKey } from '@/lib/trackOverlayKey'
-import { LibraryOverlayService } from '@/services'
+import { LibraryOverlayService, LinkPreviewService } from '@/services'
 import { useOverlayFieldsStore } from '@/stores'
 
 const props = defineProps<{
@@ -79,6 +80,39 @@ watch([open, () => props.song?.id], async ([isOpen, songId]) => {
 })
 
 const previewImageIsSet = computed(() => previewImageUrl.value.trim() !== '')
+
+const { blobUrl: previewBlobUrl, status: previewStatus } = useLinkPreview(
+  computed(() => previewImageUrl.value.trim() || undefined),
+)
+
+const previewFailed = computed(() => previewStatus.value === 'error')
+
+const previewStatusMessage = computed(() => {
+  switch (previewStatus.value) {
+    case 'pending':
+      return 'Fetching preview…'
+    case 'fetched':
+      return 'Preview ready'
+    case 'error':
+      return 'Preview could not be fetched — the round would fall back to the album cover.'
+    // No record yet: `upsertOverlay` is what queues the URL, so a freshly typed one has none.
+    default:
+      return 'Preview will be fetched when you save.'
+  }
+})
+
+async function handleRetryPreview() {
+  const url = previewImageUrl.value.trim()
+  if (!url)
+    return
+
+  try {
+    await LinkPreviewService.retryPreview(url)
+  }
+  catch (err) {
+    toast.error(`Failed to retry the preview: ${err instanceof Error ? err.message : String(err)}`)
+  }
+}
 
 function addCustomField() {
   customFields.value.push({ name: '', value: '' })
@@ -180,9 +214,31 @@ async function handleSubmit() {
             placeholder="https://..."
             autocomplete="off"
           />
+          <div v-if="previewImageIsSet" class="flex items-center gap-2">
+            <p
+              class="text-xs"
+              :class="[previewFailed ? 'text-destructive' : `
+                text-muted-foreground
+              `]"
+            >
+              {{ previewStatusMessage }}
+            </p>
+            <Button
+              v-if="previewFailed"
+              type="button"
+              variant="outline"
+              size="sm"
+              class="h-6 px-2 text-xs"
+              @click="handleRetryPreview"
+            >
+              Retry
+            </Button>
+          </div>
+          <!-- Once the proxy has the blob, show it: the raw URL only proves the browser can load
+               it cross-origin, which the round cannot do. -->
           <img
             v-if="previewImageIsSet"
-            :src="previewImageUrl"
+            :src="previewBlobUrl ?? previewImageUrl"
             alt="Preview"
             class="size-24 rounded-md border object-cover"
           >
