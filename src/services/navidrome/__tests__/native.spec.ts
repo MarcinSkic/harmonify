@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearSession, setSession } from '../client'
-import { getAlbumSongTags, getPlaylistSongTags, getTagIndex } from '../native'
+import { getAlbumSongTags, getPlaylistSongTags, getTagIndex, verifyJwt } from '../native'
 
 function nativeResponse(body: unknown, headers: Record<string, string> = {}): Response {
   return {
@@ -31,6 +31,33 @@ afterEach(() => {
   clearSession()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
+})
+
+describe('verifyJwt', () => {
+  it('hits the keepalive route with the stored JWT', async () => {
+    const fetchMock = stubFetch(nativeResponse({ response: 'ok', id: 'keepalive' }))
+
+    await verifyJwt()
+
+    expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:4533/api/keepalive/keepalive')
+    expect(fetchMock.mock.calls[0][1].headers['x-nd-authorization']).toBe('Bearer jwt')
+  })
+
+  it('accepts a payload of an unknown shape — only the status answers the question', async () => {
+    stubFetch(nativeResponse({ whatever: 'a future version returns' }))
+
+    await expect(verifyJwt()).resolves.toBeUndefined()
+  })
+
+  it('reports a rejected token as an expired session', async () => {
+    stubFetch({
+      status: 401,
+      headers: { get: () => null },
+      json: async () => ({}),
+    } as unknown as Response)
+
+    await expect(verifyJwt()).rejects.toMatchObject({ kind: 'sessionExpired' })
+  })
 })
 
 describe('getAlbumSongTags', () => {

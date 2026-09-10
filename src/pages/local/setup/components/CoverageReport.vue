@@ -1,25 +1,38 @@
 <script setup lang="ts">
 import type { CoverageReport } from '@/lib/categoryCoverage'
+import type { NavidromeError } from '@/services/navidrome'
 import { TriangleAlert } from '@lucide/vue'
+import { computed } from 'vue'
 import PointsDisplay from '@/components/PointsDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 
-defineProps<{
+const props = defineProps<{
   /** `null` until a category set with at least one category is picked. */
   report: CoverageReport | null
   /** Navidrome answered for the songs but not for their tags — every category will come out empty. */
-  tagsUnavailable: boolean
+  tagsError: NavidromeError | null
 }>()
+
+// An expired session is the one tag failure the host can fix on the spot, so it is named as such
+// instead of reading as a server fault (the connect dialog is opened for them by the store).
+const tagsMessage = computed(() => {
+  if (!props.tagsError)
+    return ''
+
+  return props.tagsError.kind === 'sessionExpired'
+    ? 'The Navidrome session has expired — sign in again to fetch tags, or categories will stay empty.'
+    : 'Could not fetch tags from Navidrome — categories will stay empty.'
+})
 </script>
 
 <template>
   <div class="flex w-full flex-col gap-2 rounded-md border p-3">
     <p
-      v-if="tagsUnavailable"
+      v-if="tagsMessage"
       class="flex items-start gap-1.5 text-sm text-destructive"
     >
       <TriangleAlert class="mt-0.5 size-4 shrink-0" />
-      Could not fetch tags from Navidrome — categories will stay empty.
+      {{ tagsMessage }}
     </p>
 
     <p v-if="!report" class="text-sm text-muted-foreground">

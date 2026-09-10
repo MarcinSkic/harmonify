@@ -33,6 +33,19 @@ export async function login(baseUrl: string, username: string, password: string)
   return { jwt: payload.token, username: payload.username }
 }
 
+/**
+ * Has the server accept or reject the stored JWT, nothing more. A Subsonic ping cannot answer this —
+ * its salt + token pair never expires, so a session whose JWT died still pings green.
+ *
+ * `/api/keepalive/*` exists for exactly this: it sits behind the same authenticator as every other
+ * native route (401 on a dead token), answers a fixed one-line body whatever the library holds, and
+ * being a native response it also refreshes the JWT on the way back. No pagination or shape
+ * assumption to get wrong, so the payload is left unvalidated — the HTTP status is the whole answer.
+ */
+export async function verifyJwt(): Promise<void> {
+  await nativeFetch('/api/keepalive/keepalive', z.unknown())
+}
+
 /** Tag name → list of values; a song without custom tags yields an empty map. */
 export async function getSongTags(songId: string): Promise<Record<string, string[]>> {
   const song = await nativeFetch(`/api/song/${encodeURIComponent(songId)}`, nativeSongSchema)

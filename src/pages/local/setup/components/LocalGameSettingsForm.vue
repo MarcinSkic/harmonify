@@ -2,6 +2,7 @@
 import type { PreviewCoverage } from '@/composables/usePreviewCoverage'
 import type { CategoryLimit, LocalGameSettings } from '@/db/schemas'
 import type { CoverageReport as CoverageReportData } from '@/lib/categoryCoverage'
+import type { NavidromeError } from '@/services/navidrome'
 import { Infinity as InfinityIcon, RotateCcw, Shuffle, Slash, Star, TriangleAlert } from '@lucide/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,8 @@ defineProps<{
   /** Pool size before `valueLimitations` trims it — same as `totalTracks` when no limits apply. */
   poolBeforeLimits: number
   coverageReport: CoverageReportData | null
-  tagsUnavailable: boolean
+  /** The failure that left the field bags empty, `null` when tags came through. */
+  tagsError: NavidromeError | null
   poolUnavailable: boolean
   /** Cover preview progress for the pool — reported in both game modes, unlike `coverageReport`. */
   previewCoverage: PreviewCoverage
@@ -249,7 +251,7 @@ function toggleUnlimitedRounds() {
         <Label class="text-base">Coverage</Label>
         <CoverageReport
           :report="coverageReport"
-          :tags-unavailable="tagsUnavailable"
+          :tags-error="tagsError"
           class="
             mb-2
             sm:col-span-2
