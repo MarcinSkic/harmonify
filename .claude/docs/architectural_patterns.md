@@ -211,4 +211,4 @@ OAuth token management lives in `api/token/`:
 | `refresh`  | Uses the refresh_token cookie to get a new access_token |
 | `expired`  | Clears cookies, redirects to `request`            |
 
-Tokens are stored as HTTP cookies: `access_token` is client-readable, `refresh_token` is `HttpOnly`. Shared helpers in `api/token/common.ts`. These functions validate their inputs with inline Zod schemas, same as the client.
+Tokens are stored as HTTP cookies: `access_token` is client-readable, `refresh_token` is `HttpOnly`. Shared helpers in `api/token/_common.ts` (the `_` prefix keeps Vercel from deploying it as a function); request/response types come from the hand-written `api/_vercel.ts`, not `@vercel/node`. These functions validate their inputs with inline Zod schemas, same as the client.

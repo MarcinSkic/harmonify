@@ -1,4 +1,4 @@
-import type { VercelResponse } from '@vercel/node'
+import type { VercelResponse } from '../_vercel.js'
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import queryString from 'query-string'
