@@ -27,7 +27,9 @@ export class NavidromeError extends Error {
   readonly status?: number
 
   constructor(kind: NavidromeErrorKind, details?: string, status?: number) {
-    super(details ? `${MESSAGES[kind]} (${details})` : MESSAGES[kind])
+    super(details
+      ? `${MESSAGES[kind]} (${details})`
+      : MESSAGES[kind])
     this.name = 'NavidromeError'
     this.kind = kind
     this.status = status
@@ -84,7 +86,9 @@ export function errorFromHttpStatus(status: number, { authenticated = false } = 
  * Only the credential codes have a dedicated kind; anything else keeps the server's own message.
  */
 export function errorFromSubsonicCode(code: number, message?: string): NavidromeError {
-  const details = message ? `${message} [${code}]` : `code ${code}`
+  const details = message
+    ? `${message} [${code}]`
+    : `code ${code}`
 
   if (code === 40 || code === 41)
     return new NavidromeError('badCredentials', details)

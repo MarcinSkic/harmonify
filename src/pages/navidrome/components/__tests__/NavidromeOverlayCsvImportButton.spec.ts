@@ -5,7 +5,11 @@ import { db } from '@/db'
 import { LibraryOverlayService } from '@/services'
 import NavidromeOverlayCsvImportButton from '../NavidromeOverlayCsvImportButton.vue'
 
-const toast = vi.hoisted(() => ({ success: vi.fn(), warning: vi.fn(), error: vi.fn() }))
+const toast = vi.hoisted(() => ({
+  success: vi.fn(),
+  warning: vi.fn(),
+  error: vi.fn(),
+}))
 vi.mock('vue-sonner', async importOriginal => ({
   ...await importOriginal<typeof import('vue-sonner')>(),
   toast,
@@ -18,7 +22,11 @@ async function importCSV(lines: string[]) {
   wrapper = mount(NavidromeOverlayCsvImportButton)
   const input = wrapper.find('input[type="file"]')
   Object.defineProperty(input.element, 'files', {
-    value: [new File([lines.join('\n')], 'overlay.csv', { type: 'text/csv' })],
+    value: [
+      new File([
+        lines.join('\n'),
+      ], 'overlay.csv', { type: 'text/csv' }),
+    ],
     configurable: true,
   })
   await input.trigger('change')
@@ -69,7 +77,14 @@ describe('overlay CSV import', () => {
 
   it('keeps the identity of the stored overlay for fields the sheet does not carry', async () => {
     await LibraryOverlayService.upsertOverlay(
-      { musicBrainzId: 'mbid-1', albumId: 'album-1', discNumber: 1, track: 2, title: 'Stored Title', artist: 'Stored Artist' },
+      {
+        musicBrainzId: 'mbid-1',
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Stored Title',
+        artist: 'Stored Artist',
+      },
       {},
     )
 

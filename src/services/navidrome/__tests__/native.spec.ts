@@ -5,7 +5,9 @@ import { getAlbumSongTags, getPlaylistSongTags, getTagIndex, verifyJwt } from '.
 function nativeResponse(body: unknown, headers: Record<string, string> = {}): Response {
   return {
     status: 200,
-    headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+    headers: {
+      get: (name: string) => headers[name.toLowerCase()] ?? null,
+    },
     json: async () => body,
   } as unknown as Response
 }
@@ -52,7 +54,9 @@ describe('verifyJwt', () => {
   it('reports a rejected token as an expired session', async () => {
     stubFetch({
       status: 401,
-      headers: { get: () => null },
+      headers: {
+        get: () => null,
+      },
       json: async () => ({}),
     } as unknown as Response)
 
@@ -63,14 +67,23 @@ describe('verifyJwt', () => {
 describe('getAlbumSongTags', () => {
   it('keys the tag map by song id and asks for the whole album', async () => {
     const fetchMock = stubFetch(nativeResponse([
-      { id: 'song-1', tags: { grouping: 'op', genre: ['Anime', 'J-Pop'] } },
+      {
+        id: 'song-1',
+        tags: {
+          grouping: 'op',
+          genre: ['Anime', 'J-Pop'],
+        },
+      },
       { id: 'song-2' },
     ]))
 
     const tags = await getAlbumSongTags('album-1')
 
     expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:4533/api/song?album_id=album-1&_end=0')
-    expect(tags.get('song-1')).toEqual({ grouping: ['op'], genre: ['Anime', 'J-Pop'] })
+    expect(tags.get('song-1')).toEqual({
+      grouping: ['op'],
+      genre: ['Anime', 'J-Pop'],
+    })
     expect(tags.get('song-2')).toEqual({})
   })
 })
@@ -78,19 +91,32 @@ describe('getAlbumSongTags', () => {
 describe('getPlaylistSongTags', () => {
   it('keys the tag map by mediaFileId, not by the entry id', async () => {
     const fetchMock = stubFetch(nativeResponse([
-      { id: '1', mediaFileId: 'song-42', tags: { grouping: 'ed' } },
+      {
+        id: '1',
+        mediaFileId: 'song-42',
+        tags: { grouping: 'ed' },
+      },
       { id: '2', mediaFileId: 'song-7', tags: {} },
     ]))
 
     const tags = await getPlaylistSongTags('playlist-1')
 
     expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:4533/api/playlist/playlist-1/tracks?_end=0')
-    expect([...tags.keys()]).toEqual(['song-42', 'song-7'])
-    expect(tags.get('song-42')).toEqual({ grouping: ['ed'] })
+    expect([
+      ...tags.keys(),
+    ]).toEqual(['song-42', 'song-7'])
+    expect(tags.get('song-42')).toEqual({
+      grouping: ['ed'],
+    })
   })
 
   it('reports a missing mediaFileId as an unsupported shape instead of joining against nothing', async () => {
-    stubFetch(nativeResponse([{ id: '1', tags: { grouping: 'ed' } }]))
+    stubFetch(nativeResponse([
+      {
+        id: '1',
+        tags: { grouping: 'ed' },
+      },
+    ]))
 
     await expect(getPlaylistSongTags('playlist-1')).rejects.toMatchObject({ kind: 'unsupportedShape' })
   })
@@ -113,7 +139,9 @@ describe('getTagIndex', () => {
 
   it('warns when the row count disagrees with x-total-count', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    stubFetch(nativeResponse([{ id: '1', tagName: 'grouping', tagValue: 'op' }], { 'x-total-count': '7436' }))
+    stubFetch(nativeResponse([
+      { id: '1', tagName: 'grouping', tagValue: 'op' },
+    ], { 'x-total-count': '7436' }))
 
     await getTagIndex()
 
@@ -123,7 +151,9 @@ describe('getTagIndex', () => {
 
   it('does not warn when the row count matches the header', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    stubFetch(nativeResponse([{ id: '1', tagName: 'grouping', tagValue: 'op' }], { 'x-total-count': '1' }))
+    stubFetch(nativeResponse([
+      { id: '1', tagName: 'grouping', tagValue: 'op' },
+    ], { 'x-total-count': '1' }))
 
     await getTagIndex()
 

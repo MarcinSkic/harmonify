@@ -13,7 +13,9 @@ async function handleExport() {
     saveAs(new Blob([csv], { type: 'text/csv' }), 'navidrome-overlay.csv')
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'CSV export failed')
+    toast.error(e instanceof Error
+      ? e.message
+      : 'CSV export failed')
   }
 }
 </script>

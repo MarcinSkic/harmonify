@@ -9,7 +9,10 @@ const connectionStore = useConnectionStore()
 const icon = computed(() => gameDataStore.isPaused ? Play : Pause)
 
 function handleClick() {
-  const message: { $type: 'message', type: string } = { $type: 'message', type: gameDataStore.isPaused ? 'resumeGame' : 'pauseGame' }
+  const message: { $type: 'message', type: string } = {
+    $type: 'message',
+    type: gameDataStore.isPaused ? 'resumeGame' : 'pauseGame',
+  }
 
   connectionStore.sendMessage(message)
 }

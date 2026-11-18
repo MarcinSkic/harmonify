@@ -78,7 +78,9 @@ describe('useLoadNavidromeLibrary playlist paging', () => {
   })
 
   it('should ignore a page beyond the last one', async () => {
-    getPlaylists.mockResolvedValue([{ id: 'p1', name: 'Only playlist', songCount: 1 }])
+    getPlaylists.mockResolvedValue([
+      { id: 'p1', name: 'Only playlist', songCount: 1 },
+    ])
 
     wrapper = mount(host)
     await flushPromises()

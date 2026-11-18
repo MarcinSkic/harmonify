@@ -14,8 +14,19 @@ function makeFrozenTrack(overrides: Partial<FrozenNavidromeTrack> = {}): FrozenN
 }
 
 const pool: FrozenNavidromeTrack[] = [
-  makeFrozenTrack({ id: 'abc123', overlayKey: 'mbid-aaa', title: 'Wonderwall', artist: 'Oasis', albumName: 'Morning Glory' }),
-  makeFrozenTrack({ id: 'def456', overlayKey: 'mbid-bbb', title: 'Wonderwall (Live)', artist: 'Oasis' }),
+  makeFrozenTrack({
+    id: 'abc123',
+    overlayKey: 'mbid-aaa',
+    title: 'Wonderwall',
+    artist: 'Oasis',
+    albumName: 'Morning Glory',
+  }),
+  makeFrozenTrack({
+    id: 'def456',
+    overlayKey: 'mbid-bbb',
+    title: 'Wonderwall (Live)',
+    artist: 'Oasis',
+  }),
   makeFrozenTrack({ id: 'ghi789', overlayKey: 'mbid-ccc', title: 'Champagne Supernova' }),
 ]
 

@@ -51,7 +51,10 @@ export const useNavidromeStore = defineStore('navidrome', () => {
       NavidromeService.setSession(provisional)
 
       const { serverVersion: version } = await NavidromeService.ping()
-      const connected = { ...NavidromeService.getSession() ?? provisional, serverVersion: version }
+      const connected = {
+        ...NavidromeService.getSession() ?? provisional,
+        serverVersion: version,
+      }
       NavidromeService.setSession(connected)
 
       status.value = 'connected'
@@ -67,8 +70,12 @@ export const useNavidromeStore = defineStore('navidrome', () => {
       else
         NavidromeService.clearSession()
 
-      lastError.value = error instanceof Error ? error : new Error(String(error))
-      status.value = previous && isCredentialError(error) ? 'expired' : 'disconnected'
+      lastError.value = error instanceof Error
+        ? error
+        : new Error(String(error))
+      status.value = previous && isCredentialError(error)
+        ? 'expired'
+        : 'disconnected'
       throw error
     }
   }
@@ -111,9 +118,13 @@ export const useNavidromeStore = defineStore('navidrome', () => {
       status.value = await verifyJwt()
     }
     catch (error) {
-      lastError.value = error instanceof Error ? error : new Error(String(error))
+      lastError.value = error instanceof Error
+        ? error
+        : new Error(String(error))
       // The session is kept either way, so the dialog can prefill the address and the login.
-      status.value = isCredentialError(error) ? 'expired' : 'disconnected'
+      status.value = isCredentialError(error)
+        ? 'expired'
+        : 'disconnected'
     }
 
     return status.value
@@ -138,7 +149,9 @@ export const useNavidromeStore = defineStore('navidrome', () => {
         return 'connected'
       }
 
-      lastError.value = error instanceof Error ? error : new Error(String(error))
+      lastError.value = error instanceof Error
+        ? error
+        : new Error(String(error))
       return 'expired'
     }
   }
@@ -152,7 +165,9 @@ export const useNavidromeStore = defineStore('navidrome', () => {
     if (!isCredentialError(error))
       return
 
-    lastError.value = error instanceof Error ? error : new Error(String(error))
+    lastError.value = error instanceof Error
+      ? error
+      : new Error(String(error))
     status.value = 'expired'
     openConnectDialog()
   }

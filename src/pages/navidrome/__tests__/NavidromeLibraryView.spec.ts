@@ -8,7 +8,9 @@ import NavidromeLibraryView from '../NavidromeLibraryView.vue'
 
 vi.mock('vue-router', async importOriginal => ({
   ...await importOriginal<typeof import('vue-router')>(),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
 }))
 
 const getAlbums = vi.fn()
@@ -61,7 +63,9 @@ describe('navidromeLibraryView album pagination', () => {
     const fullPage = Array.from({ length: PAGE_SIZE }, (_, i) => ({ id: `a${i}`, name: `Album ${i}` }))
     getAlbums
       .mockResolvedValueOnce(fullPage)
-      .mockResolvedValueOnce([{ id: 'b1', name: 'Last album' }])
+      .mockResolvedValueOnce([
+        { id: 'b1', name: 'Last album' },
+      ])
     connect()
 
     wrapper = mount(NavidromeLibraryView)
@@ -80,7 +84,9 @@ describe('navidromeLibraryView album pagination', () => {
   })
 
   it('should disable the next page button on a page that is not full', async () => {
-    getAlbums.mockResolvedValue([{ id: 'a1', name: 'Only album' }])
+    getAlbums.mockResolvedValue([
+      { id: 'a1', name: 'Only album' },
+    ])
     connect()
 
     wrapper = mount(NavidromeLibraryView)

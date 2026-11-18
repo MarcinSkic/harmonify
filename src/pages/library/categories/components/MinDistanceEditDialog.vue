@@ -97,7 +97,9 @@ async function handleSubmit() {
   const current = props.categorySet.minDistances ?? []
   const existingIndex = current.findIndex(d => d.name === originalName.value)
   const next = existingIndex >= 0
-    ? current.map((d, i) => (i === existingIndex ? validation.data : d))
+    ? current.map((d, i) => (i === existingIndex
+        ? validation.data
+        : d))
     : [...current, validation.data]
 
   try {

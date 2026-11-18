@@ -34,7 +34,9 @@ const participants = computed(() =>
 
 const canSpin = computed(() => participants.value.length >= 2 && !isSpinning.value)
 // With no spin needed (only one candidate), that lone candidate is the takeover team.
-const resolvedWinnerId = computed(() => winnerId.value ?? (participants.value.length === 1 ? participants.value[0].id : null))
+const resolvedWinnerId = computed(() => winnerId.value ?? (participants.value.length === 1
+  ? participants.value[0].id
+  : null))
 const winnerName = computed(() => props.teams.find(t => t.id === resolvedWinnerId.value)?.name)
 
 watch(() => props.open, (isOpen) => {

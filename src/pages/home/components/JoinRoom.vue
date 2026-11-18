@@ -23,7 +23,10 @@ function joinRoom() {
     handleMessage(message) {
       if (message.$type === 'message/playerInfoDto') {
         gameDataStore.joinGame(room, message.data)
-        router.push({ name: 'setup', params: { id: room } })
+        router.push({
+          name: 'setup',
+          params: { id: room },
+        })
       }
     },
   })

@@ -35,7 +35,10 @@ async function handleFinishEarly() {
   const id = router.currentRoute.value.params.id as string
   await localGameStore.finishGame()
   isDialogOpen.value = false
-  router.push({ name: 'localResult', params: { id } })
+  router.push({
+    name: 'localResult',
+    params: { id },
+  })
 }
 
 function handleSuspend() {

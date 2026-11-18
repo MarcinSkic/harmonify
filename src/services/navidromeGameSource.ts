@@ -68,7 +68,9 @@ export async function materializePool(
       tagsBySongId.set(songId, songTags)
   }
 
-  const songs = [...songsById.values()]
+  const songs = [
+    ...songsById.values(),
+  ]
   const overlayKeyBySongId = new Map(songs.map(song => [
     song.id,
     deriveOverlayKey({
@@ -79,7 +81,9 @@ export async function materializePool(
       title: song.title,
     }),
   ]))
-  const overlays = await LibraryOverlayService.getOverlaysByKeys([...new Set(overlayKeyBySongId.values())])
+  const overlays = await LibraryOverlayService.getOverlaysByKeys([
+    ...new Set(overlayKeyBySongId.values()),
+  ])
 
   const pool: FrozenNavidromeTrack[] = []
   for (const song of songs) {
@@ -96,7 +100,9 @@ export async function materializePool(
       albumName: song.album,
       albumId: song.albumId,
       coverArt: song.coverArt,
-      durationMs: song.duration != null ? song.duration * 1000 : undefined,
+      durationMs: song.duration != null
+        ? song.duration * 1000
+        : undefined,
       playbackRange: overlay?.playbackRange ?? null,
       previewImageUrl: overlay?.previewImageUrl,
       fields: mergeFields(tagsBySongId.get(song.id) ?? {}, overlay?.customFields ?? {}),

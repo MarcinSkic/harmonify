@@ -10,7 +10,9 @@ export async function fetchFromSpotify(
   body: string | undefined = undefined,
 ) {
   const response = await fetch(
-    isURLFull ? url : `${import.meta.env.VITE_SPOTIFY_URL}${url}`,
+    isURLFull
+      ? url
+      : `${import.meta.env.VITE_SPOTIFY_URL}${url}`,
     {
       method,
       headers: {

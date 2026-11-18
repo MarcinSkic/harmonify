@@ -90,5 +90,8 @@ export async function getTagIndex(): Promise<Map<string, string[]>> {
     valuesByName.set(tag.tagName, values)
   }
 
-  return new Map([...valuesByName].map(([name, values]) => [name, [...values].sort()]))
+  return new Map([...valuesByName].map(([name, values]) => [
+    name,
+    [...values].sort(),
+  ]))
 }

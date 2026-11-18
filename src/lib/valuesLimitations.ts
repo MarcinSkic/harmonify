@@ -68,8 +68,12 @@ function distinctValues(bag: FieldBag, name: string, multiValue: MultiValueMode 
   if (nonBlank.length === 0)
     return []
 
-  const picked = multiValue === 'first' ? [nonBlank[0]] : nonBlank
-  return [...new Set(picked.map(foldCase))]
+  const picked = multiValue === 'first'
+    ? [nonBlank[0]]
+    : nonBlank
+  return [
+    ...new Set(picked.map(foldCase)),
+  ]
 }
 
 function pairCharges(

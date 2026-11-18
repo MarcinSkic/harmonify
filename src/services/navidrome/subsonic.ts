@@ -94,7 +94,11 @@ function parseVersion(version: string): VersionParts | null {
   if (!match)
     return null
 
-  return [Number(match[1]), Number(match[2]), Number(match[3] ?? 0)]
+  return [
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3] ?? 0),
+  ]
 }
 
 function compareVersions(left: VersionParts, right: VersionParts): number {

@@ -72,7 +72,9 @@ function save() {
 }
 
 function getCoverNameOrDefault(cover: CoverType) {
-  return cover.name ? cover.name : `${cover.title.value}_${cover.subtitle.value}_${cover.example.value}`
+  return cover.name
+    ? cover.name
+    : `${cover.title.value}_${cover.subtitle.value}_${cover.example.value}`
 }
 
 async function getCoverBlob() {

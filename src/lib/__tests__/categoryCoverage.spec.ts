@@ -5,20 +5,54 @@ import { buildCoverageReport } from '../categoryCoverage'
 const openings: CoverageCategory = {
   id: 'cat-op',
   displayName: 'Popularne Anime OP',
-  match: { all: [{ is: { grouping: 'op' } }, { gt: { popularity: 2 } }] },
+  match: {
+    all: [
+      {
+        is: { grouping: 'op' },
+      },
+      {
+        gt: { popularity: 2 },
+      },
+    ],
+  },
   points: 10,
 }
 
 const anime: CoverageCategory = {
   id: 'cat-anime',
   displayName: 'Anime',
-  match: { all: [{ is: { genre: 'anime' } }] },
+  match: {
+    all: [
+      {
+        is: { genre: 'anime' },
+      },
+    ],
+  },
 }
 
 const tracks: CoverageTrack[] = [
-  { id: 't1', fields: { grouping: ['op'], genre: ['Anime'], popularity: ['5'] } }, // both
-  { id: 't2', fields: { grouping: ['op'], genre: ['Anime'], popularity: ['1'] } }, // anime only
-  { id: 't3', fields: { genre: ['Rock'] } }, // none
+  {
+    id: 't1',
+    fields: {
+      grouping: ['op'],
+      genre: ['Anime'],
+      popularity: ['5'],
+    },
+  }, // both
+  {
+    id: 't2',
+    fields: {
+      grouping: ['op'],
+      genre: ['Anime'],
+      popularity: ['1'],
+    },
+  }, // anime only
+  {
+    id: 't3',
+    fields: {
+      genre: ['Rock'],
+    },
+  }, // none
 ]
 
 describe('buildCoverageReport', () => {
@@ -27,8 +61,20 @@ describe('buildCoverageReport', () => {
 
     expect(report.total).toBe(3)
     expect(report.perCategory).toEqual([
-      { categoryId: 'cat-op', displayName: 'Popularne Anime OP', points: 10, count: 1, tooFewForRounds: false },
-      { categoryId: 'cat-anime', displayName: 'Anime', points: undefined, count: 2, tooFewForRounds: false },
+      {
+        categoryId: 'cat-op',
+        displayName: 'Popularne Anime OP',
+        points: 10,
+        count: 1,
+        tooFewForRounds: false,
+      },
+      {
+        categoryId: 'cat-anime',
+        displayName: 'Anime',
+        points: undefined,
+        count: 2,
+        tooFewForRounds: false,
+      },
     ])
   })
 

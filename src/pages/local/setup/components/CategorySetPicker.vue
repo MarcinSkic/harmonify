@@ -30,7 +30,9 @@ function describeLimitations(limitations: FieldLimitation[]): string {
 const limitationsCaption = computed(() => {
   const set = categorySetsStore.categorySets.find(s => s.id === categorySetId.value)
   const description = describeLimitations(set?.valueLimitations ?? [])
-  return description === '' ? null : `Trims the pool: ${description}`
+  return description === ''
+    ? null
+    : `Trims the pool: ${description}`
 })
 </script>
 

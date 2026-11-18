@@ -6,7 +6,11 @@ import { ensurePreviewRecord, processQueue, retryPreview, startupSync } from '..
 function imageResponse() {
   return {
     ok: true,
-    headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
+    headers: {
+      get: (key: string) => key === 'content-type'
+        ? 'image/jpeg'
+        : null,
+    },
     blob: () => Promise.resolve(new Blob(['img'], { type: 'image/jpeg' })),
   }
 }
@@ -72,7 +76,11 @@ describe('processQueue', () => {
     const fakeBlob = new Blob(['fake-image'], { type: 'image/jpeg' })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
-      headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
+      headers: {
+        get: (key: string) => key === 'content-type'
+          ? 'image/jpeg'
+          : null,
+      },
       blob: () => Promise.resolve(fakeBlob),
     }))
 
@@ -130,7 +138,11 @@ describe('processQueue', () => {
     const fakeBlob = new Blob(['img'], { type: 'image/jpeg' })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
-      headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
+      headers: {
+        get: (key: string) => key === 'content-type'
+          ? 'image/jpeg'
+          : null,
+      },
       blob: () => Promise.resolve(fakeBlob),
     }))
 
@@ -165,7 +177,11 @@ describe('processQueue', () => {
       }
       return {
         ok: true,
-        headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
+        headers: {
+          get: (key: string) => key === 'content-type'
+            ? 'image/jpeg'
+            : null,
+        },
         blob: () => Promise.resolve(fakeBlob),
       }
     }))
@@ -218,7 +234,11 @@ describe('processQueue', () => {
       }
       return {
         ok: true,
-        headers: { get: (key: string) => key === 'content-type' ? 'image/jpeg' : null },
+        headers: {
+          get: (key: string) => key === 'content-type'
+            ? 'image/jpeg'
+            : null,
+        },
         blob: () => Promise.resolve(fakeBlob),
       }
     }))
@@ -249,16 +269,18 @@ describe('startupSync', () => {
       gameMode: 'random',
       teams: [],
       selectedPlaylists: [],
-      rounds: [{
-        roundNumber: 1,
-        trackId: 'track-1',
-        trackSourceId: 'source-1',
-        trackName: 'Track',
-        trackArtists: ['Artist'],
-        albumName: 'Album',
-        previewImageUrl: url,
-        teamScores: [],
-      }],
+      rounds: [
+        {
+          roundNumber: 1,
+          trackId: 'track-1',
+          trackSourceId: 'source-1',
+          trackName: 'Track',
+          trackArtists: ['Artist'],
+          albumName: 'Album',
+          previewImageUrl: url,
+          teamScores: [],
+        },
+      ],
     }
   }
 
@@ -349,7 +371,9 @@ describe('startupSync', () => {
       id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
       status: 'playing',
       createdAt: 1,
-      navidromeTracks: { 'song-1': { previewImageUrl: LOCAL_GAME_URL } },
+      navidromeTracks: {
+        'song-1': { previewImageUrl: LOCAL_GAME_URL },
+      },
     })
     await db.linkPreviews.put({
       url: LOCAL_GAME_URL,

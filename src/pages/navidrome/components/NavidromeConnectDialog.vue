@@ -34,7 +34,9 @@ watch(() => navidromeStore.connectDialogOpen, (open) => {
     username.value = navidromeStore.session?.username ?? username.value
     password.value = ''
     // A failed session check already has a reason — show it instead of an empty form.
-    errorMessage.value = navidromeStore.status === 'connecting' ? '' : navidromeStore.lastError?.message ?? ''
+    errorMessage.value = navidromeStore.status === 'connecting'
+      ? ''
+      : navidromeStore.lastError?.message ?? ''
     return
   }
 

@@ -8,7 +8,9 @@ import NavidromeConnectDialog from '../NavidromeConnectDialog.vue'
 
 vi.mock('vue-router', async importOriginal => ({
   ...await importOriginal<typeof import('vue-router')>(),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
 }))
 
 let wrapper: VueWrapper | null = null

@@ -29,12 +29,23 @@ describe('deriveOverlayKey', () => {
   })
 
   it('returns the same key for the same input (deterministic)', () => {
-    const source = { albumId: 'a', discNumber: 1, track: 3, title: 'T' }
+    const source = {
+      albumId: 'a',
+      discNumber: 1,
+      track: 3,
+      title: 'T',
+    }
     expect(deriveOverlayKey(source)).toBe(deriveOverlayKey({ ...source }))
   })
 
   it('treats an empty musicBrainzId as absent and falls back to the composite key', () => {
-    const key = deriveOverlayKey({ musicBrainzId: '', albumId: 'album-1', discNumber: 1, track: 2, title: 'Some Title' })
+    const key = deriveOverlayKey({
+      musicBrainzId: '',
+      albumId: 'album-1',
+      discNumber: 1,
+      track: 2,
+      title: 'Some Title',
+    })
     expect(key).toBe('album-1|1|2|Some Title')
   })
 })

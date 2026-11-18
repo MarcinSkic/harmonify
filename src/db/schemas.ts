@@ -1,7 +1,13 @@
 import { z } from 'zod'
 import { localGuessLevelSchema } from '@/types'
 
-export const metadataSourceSchema = z.enum(['spotify', 'server', 'manual', 'csv', 'navidrome'])
+export const metadataSourceSchema = z.enum([
+  'spotify',
+  'server',
+  'manual',
+  'csv',
+  'navidrome',
+])
 export type MetadataSource = z.infer<typeof metadataSourceSchema>
 
 export const playbackRangeSchema = z.object({
@@ -95,20 +101,43 @@ function conditionOperandMap<TOperand extends z.ZodType>(operand: TOperand) {
  * Do not relax it to `z.object` to make an import "more forgiving".
  */
 export const conditionSchema = z.union([
-  z.strictObject({ is: conditionOperandMap(z.string()) }),
-  z.strictObject({ isNot: conditionOperandMap(z.string()) }),
-  z.strictObject({ gt: conditionOperandMap(z.number()) }),
-  z.strictObject({ lt: conditionOperandMap(z.number()) }),
-  z.strictObject({ contains: conditionOperandMap(z.string()) }),
-  z.strictObject({ inTheRange: conditionOperandMap(z.tuple([z.number(), z.number()])) }),
-  z.strictObject({ isMissing: conditionOperandMap(z.boolean()) }),
-  z.strictObject({ isPresent: conditionOperandMap(z.boolean()) }),
+  z.strictObject({
+    is: conditionOperandMap(z.string()),
+  }),
+  z.strictObject({
+    isNot: conditionOperandMap(z.string()),
+  }),
+  z.strictObject({
+    gt: conditionOperandMap(z.number()),
+  }),
+  z.strictObject({
+    lt: conditionOperandMap(z.number()),
+  }),
+  z.strictObject({
+    contains: conditionOperandMap(z.string()),
+  }),
+  z.strictObject({
+    inTheRange: conditionOperandMap(z.tuple([
+      z.number(),
+      z.number(),
+    ])),
+  }),
+  z.strictObject({
+    isMissing: conditionOperandMap(z.boolean()),
+  }),
+  z.strictObject({
+    isPresent: conditionOperandMap(z.boolean()),
+  }),
 ])
 export type Condition = z.infer<typeof conditionSchema>
 
 export const categoryMatchSchema = z.union([
-  z.strictObject({ all: z.array(conditionSchema).min(1) }),
-  z.strictObject({ any: z.array(conditionSchema).min(1) }),
+  z.strictObject({
+    all: z.array(conditionSchema).min(1),
+  }),
+  z.strictObject({
+    any: z.array(conditionSchema).min(1),
+  }),
 ])
 export type CategoryMatch = z.infer<typeof categoryMatchSchema>
 
@@ -259,7 +288,11 @@ export const gameResultSchema = z.object({
     totalScore: z.number(),
   })),
   rounds: z.array(roundResultSchema),
-  selectedPlaylists: z.array(z.object({ id: z.string(), name: z.string(), imageUrl: z.string().optional() })),
+  selectedPlaylists: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    imageUrl: z.string().optional(),
+  })),
 })
 export type GameResult = z.infer<typeof gameResultSchema>
 
@@ -307,7 +340,10 @@ export const localGameSettingsSchema = z.object({
   generatedCategoryPoints: z.number().default(10),
   standardPoints: z.number().default(10),
   trackStartMode: z.enum(['beginning', 'random']).default('beginning'),
-  randomStartRange: z.tuple([z.number(), z.number()]).default([0, 100]),
+  randomStartRange: z.tuple([
+    z.number(),
+    z.number(),
+  ]).default([0, 100]),
   overridePlaybackRange: z.boolean().default(false),
 })
 export type LocalGameSettings = z.infer<typeof localGameSettingsSchema>
@@ -350,7 +386,12 @@ export type FrozenNavidromeTrack = z.infer<typeof frozenNavidromeTrackSchema>
 export const localGameStatusSchema = z.enum(['setup', 'playing', 'finished'])
 export type LocalGameStatus = z.infer<typeof localGameStatusSchema>
 
-export const localGameRoundPhaseSchema = z.enum(['pickingCategory', 'playing', 'scoring', 'leaderboard'])
+export const localGameRoundPhaseSchema = z.enum([
+  'pickingCategory',
+  'playing',
+  'scoring',
+  'leaderboard',
+])
 export type LocalGameRoundPhase = z.infer<typeof localGameRoundPhaseSchema>
 
 export const localGameSchema = z.object({

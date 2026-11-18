@@ -39,7 +39,9 @@ watchDebounced(query, (value) => {
 }, { debounce: 300 })
 
 const candidates = computed(() =>
-  status.value?.type === 'ambiguous' ? status.value.candidates : [],
+  status.value?.type === 'ambiguous'
+    ? status.value.candidates
+    : [],
 )
 const shownCandidates = computed(() => candidates.value.slice(0, MAX_SHOWN_CANDIDATES))
 const hiddenCandidateCount = computed(() => candidates.value.length - shownCandidates.value.length)

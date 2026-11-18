@@ -22,12 +22,18 @@ async function onFileSelected(event: Event) {
 
     if (errors.length > 0) {
       toast.warning(
-        `Skipped ${errors.length} ${errors.length === 1 ? 'entry' : 'entries'}: ${errors.slice(0, 3).map(e => `#${e.index}: ${e.message}`).join(', ')}${errors.length > 3 ? '…' : ''}`,
+        `Skipped ${errors.length} ${errors.length === 1
+          ? 'entry'
+          : 'entries'}: ${errors.slice(0, 3).map(e => `#${e.index}: ${e.message}`).join(', ')}${errors.length > 3
+          ? '…'
+          : ''}`,
       )
     }
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'JSON import failed')
+    toast.error(e instanceof Error
+      ? e.message
+      : 'JSON import failed')
   }
   finally {
     if (jsonInput.value)

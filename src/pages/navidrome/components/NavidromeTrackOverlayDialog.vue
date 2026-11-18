@@ -54,7 +54,10 @@ function overlaySource(song: SubsonicSong): OverlayKeySource & { artist?: string
   }
 }
 
-watch([open, () => props.song?.id], async ([isOpen, songId]) => {
+watch([
+  open,
+  () => props.song?.id,
+], async ([isOpen, songId]) => {
   if (!isOpen || !songId || !props.song)
     return
 
@@ -110,7 +113,9 @@ async function handleRetryPreview() {
     await LinkPreviewService.retryPreview(url)
   }
   catch (err) {
-    toast.error(`Failed to retry the preview: ${err instanceof Error ? err.message : String(err)}`)
+    toast.error(`Failed to retry the preview: ${err instanceof Error
+      ? err.message
+      : String(err)}`)
   }
 }
 
@@ -126,7 +131,9 @@ async function handleSubmit() {
   if (!props.song)
     return
 
-  const durationMs = props.song.duration != null ? props.song.duration * 1000 : undefined
+  const durationMs = props.song.duration != null
+    ? props.song.duration * 1000
+    : undefined
   const hasStart = playbackStart.value.trim() !== ''
   const hasEnd = playbackEnd.value.trim() !== ''
 
@@ -181,7 +188,9 @@ async function handleSubmit() {
     open.value = false
   }
   catch (err) {
-    toast.error(`Failed to save overlay: ${err instanceof Error ? err.message : String(err)}`)
+    toast.error(`Failed to save overlay: ${err instanceof Error
+      ? err.message
+      : String(err)}`)
   }
 }
 </script>

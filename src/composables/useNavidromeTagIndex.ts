@@ -18,7 +18,9 @@ export function useNavidromeTagIndex() {
   const isLoading = ref(false)
   let hasLoaded = false
 
-  const tagNames = computed(() => [...tagIndex.value.keys()])
+  const tagNames = computed(() => [
+    ...tagIndex.value.keys(),
+  ])
 
   function valuesFor(tagName: string): string[] {
     return tagIndex.value.get(tagName) ?? []

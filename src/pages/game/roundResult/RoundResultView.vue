@@ -32,7 +32,9 @@ onBeforeMount(() => {
 const track = computed(() => resultStore.round.track)
 const selfPlayerRoundResult = computed(() => resultStore.roundSelfPlayer.roundResults.at(-1)!)
 const isFullyGuessed = computed(() => selfPlayerRoundResult.value.guess === resultStore.round.track.guess)
-const pointsBarMaxWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 320 : 220)
+const pointsBarMaxWidth = computed(() => screenWidth.value >= Breakpoint.LG
+  ? 320
+  : 220)
 </script>
 
 <template>

@@ -43,11 +43,27 @@ export const useSpotifyLibraryStore = defineStore('spotifyLibrary', () => {
     if (favouritesSelected.value)
       favouriteTracks = favourites.value ?? []
 
-    const playlistsTracks = playlists.value ? await SpotifyService.getTracksFromPlaylists(playlists.value.filter(p => p.selected), access_token, router) : []
-    const albumTracks = albums.value ? await SpotifyService.getTracksFromAlbums(albums.value.filter(p => p.selected)) : []
+    const playlistsTracks = playlists.value
+      ? await SpotifyService.getTracksFromPlaylists(playlists.value.filter(p => p.selected), access_token, router)
+      : []
+    const albumTracks = albums.value
+      ? await SpotifyService.getTracksFromAlbums(albums.value.filter(p => p.selected))
+      : []
 
-    return [...favouriteTracks, ...playlistsTracks, ...albumTracks]
+    return [
+      ...favouriteTracks,
+      ...playlistsTracks,
+      ...albumTracks,
+    ]
   }
 
-  return { favourites, favouritesSelected, playlists, albums, totalSelectedTracks, hasData, getTracksFromSelectedSets }
+  return {
+    favourites,
+    favouritesSelected,
+    playlists,
+    albums,
+    totalSelectedTracks,
+    hasData,
+    getTracksFromSelectedSets,
+  }
 })

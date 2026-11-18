@@ -57,7 +57,9 @@ watch(track, (t) => {
   const safeMaxMs = Math.max(0, durationMs - settings.trackDuration * 1000)
   const minMs = Math.min((minPct / 100) * durationMs, safeMaxMs)
   const maxMs = Math.min((maxPct / 100) * durationMs, safeMaxMs)
-  randomStartMs.value = minMs >= maxMs ? minMs : Math.floor(Math.random() * (maxMs - minMs) + minMs)
+  randomStartMs.value = minMs >= maxMs
+    ? minMs
+    : Math.floor(Math.random() * (maxMs - minMs) + minMs)
 }, { immediate: true })
 
 const musicPlayData = computed(() => {
@@ -121,8 +123,12 @@ async function handleSubmitScores(scores: Map<string, number>) {
 
   if (settingsStore.hideScores) {
     await localGameStore.nextRound()
-    if (localGameStore.game?.status === 'finished')
-      router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
+    if (localGameStore.game?.status === 'finished') {
+      router.push({
+        name: 'localResult',
+        params: { id: localGameStore.game.id },
+      })
+    }
     return
   }
 
@@ -135,8 +141,12 @@ async function handleAddTeam(name: string) {
 
 async function handleContinueFromLeaderboard() {
   await localGameStore.nextRound()
-  if (localGameStore.game?.status === 'finished')
-    router.push({ name: 'localResult', params: { id: localGameStore.game.id } })
+  if (localGameStore.game?.status === 'finished') {
+    router.push({
+      name: 'localResult',
+      params: { id: localGameStore.game.id },
+    })
+  }
 }
 </script>
 

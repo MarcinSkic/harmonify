@@ -32,6 +32,10 @@ export default async function handler(
     return response.status(200).send(buffer)
   }
   catch (err) {
-    return response.status(502).json({ error: err instanceof Error ? err.message : 'Upstream fetch failed' })
+    return response.status(502).json({
+      error: err instanceof Error
+        ? err.message
+        : 'Upstream fetch failed',
+    })
   }
 }

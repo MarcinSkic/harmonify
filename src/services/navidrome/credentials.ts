@@ -19,7 +19,10 @@ export function generateSalt(): string {
 
 export function deriveSubsonicCredentials(password: string): { salt: string, token: string } {
   const salt = generateSalt()
-  return { salt, token: computeSubsonicToken(password, salt) }
+  return {
+    salt,
+    token: computeSubsonicToken(password, salt),
+  }
 }
 
 export const navidromeSessionSchema = z.object({

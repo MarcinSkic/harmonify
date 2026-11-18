@@ -12,9 +12,13 @@ export function toDisplayTrack(t: FrozenNavidromeTrack): Track {
     id: t.id,
     sourceId: t.id,
     name: t.title,
-    artists: t.artist ? [t.artist] : [],
+    artists: t.artist
+      ? [t.artist]
+      : [],
     albumName: t.albumName ?? '',
-    albumImageUrl: t.coverArt ? NavidromeService.getCoverArtUrl(t.coverArt) : undefined,
+    albumImageUrl: t.coverArt
+      ? NavidromeService.getCoverArtUrl(t.coverArt)
+      : undefined,
     audioUrl: NavidromeService.getStreamUrl(t.id),
     durationMs: t.durationMs ?? 0,
     playbackRange: t.playbackRange,

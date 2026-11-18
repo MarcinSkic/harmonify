@@ -32,8 +32,12 @@ export function parseCSV(text: string): TrackAnnotation[] {
     .filter(row => !!row.sourceid?.trim())
     .map(row => ({
       sourceId: row.sourceid.trim(),
-      tags: row.tags ? row.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
-      playbackRange: row.playbackrange ? parsePlaybackRange(row.playbackrange) : null,
+      tags: row.tags
+        ? row.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+        : [],
+      playbackRange: row.playbackrange
+        ? parsePlaybackRange(row.playbackrange)
+        : null,
       enabled: row.enabled != null && row.enabled.trim() !== ''
         ? z.stringbool().parse(row.enabled.trim().toLowerCase())
         : undefined,
@@ -57,7 +61,17 @@ export function formatPlaybackRange(range: PlaybackRange): string {
 // `albumId/discNumber/track` are matching input, not decoration: a row without `musicBrainzId` is
 // matched by the composite key built from them plus `title`, exactly like a track loaded from
 // Navidrome (see `deriveOverlayKey`). Anything outside this set becomes a custom field.
-const OVERLAY_INPUT_COLUMNS = ['musicbrainzid', 'albumid', 'discnumber', 'track', 'title', 'artist', 'playbackrange', 'previewimageurl', 'enabled']
+const OVERLAY_INPUT_COLUMNS = [
+  'musicbrainzid',
+  'albumid',
+  'discnumber',
+  'track',
+  'title',
+  'artist',
+  'playbackrange',
+  'previewimageurl',
+  'enabled',
+]
 
 export interface OverlayCsvRow {
   /** `deriveOverlayKey(identity)` — the one place an imported row's overlay key is computed. */
@@ -92,7 +106,9 @@ export interface OverlayCsvRow {
  * sloppily tagged title and silently orphan the overlay instead of round-tripping it.
  */
 function parseIdentityText(raw: string | undefined): string | undefined {
-  return raw?.trim() ? raw : undefined
+  return raw?.trim()
+    ? raw
+    : undefined
 }
 
 /**
@@ -106,7 +122,9 @@ function parseIdentityNumber(raw: string | undefined): number | undefined {
   if (!trimmed)
     return undefined
   const value = Number(trimmed)
-  return Number.isFinite(value) ? value : undefined
+  return Number.isFinite(value)
+    ? value
+    : undefined
 }
 
 /**
@@ -124,7 +142,9 @@ export function parseOverlayCSV(text: string): { rows: OverlayCsvRow[], unmapped
   if (errors.length > 0 && data.length === 0)
     throw new Error(`CSV parse error: ${errors[0].message}`)
 
-  const headers = data[0] ? Object.keys(data[0]) : []
+  const headers = data[0]
+    ? Object.keys(data[0])
+    : []
   const knownHeaderByColumn = new Map<string, string>()
   for (const header of headers) {
     const normalized = header.trim().toLowerCase()
@@ -149,7 +169,10 @@ export function parseOverlayCSV(text: string): { rows: OverlayCsvRow[], unmapped
     // both `albumId` and `title`, so a hand-written list of titles is still reported, not guessed at.
     if (!musicBrainzId && (!albumId || !title)) {
       // Reported to the user rather than matched on, so here the surrounding whitespace goes.
-      unmapped.push({ rowIndex: i + 1, title: title?.trim() })
+      unmapped.push({
+        rowIndex: i + 1,
+        title: title?.trim(),
+      })
       return
     }
 
@@ -182,7 +205,9 @@ export function parseOverlayCSV(text: string): { rows: OverlayCsvRow[], unmapped
       identity,
       artist: get('artist')?.trim() || undefined,
       playbackRange: knownHeaderByColumn.has('playbackrange')
-        ? (playbackRangeRaw?.trim() ? parsePlaybackRange(playbackRangeRaw) : null)
+        ? (playbackRangeRaw?.trim()
+            ? parsePlaybackRange(playbackRangeRaw)
+            : null)
         : undefined,
       previewImageUrl: get('previewimageurl')?.trim() || undefined,
       enabled: enabledRaw != null && enabledRaw.trim() !== ''
@@ -195,22 +220,43 @@ export function parseOverlayCSV(text: string): { rows: OverlayCsvRow[], unmapped
   return { rows, unmapped }
 }
 
-const OVERLAY_CSV_COLUMNS = ['musicBrainzId', 'albumId', 'discNumber', 'track', 'title', 'artist', 'playbackRange', 'previewImageUrl', 'enabled']
+const OVERLAY_CSV_COLUMNS = [
+  'musicBrainzId',
+  'albumId',
+  'discNumber',
+  'track',
+  'title',
+  'artist',
+  'playbackRange',
+  'previewImageUrl',
+  'enabled',
+]
 
 export function serializeOverlayCSV(rows: TrackOverlay[]): string {
-  const customFieldColumns = [...new Set(rows.flatMap(r => Object.keys(r.customFields)))].sort()
-  const columns = [...OVERLAY_CSV_COLUMNS, ...customFieldColumns]
+  const customFieldColumns = [
+    ...new Set(rows.flatMap(r => Object.keys(r.customFields))),
+  ].sort()
+  const columns = [
+    ...OVERLAY_CSV_COLUMNS,
+    ...customFieldColumns,
+  ]
 
   return Papa.unparse(
     rows.map((r) => {
       const record: Record<string, string> = {
         musicBrainzId: r.musicBrainzId ?? '',
         albumId: r.albumId ?? '',
-        discNumber: r.discNumber != null ? String(r.discNumber) : '',
-        track: r.track != null ? String(r.track) : '',
+        discNumber: r.discNumber != null
+          ? String(r.discNumber)
+          : '',
+        track: r.track != null
+          ? String(r.track)
+          : '',
         title: r.title,
         artist: r.artist ?? '',
-        playbackRange: r.playbackRange ? formatPlaybackRange(r.playbackRange) : '',
+        playbackRange: r.playbackRange
+          ? formatPlaybackRange(r.playbackRange)
+          : '',
         previewImageUrl: r.previewImageUrl ?? '',
         enabled: String(r.enabled),
       }
@@ -233,10 +279,23 @@ export function serializeTrackIdentityCSV(songs: SubsonicSong[]): string {
       index: String(i + 1),
       musicBrainzId: song.musicBrainzId ?? '',
       albumId: song.albumId ?? '',
-      discNumber: song.discNumber != null ? String(song.discNumber) : '',
-      track: song.track != null ? String(song.track) : '',
+      discNumber: song.discNumber != null
+        ? String(song.discNumber)
+        : '',
+      track: song.track != null
+        ? String(song.track)
+        : '',
       title: song.title,
     })),
-    { columns: ['index', 'musicBrainzId', 'albumId', 'discNumber', 'track', 'title'] },
+    {
+      columns: [
+        'index',
+        'musicBrainzId',
+        'albumId',
+        'discNumber',
+        'track',
+        'title',
+      ],
+    },
   )
 }

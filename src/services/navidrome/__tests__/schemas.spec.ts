@@ -10,13 +10,21 @@ describe('nativeSongSchema', () => {
   })
 
   it('should normalize a single tag value to a list', () => {
-    const song = nativeSongSchema.parse({ id: 'abc', tags: { grouping: 'op' } })
+    const song = nativeSongSchema.parse({
+      id: 'abc',
+      tags: { grouping: 'op' },
+    })
 
     expect(song.tags.grouping).toEqual(['op'])
   })
 
   it('should keep a multi-valued tag as a list', () => {
-    const song = nativeSongSchema.parse({ id: 'abc', tags: { grouping: ['op', 'insert'] } })
+    const song = nativeSongSchema.parse({
+      id: 'abc',
+      tags: {
+        grouping: ['op', 'insert'],
+      },
+    })
 
     expect(song.tags.grouping).toEqual(['op', 'insert'])
   })
@@ -29,7 +37,12 @@ describe('nativeSongSchema', () => {
 
   it('should fail on a foreign response shape', () => {
     expect(nativeSongSchema.safeParse({ hello: 'world' }).success).toBe(false)
-    expect(nativeSongSchema.safeParse({ id: 'abc', tags: { grouping: [1, 2] } }).success).toBe(false)
+    expect(nativeSongSchema.safeParse({
+      id: 'abc',
+      tags: {
+        grouping: [1, 2],
+      },
+    }).success).toBe(false)
   })
 })
 
@@ -49,10 +62,16 @@ describe('subsonic collection schemas', () => {
 
 describe('nativePlaylistTrackSchema', () => {
   it('reads the song id from mediaFileId, ignoring the entry position in id', () => {
-    const entry = nativePlaylistTrackSchema.parse({ id: '1', mediaFileId: 'song-42', tags: { grouping: 'ed' } })
+    const entry = nativePlaylistTrackSchema.parse({
+      id: '1',
+      mediaFileId: 'song-42',
+      tags: { grouping: 'ed' },
+    })
 
     expect(entry.mediaFileId).toBe('song-42')
-    expect(entry.tags).toEqual({ grouping: ['ed'] })
+    expect(entry.tags).toEqual({
+      grouping: ['ed'],
+    })
   })
 
   it('defaults tags to an empty map for a track with none', () => {
@@ -60,13 +79,21 @@ describe('nativePlaylistTrackSchema', () => {
   })
 
   it('rejects a row without mediaFileId rather than joining against nothing', () => {
-    expect(nativePlaylistTrackSchema.safeParse({ id: '1', tags: { grouping: 'ed' } }).success).toBe(false)
+    expect(nativePlaylistTrackSchema.safeParse({
+      id: '1',
+      tags: { grouping: 'ed' },
+    }).success).toBe(false)
   })
 })
 
 describe('nativeTagSchema', () => {
   it('parses a tag row and keeps unknown fields', () => {
-    const tag = nativeTagSchema.parse({ id: 'tag-1', tagName: 'grouping', tagValue: 'op', somethingNew: 42 })
+    const tag = nativeTagSchema.parse({
+      id: 'tag-1',
+      tagName: 'grouping',
+      tagValue: 'op',
+      somethingNew: 42,
+    })
 
     expect(tag).toMatchObject({ id: 'tag-1', tagName: 'grouping', tagValue: 'op' })
   })

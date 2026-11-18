@@ -37,7 +37,9 @@ function mountDialog(categorySet: CategorySet, initial: FieldLimitation | null):
 
 /** The dialog content is teleported, so it is read off the document rather than off the wrapper. */
 function inputs(): HTMLInputElement[] {
-  return [...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input')]
+  return [
+    ...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input'),
+  ]
 }
 
 function selfLimitInput(): HTMLInputElement {
@@ -55,7 +57,9 @@ function setNumberField(input: HTMLInputElement, value: string) {
 }
 
 function buttonLabelled(label: string): HTMLElement {
-  const button = [...document.querySelectorAll<HTMLElement>('[role="dialog"] button')]
+  const button = [
+    ...document.querySelectorAll<HTMLElement>('[role="dialog"] button'),
+  ]
     .find(candidate => candidate.textContent?.trim() === label)
   if (!button)
     throw new Error(`No "${label}" button in the dialog`)
@@ -84,7 +88,9 @@ describe('editing an entry that carries exceptions', () => {
     const workLimitation: FieldLimitation = {
       name: 'work',
       selfLimit: 3,
-      exceptions: [{ value: 'Puella Magi Madoka Magica', selfLimit: 5 }],
+      exceptions: [
+        { value: 'Puella Magi Madoka Magica', selfLimit: 5 },
+      ],
     }
     const albumLimitation: FieldLimitation = { name: 'album', selfLimit: 2 }
 

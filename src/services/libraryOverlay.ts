@@ -74,7 +74,10 @@ export async function removeCustomField(key: string, fieldName: string): Promise
   if (!existing)
     return
   const { [fieldName]: _removed, ...customFields } = existing.customFields
-  await db.trackOverlays.update(key, { customFields, updatedAt: Date.now() })
+  await db.trackOverlays.update(key, {
+    customFields,
+    updatedAt: Date.now(),
+  })
 }
 
 /**
@@ -134,7 +137,12 @@ export async function rekeyOverlays(sources: OverlayKeySource[]): Promise<number
     // Without the identifier the row would export an empty MBID cell and fall straight back onto
     // the composite key on the next import.
     moves.push({
-      row: { ...existing.get(compositeKey)!, id: mbidKey, musicBrainzId, updatedAt: Date.now() },
+      row: {
+        ...existing.get(compositeKey)!,
+        id: mbidKey,
+        musicBrainzId,
+        updatedAt: Date.now(),
+      },
       from: compositeKey,
     })
   }

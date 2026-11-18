@@ -16,7 +16,10 @@ function createRoom() {
     handleMessage(message) {
       if (message.$type === 'message/createdGameDto') {
         gameDataStore.createGame(message.data)
-        router.push({ name: 'setup', params: { id: message.data.gameId } })
+        router.push({
+          name: 'setup',
+          params: { id: message.data.gameId },
+        })
       }
     },
   })

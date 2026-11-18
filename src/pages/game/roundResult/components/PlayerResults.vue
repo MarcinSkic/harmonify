@@ -23,7 +23,9 @@ const playerResults = computed(() => {
   const bestScore: number = results[0]?.score ?? 0
 
   return results.map((r) => {
-    const width = bestScore === 0 ? 0 : (r.score / bestScore) * props.pointsBarMaxWidth
+    const width = bestScore === 0
+      ? 0
+      : (r.score / bestScore) * props.pointsBarMaxWidth
 
     return { ...r, width }
   })

@@ -30,7 +30,9 @@ describe('upsertOverlay', () => {
   it('merges a patch into an existing overlay instead of replacing it', async () => {
     await LibraryOverlayService.upsertOverlay(
       { musicBrainzId: 'mbid-1', title: 'Track' },
-      { playbackRange: { startMs: 1000, endMs: 2000 } },
+      {
+        playbackRange: { startMs: 1000, endMs: 2000 },
+      },
     )
     await LibraryOverlayService.upsertOverlay(
       { musicBrainzId: 'mbid-1', title: 'Track' },
@@ -72,7 +74,12 @@ describe('upsertOverlay', () => {
 
   it('falls back to the composite key when musicBrainzId is missing', async () => {
     await LibraryOverlayService.upsertOverlay(
-      { albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' },
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
       { enabled: false },
     )
 
@@ -134,12 +141,25 @@ describe('getOverlaysByKeys / getAllOverlays', () => {
 })
 
 describe('rekeyOverlays', () => {
-  const taggedSong = { musicBrainzId: 'mbid-1', albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' }
+  const taggedSong = {
+    musicBrainzId: 'mbid-1',
+    albumId: 'album-1',
+    discNumber: 1,
+    track: 2,
+    title: 'Track',
+  }
 
   it('moves an overlay off the composite key once the track gained a musicBrainzId', async () => {
     await LibraryOverlayService.upsertOverlay(
-      { albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' },
-      { playbackRange: { startMs: 1000, endMs: 2000 } },
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
+      {
+        playbackRange: { startMs: 1000, endMs: 2000 },
+      },
     )
 
     expect(await LibraryOverlayService.rekeyOverlays([taggedSong])).toBe(1)
@@ -154,10 +174,19 @@ describe('rekeyOverlays', () => {
 
   it('leaves both overlays untouched when one exists under each key', async () => {
     await LibraryOverlayService.upsertOverlay(
-      { albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' },
-      { playbackRange: { startMs: 1000, endMs: 2000 } },
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
+      {
+        playbackRange: { startMs: 1000, endMs: 2000 },
+      },
     )
-    await LibraryOverlayService.upsertOverlay(taggedSong, { playbackRange: { startMs: 3000, endMs: 4000 } })
+    await LibraryOverlayService.upsertOverlay(taggedSong, {
+      playbackRange: { startMs: 3000, endMs: 4000 },
+    })
 
     expect(await LibraryOverlayService.rekeyOverlays([taggedSong])).toBe(0)
 
@@ -169,11 +198,23 @@ describe('rekeyOverlays', () => {
 
   it('does nothing for a track without a musicBrainzId', async () => {
     await LibraryOverlayService.upsertOverlay(
-      { albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' },
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
       { enabled: false },
     )
 
-    expect(await LibraryOverlayService.rekeyOverlays([{ albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' }])).toBe(0)
+    expect(await LibraryOverlayService.rekeyOverlays([
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
+    ])).toBe(0)
     expect(await LibraryOverlayService.getOverlay('album-1|1|2|Track')).toBeDefined()
   })
 
@@ -181,7 +222,12 @@ describe('rekeyOverlays', () => {
     // The duplicate-file case: one recording in two files, each now tagged with its own MBID. There
     // is no telling which of them the single annotation belongs to, so it moves onto neither.
     await LibraryOverlayService.upsertOverlay(
-      { albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' },
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
       { enabled: false },
     )
 
@@ -197,10 +243,23 @@ describe('rekeyOverlays', () => {
   })
 
   it('leaves both overlays alone when two tracks sharing a musicBrainzId each have one', async () => {
-    await LibraryOverlayService.upsertOverlay({ albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' }, {})
-    await LibraryOverlayService.upsertOverlay({ albumId: 'album-1', discNumber: 1, track: 5, title: 'Other' }, {})
+    await LibraryOverlayService.upsertOverlay({
+      albumId: 'album-1',
+      discNumber: 1,
+      track: 2,
+      title: 'Track',
+    }, {})
+    await LibraryOverlayService.upsertOverlay({
+      albumId: 'album-1',
+      discNumber: 1,
+      track: 5,
+      title: 'Other',
+    }, {})
 
-    const sources = [taggedSong, { ...taggedSong, track: 5, title: 'Other' }]
+    const sources = [
+      taggedSong,
+      { ...taggedSong, track: 5, title: 'Other' },
+    ]
 
     // Whichever moved would silently overwrite the other under `mbid-1`, and which one that is must
     // not come down to the order of the track list.
@@ -212,11 +271,19 @@ describe('rekeyOverlays', () => {
 
   it('moves once when the same track appears twice in one list', async () => {
     await LibraryOverlayService.upsertOverlay(
-      { albumId: 'album-1', discNumber: 1, track: 2, title: 'Track' },
+      {
+        albumId: 'album-1',
+        discNumber: 1,
+        track: 2,
+        title: 'Track',
+      },
       { enabled: false },
     )
 
-    expect(await LibraryOverlayService.rekeyOverlays([taggedSong, { ...taggedSong }])).toBe(1)
+    expect(await LibraryOverlayService.rekeyOverlays([
+      taggedSong,
+      { ...taggedSong },
+    ])).toBe(1)
     expect(await LibraryOverlayService.getOverlay('mbid-1')).toBeDefined()
   })
 })

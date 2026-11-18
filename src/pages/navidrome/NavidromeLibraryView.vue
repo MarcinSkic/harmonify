@@ -82,14 +82,24 @@ async function openSelection(load: () => Promise<Selection>) {
 function openAlbum(album: SubsonicAlbum) {
   openSelection(async () => {
     const { songs } = await NavidromeService.getAlbum(album.id)
-    return { title: album.name, subtitle: album.artist ?? 'Unknown artist', songs, numbering: 'track' }
+    return {
+      title: album.name,
+      subtitle: album.artist ?? 'Unknown artist',
+      songs,
+      numbering: 'track',
+    }
   })
 }
 
 function openPlaylist(playlist: SubsonicPlaylist) {
   openSelection(async () => {
     const { songs } = await NavidromeService.getPlaylist(playlist.id)
-    return { title: playlist.name, subtitle: playlist.comment ?? 'Playlist', songs, numbering: 'position' }
+    return {
+      title: playlist.name,
+      subtitle: playlist.comment ?? 'Playlist',
+      songs,
+      numbering: 'position',
+    }
   })
 }
 

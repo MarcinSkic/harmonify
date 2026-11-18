@@ -37,7 +37,9 @@ const model = defineModel<CategoryMatch | null>({ required: true })
 const overlayFieldsStore = useOverlayFieldsStore()
 const { tagNames, valuesFor, load: loadTagIndex } = useNavidromeTagIndex()
 
-const mode = ref<'all' | 'any'>(model.value && 'any' in model.value ? 'any' : 'all')
+const mode = ref<'all' | 'any'>(model.value && 'any' in model.value
+  ? 'any'
+  : 'all')
 const rows = ref<ConditionRow[]>(rowsFromMatch(model.value))
 const overlayValueFieldNames = ref<string[]>([])
 
@@ -77,27 +79,43 @@ const overlayFieldTypes = computed(
  * all of them — the evaluator coerces by operator, not by declared type. */
 function operatorsFor(field: string): Operator[] {
   const type: OverlayField['type'] | undefined = overlayFieldTypes.value.get(field.trim())
-  if (type === 'number')
-    return [...NUMBER_OPERATORS, ...PRESENCE_OPERATORS]
-  if (type === 'text')
-    return [...TEXT_OPERATORS, ...PRESENCE_OPERATORS]
+  if (type === 'number') {
+    return [
+      ...NUMBER_OPERATORS,
+      ...PRESENCE_OPERATORS,
+    ]
+  }
+  if (type === 'text') {
+    return [
+      ...TEXT_OPERATORS,
+      ...PRESENCE_OPERATORS,
+    ]
+  }
   return ALL_OPERATORS
 }
 
 function valueSuggestions(row: ConditionRow): string[] {
   if (row.operator !== 'is' && row.operator !== 'isNot')
     return []
-  return [...valuesFor(row.field.trim())].sort((a, b) => a.localeCompare(b))
+  return [
+    ...valuesFor(row.field.trim()),
+  ].sort((a, b) => a.localeCompare(b))
 }
 
 function addRow() {
-  rows.value = [...rows.value, emptyRow()]
+  rows.value = [
+    ...rows.value,
+    emptyRow(),
+  ]
 }
 
 function removeRow(index: number) {
   rows.value = rows.value.filter((_, i) => i !== index)
-  if (rows.value.length === 0)
-    rows.value = [emptyRow()]
+  if (rows.value.length === 0) {
+    rows.value = [
+      emptyRow(),
+    ]
+  }
 }
 
 /**
@@ -115,7 +133,9 @@ watch([rows, mode], () => {
   const conditions = conditionsFromRows(rows.value)
   model.value = conditions === null
     ? null
-    : (mode.value === 'all' ? { all: conditions } : { any: conditions })
+    : (mode.value === 'all'
+        ? { all: conditions }
+        : { any: conditions })
 }, { deep: true })
 </script>
 
