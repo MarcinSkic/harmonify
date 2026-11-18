@@ -22,8 +22,11 @@ const host = computed(() => {
 })
 
 const label = computed(() => {
-  if (navidromeStore.status === 'connected')
-    return navidromeStore.serverVersion ? `${host.value} · ${navidromeStore.serverVersion}` : host.value
+  if (navidromeStore.status === 'connected') {
+    return navidromeStore.serverVersion
+      ? `${host.value} · ${navidromeStore.serverVersion}`
+      : host.value
+  }
 
   if (navidromeStore.status === 'connecting')
     return 'Connecting...'

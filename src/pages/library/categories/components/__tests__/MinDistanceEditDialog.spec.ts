@@ -37,7 +37,9 @@ function mountDialog(categorySet: CategorySet, initial: FieldMinDistance | null)
 
 /** The dialog content is teleported, so it is read off the document rather than off the wrapper. */
 function inputs(): HTMLInputElement[] {
-  return [...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input')]
+  return [
+    ...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input'),
+  ]
 }
 
 /** `SuggestInput` puts the id on its wrapper, so the field is found by its placeholder. */
@@ -68,7 +70,9 @@ function setNumberField(input: HTMLInputElement, value: string) {
 }
 
 function buttonLabelled(label: string): HTMLElement {
-  const button = [...document.querySelectorAll<HTMLElement>('[role="dialog"] button')]
+  const button = [
+    ...document.querySelectorAll<HTMLElement>('[role="dialog"] button'),
+  ]
     .find(candidate => candidate.textContent?.trim() === label)
   if (!button)
     throw new Error(`No "${label}" button in the dialog`)
@@ -125,7 +129,10 @@ describe('minDistanceEditDialog', () => {
     expect(document.querySelector('[role="dialog"]')).toBeNull()
 
     const stored = (await db.categorySets.get(categorySet.id))!
-    expect(stored.minDistances).toEqual([album, { name: 'work', distance: 8 }])
+    expect(stored.minDistances).toEqual([
+      album,
+      { name: 'work', distance: 8 },
+    ])
   })
 
   it('adds a new entry to the set', async () => {
@@ -146,7 +153,9 @@ describe('minDistanceEditDialog', () => {
     expect(open.value).toBe(false)
 
     const stored = (await db.categorySets.get(categorySet.id))!
-    expect(stored.minDistances).toEqual([{ name: 'work', distance: 5 }])
+    expect(stored.minDistances).toEqual([
+      { name: 'work', distance: 5 },
+    ])
   })
 
   it('refuses a field already covered by another entry and stores nothing', async () => {
@@ -194,7 +203,9 @@ describe('minDistanceEditDialog', () => {
     await settle()
 
     const stored = (await db.categorySets.get(categorySet.id))!
-    expect(stored.minDistances).toEqual([{ name: 'work', distance: 2 }])
+    expect(stored.minDistances).toEqual([
+      { name: 'work', distance: 2 },
+    ])
   })
 
   it('refuses an entry with no round count and stores nothing', async () => {

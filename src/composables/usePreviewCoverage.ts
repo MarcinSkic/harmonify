@@ -30,8 +30,14 @@ export function usePreviewCoverage(urls: Ref<string[]>): Ref<PreviewCoverage> {
     async () => {
       const wanted = new Set(urls.value)
       const total = wanted.size
-      if (total === 0)
-        return { total: 0, ready: 0, pending: 0, failed: 0 }
+      if (total === 0) {
+        return {
+          total: 0,
+          ready: 0,
+          pending: 0,
+          failed: 0,
+        }
+      }
 
       const fetched = await db.linkPreviews.where('status').equals('fetched').primaryKeys()
       const errored = await db.linkPreviews.where('status').equals('error').primaryKeys()
@@ -39,9 +45,19 @@ export function usePreviewCoverage(urls: Ref<string[]>): Ref<PreviewCoverage> {
       const ready = fetched.filter(url => wanted.has(url)).length
       const failed = errored.filter(url => wanted.has(url)).length
 
-      return { total, ready, pending: total - ready - failed, failed }
+      return {
+        total,
+        ready,
+        pending: total - ready - failed,
+        failed,
+      }
     },
-    { total: 0, ready: 0, pending: 0, failed: 0 },
+    {
+      total: 0,
+      ready: 0,
+      pending: 0,
+      failed: 0,
+    },
     [urls],
   )
 }

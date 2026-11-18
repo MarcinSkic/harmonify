@@ -75,5 +75,10 @@ export function buildCoverageReport(
     }
   })
 
-  return { total: tracks.length, perCategory, matchedByNone, matchedByMultiple }
+  return {
+    total: tracks.length,
+    perCategory,
+    matchedByNone,
+    matchedByMultiple,
+  }
 }

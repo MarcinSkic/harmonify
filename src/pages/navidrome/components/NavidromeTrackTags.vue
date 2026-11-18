@@ -31,7 +31,10 @@ let requestId = 0
 
 const tagEntries = computed(() => Object.entries(tags.value))
 
-watch([open, () => props.song?.id], async ([isOpen, songId]) => {
+watch([
+  open,
+  () => props.song?.id,
+], async ([isOpen, songId]) => {
   if (!isOpen || !songId)
     return
 

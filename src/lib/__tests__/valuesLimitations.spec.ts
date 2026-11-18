@@ -8,7 +8,14 @@ function track(id: string, fields: LimitedTrack['fields']): LimitedTrack {
 
 describe('applyValuesLimitations', () => {
   it('is the identity when the list of limitations is empty', () => {
-    const tracks = [track('1', { work: ['Madoka'] }), track('2', { work: ['Nanoha'] })]
+    const tracks = [
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Nanoha'],
+      }),
+    ]
 
     const { admitted, totalIn } = applyValuesLimitations(tracks, [])
 
@@ -19,8 +26,17 @@ describe('applyValuesLimitations', () => {
   })
 
   it('is the identity for entries with neither selfLimit nor otherValuesLimit', () => {
-    const tracks = [track('1', { work: ['Madoka'] }), track('2', { work: ['Madoka'] })]
-    const limitations: FieldLimitation[] = [{ name: 'work' }]
+    const tracks = [
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Madoka'],
+      }),
+    ]
+    const limitations: FieldLimitation[] = [
+      { name: 'work' },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -31,12 +47,22 @@ describe('applyValuesLimitations', () => {
 
   it('drops the fourth track sharing the same work under a selfLimit of 3', () => {
     const tracks = [
-      track('1', { work: ['Madoka'] }),
-      track('2', { work: ['Madoka'] }),
-      track('3', { work: ['Madoka'] }),
-      track('4', { work: ['Madoka'] }),
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Madoka'],
+      }),
+      track('3', {
+        work: ['Madoka'],
+      }),
+      track('4', {
+        work: ['Madoka'],
+      }),
     ]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 3 }]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 3 },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -45,12 +71,20 @@ describe('applyValuesLimitations', () => {
 
   it('lets a track without the field through regardless of counter state', () => {
     const tracks = [
-      track('1', { work: ['Madoka'] }),
-      track('2', { work: ['Madoka'] }),
-      track('3', { work: ['Madoka'] }),
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Madoka'],
+      }),
+      track('3', {
+        work: ['Madoka'],
+      }),
       track('4', {}),
     ]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 3 }]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 3 },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -58,9 +92,19 @@ describe('applyValuesLimitations', () => {
   })
 
   it('charges only selfLimit for a track missing the pair field', () => {
-    const tracks = [track('1', { work: ['Madoka'] })]
+    const tracks = [
+      track('1', {
+        work: ['Madoka'],
+      }),
+    ]
     const limitations: FieldLimitation[] = [
-      { name: 'work', selfLimit: 3, otherValuesLimit: [{ name: 'grouping', limit: 1 }] },
+      {
+        name: 'work',
+        selfLimit: 3,
+        otherValuesLimit: [
+          { name: 'grouping', limit: 1 },
+        ],
+      },
     ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
@@ -70,12 +114,26 @@ describe('applyValuesLimitations', () => {
 
   it('drops a second op from the same work under a work x grouping pair limit of 1, but admits an ed', () => {
     const tracks = [
-      track('1', { work: ['Madoka'], grouping: ['op'] }),
-      track('2', { work: ['Madoka'], grouping: ['op'] }),
-      track('3', { work: ['Madoka'], grouping: ['ed'] }),
+      track('1', {
+        work: ['Madoka'],
+        grouping: ['op'],
+      }),
+      track('2', {
+        work: ['Madoka'],
+        grouping: ['op'],
+      }),
+      track('3', {
+        work: ['Madoka'],
+        grouping: ['ed'],
+      }),
     ]
     const limitations: FieldLimitation[] = [
-      { name: 'work', otherValuesLimit: [{ name: 'grouping', limit: 1 }] },
+      {
+        name: 'work',
+        otherValuesLimit: [
+          { name: 'grouping', limit: 1 },
+        ],
+      },
     ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
@@ -85,13 +143,23 @@ describe('applyValuesLimitations', () => {
 
   it('multiValue "all" charges every value and drops when either bucket is full (crossover)', () => {
     const tracks = [
-      track('1', { work: ['Madoka'] }),
-      track('2', { work: ['Nanoha'] }),
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Nanoha'],
+      }),
       // Crossover track shared by both works — should fill the "Nanoha" bucket too.
-      track('3', { work: ['Madoka', 'Nanoha'] }),
-      track('4', { work: ['Nanoha'] }),
+      track('3', {
+        work: ['Madoka', 'Nanoha'],
+      }),
+      track('4', {
+        work: ['Nanoha'],
+      }),
     ]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 2, multiValue: 'all' }]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 2, multiValue: 'all' },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -101,11 +169,19 @@ describe('applyValuesLimitations', () => {
 
   it('multiValue "first" charges only the first non-blank value', () => {
     const tracks = [
-      track('1', { work: ['  ', 'Madoka', 'Nanoha'] }),
-      track('2', { work: ['Nanoha'] }),
-      track('3', { work: ['Nanoha'] }),
+      track('1', {
+        work: ['  ', 'Madoka', 'Nanoha'],
+      }),
+      track('2', {
+        work: ['Nanoha'],
+      }),
+      track('3', {
+        work: ['Nanoha'],
+      }),
     ]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 2, multiValue: 'first' }]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 2, multiValue: 'first' },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -115,12 +191,27 @@ describe('applyValuesLimitations', () => {
 
   it('is atomic: a track failing the pair check does not charge selfLimit', () => {
     const tracks = [
-      track('1', { work: ['Madoka'], grouping: ['op'] }),
-      track('2', { work: ['Madoka'], grouping: ['op'] }), // fails the pair limit
-      track('3', { work: ['Madoka'], grouping: ['ed'] }), // still has room under selfLimit
+      track('1', {
+        work: ['Madoka'],
+        grouping: ['op'],
+      }),
+      track('2', {
+        work: ['Madoka'],
+        grouping: ['op'],
+      }), // fails the pair limit
+      track('3', {
+        work: ['Madoka'],
+        grouping: ['ed'],
+      }), // still has room under selfLimit
     ]
     const limitations: FieldLimitation[] = [
-      { name: 'work', selfLimit: 2, otherValuesLimit: [{ name: 'grouping', limit: 1 }] },
+      {
+        name: 'work',
+        selfLimit: 2,
+        otherValuesLimit: [
+          { name: 'grouping', limit: 1 },
+        ],
+      },
     ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
@@ -130,13 +221,27 @@ describe('applyValuesLimitations', () => {
 
   it('folds case for both the field value and the pair value into one bucket', () => {
     const tracks = [
-      track('1', { work: ['Madoka'], grouping: ['OP'] }),
-      track('2', { work: ['madoka'], grouping: ['op'] }),
+      track('1', {
+        work: ['Madoka'],
+        grouping: ['OP'],
+      }),
+      track('2', {
+        work: ['madoka'],
+        grouping: ['op'],
+      }),
       // Repeats the same folded value twice within one track's own list — counts once.
-      track('3', { work: ['MADOKA', 'madoka'], grouping: ['Op'] }),
+      track('3', {
+        work: ['MADOKA', 'madoka'],
+        grouping: ['Op'],
+      }),
     ]
     const limitations: FieldLimitation[] = [
-      { name: 'work', otherValuesLimit: [{ name: 'grouping', limit: 2 }] },
+      {
+        name: 'work',
+        otherValuesLimit: [
+          { name: 'grouping', limit: 2 },
+        ],
+      },
     ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
@@ -145,8 +250,14 @@ describe('applyValuesLimitations', () => {
   })
 
   it('treats an empty or whitespace-only value as absent', () => {
-    const tracks = [track('1', { work: ['', '   '] })]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 0 }]
+    const tracks = [
+      track('1', {
+        work: ['', '   '],
+      }),
+    ]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 0 },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -155,9 +266,18 @@ describe('applyValuesLimitations', () => {
 
   it('requires both entries of a two-entry list to pass', () => {
     const tracks = [
-      track('1', { work: ['Madoka'], album: ['OST'] }),
-      track('2', { work: ['Nanoha'], album: ['OST'] }), // fails album, even though work has room
-      track('3', { work: ['Madoka'], album: ['Single'] }), // fails work, even though album has room
+      track('1', {
+        work: ['Madoka'],
+        album: ['OST'],
+      }),
+      track('2', {
+        work: ['Nanoha'],
+        album: ['OST'],
+      }), // fails album, even though work has room
+      track('3', {
+        work: ['Madoka'],
+        album: ['Single'],
+      }), // fails work, even though album has room
     ]
     const limitations: FieldLimitation[] = [
       { name: 'work', selfLimit: 1 },
@@ -171,10 +291,14 @@ describe('applyValuesLimitations', () => {
 
   it('selfLimit of 0 drops everything with a value and admits everything without one', () => {
     const tracks = [
-      track('1', { work: ['Madoka'] }),
+      track('1', {
+        work: ['Madoka'],
+      }),
       track('2', {}),
     ]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 0 }]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 0 },
+    ]
 
     const { admitted } = applyValuesLimitations(tracks, limitations)
 
@@ -183,17 +307,27 @@ describe('applyValuesLimitations', () => {
 
   it('ignores exceptions entirely — the outcome is identical with or without them', () => {
     const tracks = [
-      track('1', { work: ['Madoka'] }),
-      track('2', { work: ['Madoka'] }),
-      track('3', { work: ['Madoka'] }),
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Madoka'],
+      }),
+      track('3', {
+        work: ['Madoka'],
+      }),
     ]
-    const withoutExceptions: FieldLimitation[] = [{ name: 'work', selfLimit: 1 }]
+    const withoutExceptions: FieldLimitation[] = [
+      { name: 'work', selfLimit: 1 },
+    ]
     // If honored, this exception would raise "Madoka"'s limit to 5 and admit every track.
     const withExceptions: FieldLimitation[] = [
       {
         name: 'work',
         selfLimit: 1,
-        exceptions: [{ value: 'Madoka', selfLimit: 5 }],
+        exceptions: [
+          { value: 'Madoka', selfLimit: 5 },
+        ],
       },
     ]
 
@@ -208,11 +342,26 @@ describe('applyValuesLimitations', () => {
     // A and B are indistinguishable but for id, both racing for the one "op" slot the pair
     // limit allows — whichever comes first in the input wins it, so the two orderings must admit
     // different id sets, not just a relabeled reversal of the same one.
-    const a = track('A', { work: ['Madoka'], grouping: ['op'] })
-    const b = track('B', { work: ['Madoka'], grouping: ['op'] })
-    const c = track('C', { work: ['Madoka'], grouping: ['ed'] })
+    const a = track('A', {
+      work: ['Madoka'],
+      grouping: ['op'],
+    })
+    const b = track('B', {
+      work: ['Madoka'],
+      grouping: ['op'],
+    })
+    const c = track('C', {
+      work: ['Madoka'],
+      grouping: ['ed'],
+    })
     const limitations: FieldLimitation[] = [
-      { name: 'work', selfLimit: 2, otherValuesLimit: [{ name: 'grouping', limit: 1 }] },
+      {
+        name: 'work',
+        selfLimit: 2,
+        otherValuesLimit: [
+          { name: 'grouping', limit: 1 },
+        ],
+      },
     ]
 
     function isValidCut(ids: string[]): boolean {
@@ -232,8 +381,17 @@ describe('applyValuesLimitations', () => {
   })
 
   it('reports totalIn as the input length, even when nothing was dropped', () => {
-    const tracks = [track('1', { work: ['Madoka'] }), track('2', { work: ['Nanoha'] })]
-    const limitations: FieldLimitation[] = [{ name: 'work', selfLimit: 3 }]
+    const tracks = [
+      track('1', {
+        work: ['Madoka'],
+      }),
+      track('2', {
+        work: ['Nanoha'],
+      }),
+    ]
+    const limitations: FieldLimitation[] = [
+      { name: 'work', selfLimit: 3 },
+    ]
 
     const { admitted, totalIn } = applyValuesLimitations(tracks, limitations)
 

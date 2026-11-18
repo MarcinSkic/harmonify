@@ -19,10 +19,14 @@ const connectionStore = useConnectionStore()
 const gameData = useGameDataStore()
 
 const selectedPlaylistIds = ref<string[]>(
-  libraryStore.selectedPlaylistId ? [libraryStore.selectedPlaylistId] : [],
+  libraryStore.selectedPlaylistId
+    ? [libraryStore.selectedPlaylistId]
+    : [],
 )
 watch(selectedPlaylistIds, (ids) => {
-  libraryStore.selectPlaylist(ids.length === 1 ? ids[0] : null)
+  libraryStore.selectPlaylist(ids.length === 1
+    ? ids[0]
+    : null)
 })
 
 async function handleGameStart() {

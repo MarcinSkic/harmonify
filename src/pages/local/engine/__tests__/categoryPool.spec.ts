@@ -10,11 +10,22 @@ import {
 } from '../categoryPool'
 
 function makeTrack(id: string, genres: string[]): CategoryPoolTrack {
-  return { id, fields: genres.length > 0 ? { genre: genres } : {} }
+  return {
+    id,
+    fields: genres.length > 0
+      ? { genre: genres }
+      : {},
+  }
 }
 
 function genreIs(genre: string): Category['match'] {
-  return { all: [{ is: { genre } }] }
+  return {
+    all: [
+      {
+        is: { genre },
+      },
+    ],
+  }
 }
 
 function makeCategory(id: string, match: Category['match']): Category {
@@ -28,7 +39,12 @@ function makeCategory(id: string, match: Category['match']): Category {
 
 /** The bags a running game hands over, keyed by track id — one `work` value per track. */
 function worksById(works: Record<string, string>): Record<string, FieldBag> {
-  return Object.fromEntries(Object.entries(works).map(([id, work]) => [id, { work: [work] }]))
+  return Object.fromEntries(Object.entries(works).map(([id, work]) => [
+    id,
+    {
+      work: [work],
+    },
+  ]))
 }
 
 /**
@@ -77,7 +93,14 @@ describe('categoryPool', () => {
 
     it('supports categories that union several values with any', () => {
       const ostCategory = makeCategory('cat-ost', {
-        any: [{ is: { genre: 'rock' } }, { is: { genre: 'jazz' } }],
+        any: [
+          {
+            is: { genre: 'rock' },
+          },
+          {
+            is: { genre: 'jazz' },
+          },
+        ],
       })
       const pool = createCategoryPool(tracks, [ostCategory])
 
@@ -96,7 +119,11 @@ describe('categoryPool', () => {
 
     it('pools the tracks a predicate matches on an absent field', () => {
       const untaggedCategory = makeCategory('cat-untagged', {
-        all: [{ isMissing: { genre: true } }],
+        all: [
+          {
+            isMissing: { genre: true },
+          },
+        ],
       })
       const pool = createCategoryPool(tracks, [untaggedCategory])
 
@@ -105,7 +132,9 @@ describe('categoryPool', () => {
 
     it('matches field values regardless of case', () => {
       const pool = createCategoryPool(
-        [makeTrack('loud', ['ROCK'])],
+        [
+          makeTrack('loud', ['ROCK']),
+        ],
         [rockCategory],
       )
 
@@ -153,7 +182,9 @@ describe('categoryPool', () => {
 
     it('picks the first track in pool order when the game carries no rules', () => {
       // Two tracks of the same work and no rules: the pool order alone decides, exactly as before.
-      const state = stateWithPools({ [rockCategory.id]: ['t2', 't1'] })
+      const state = stateWithPools({
+        [rockCategory.id]: ['t2', 't1'],
+      })
 
       const { trackId } = pickFromCategory(state, rockCategory.id, {
         fieldsById: worksById({ t1: 'Madoka', t2: 'Madoka' }),
@@ -166,7 +197,9 @@ describe('categoryPool', () => {
     it('skips a track whose work was played two rounds ago under distance 3', () => {
       // Played so far: Nanoha, then Madoka. A Madoka candidate would land at gap 1 and a Nanoha one
       // at gap 2 — both short of 3 — so the first candidate carrying an unplayed work wins.
-      const state = stateWithPools({ [rockCategory.id]: ['madoka', 'nanoha', 'fate'] }, ['p1', 'p2'])
+      const state = stateWithPools({
+        [rockCategory.id]: ['madoka', 'nanoha', 'fate'],
+      }, ['p1', 'p2'])
 
       const { trackId, selection } = pickFromCategory(state, rockCategory.id, {
         fieldsById: worksById({
@@ -176,7 +209,9 @@ describe('categoryPool', () => {
           nanoha: 'Nanoha',
           fate: 'Fate',
         }),
-        minDistances: [{ name: 'work', distance: 3 }],
+        minDistances: [
+          { name: 'work', distance: 3 },
+        ],
       })
 
       expect(trackId).toBe('fate')
@@ -188,16 +223,27 @@ describe('categoryPool', () => {
       // `playSpecificTrack` appends the host's pick to `playedTrackIds` without coming through here,
       // so a forced track occupies a round of the history like any other — and where it sits in that
       // history is what decides, which is why the same two rounds swapped give the other answer.
-      const fieldsById = worksById({ forced: 'Madoka', older: 'Nanoha', m: 'Madoka', n: 'Nanoha' })
-      const minDistances = [{ name: 'work', distance: 2 }]
+      const fieldsById = worksById({
+        forced: 'Madoka',
+        older: 'Nanoha',
+        m: 'Madoka',
+        n: 'Nanoha',
+      })
+      const minDistances = [
+        { name: 'work', distance: 2 },
+      ]
 
       const forcedLast = pickFromCategory(
-        stateWithPools({ [rockCategory.id]: ['m', 'n'] }, ['older', 'forced']),
+        stateWithPools({
+          [rockCategory.id]: ['m', 'n'],
+        }, ['older', 'forced']),
         rockCategory.id,
         { fieldsById, minDistances },
       )
       const forcedFirst = pickFromCategory(
-        stateWithPools({ [rockCategory.id]: ['m', 'n'] }, ['forced', 'older']),
+        stateWithPools({
+          [rockCategory.id]: ['m', 'n'],
+        }, ['forced', 'older']),
         rockCategory.id,
         { fieldsById, minDistances },
       )
@@ -209,11 +255,15 @@ describe('categoryPool', () => {
     it('never blocks a track the game knows no fields for', () => {
       // A game sourced from the local library carries no `fields` at all: every candidate gets an
       // empty bag, no rule reaches it, and the pick stays what it is today.
-      const state = stateWithPools({ [rockCategory.id]: ['t1', 't2'] }, ['p1'])
+      const state = stateWithPools({
+        [rockCategory.id]: ['t1', 't2'],
+      }, ['p1'])
 
       const { trackId, selection } = pickFromCategory(state, rockCategory.id, {
         fieldsById: worksById({ p1: 'Madoka' }),
-        minDistances: [{ name: 'work', distance: 10 }],
+        minDistances: [
+          { name: 'work', distance: 10 },
+        ],
       })
 
       expect(trackId).toBe('t1')
@@ -224,7 +274,9 @@ describe('categoryPool', () => {
     it('takes the least offending track and flags a fallback when every candidate is blocked', () => {
       // Madoka ran 3 rounds back and Nanoha 1: `distance: 5` blocks both, and Madoka is the one
       // closer to being allowed — so the winner is not the first candidate in pool order.
-      const state = stateWithPools({ [rockCategory.id]: ['nanoha', 'madoka'] }, ['p1', 'p2', 'p3'])
+      const state = stateWithPools({
+        [rockCategory.id]: ['nanoha', 'madoka'],
+      }, ['p1', 'p2', 'p3'])
 
       const { trackId, selection } = pickFromCategory(state, rockCategory.id, {
         fieldsById: worksById({
@@ -234,14 +286,23 @@ describe('categoryPool', () => {
           madoka: 'Madoka',
           nanoha: 'Nanoha',
         }),
-        minDistances: [{ name: 'work', distance: 5 }],
+        minDistances: [
+          { name: 'work', distance: 5 },
+        ],
       })
 
       expect(trackId).toBe('madoka')
       expect(selection.fallback).toBe(true)
       expect(selection.eligibleCount).toBe(0)
       expect(selection.score).toBe(-2)
-      expect(selection.limiting).toEqual([{ field: 'work', value: 'madoka', gap: 3, required: 5 }])
+      expect(selection.limiting).toEqual([
+        {
+          field: 'work',
+          value: 'madoka',
+          gap: 3,
+          required: 5,
+        },
+      ])
     })
 
     it('removes the picked track from ALL categories it belonged to', () => {
@@ -266,7 +327,9 @@ describe('categoryPool', () => {
     it('keeps empty categories in the map (for UI display)', () => {
       const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
-        [makeTrack('only', ['solo'])],
+        [
+          makeTrack('only', ['solo']),
+        ],
         [soloCategory],
       )
       const { newState } = pickFromCategory(pool, soloCategory.id)
@@ -288,7 +351,9 @@ describe('categoryPool', () => {
     it('throws when the category is empty', () => {
       const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
-        [makeTrack('only', ['solo'])],
+        [
+          makeTrack('only', ['solo']),
+        ],
         [soloCategory],
       )
       const drained = pickFromCategory(pool, soloCategory.id).newState
@@ -318,7 +383,9 @@ describe('categoryPool', () => {
     it('includes exhausted categories with count 0', () => {
       const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
-        [makeTrack('only', ['solo'])],
+        [
+          makeTrack('only', ['solo']),
+        ],
         [soloCategory],
       )
       const drained = pickFromCategory(pool, soloCategory.id).newState
@@ -338,7 +405,9 @@ describe('categoryPool', () => {
     it('returns true when all categories are empty', () => {
       const soloCategory = makeCategory('cat-solo', genreIs('solo'))
       const pool = createCategoryPool(
-        [makeTrack('only', ['solo'])],
+        [
+          makeTrack('only', ['solo']),
+        ],
         [soloCategory],
       )
       const drained = pickFromCategory(pool, soloCategory.id).newState
@@ -356,7 +425,9 @@ describe('categoryPool', () => {
       // One track in two categories — playing from either drains both.
       const catA = makeCategory('cat-a', genreIs('x'))
       const catB = makeCategory('cat-b', genreIs('x'))
-      const pool = createCategoryPool([makeTrack('a', ['x'])], [catA, catB])
+      const pool = createCategoryPool([
+        makeTrack('a', ['x']),
+      ], [catA, catB])
       const drained = pickFromCategory(pool, catA.id).newState
 
       expect(isCategoryPoolExhausted(drained)).toBe(true)
@@ -383,12 +454,26 @@ describe('categoryPool', () => {
         c1: 'Clannad',
       }
       const poolTracks: CategoryPoolTrack[] = Object.entries(works)
-        .map(([id, work]) => ({ id, fields: { work: [work], set: ['all'] } }))
-      const everything = makeCategory('cat-all', { all: [{ is: { set: 'all' } }] })
+        .map(([id, work]) => ({
+          id,
+          fields: {
+            work: [work],
+            set: ['all'],
+          },
+        }))
+      const everything = makeCategory('cat-all', {
+        all: [
+          {
+            is: { set: 'all' },
+          },
+        ],
+      })
       const distance = 5
       const context = {
         fieldsById: Object.fromEntries(poolTracks.map(track => [track.id, track.fields])),
-        minDistances: [{ name: 'work', distance }],
+        minDistances: [
+          { name: 'work', distance },
+        ],
       }
 
       // The pool of each round is kept as it stood *before* the pick, so eligibility can be
@@ -405,7 +490,9 @@ describe('categoryPool', () => {
       /** Rounds between the last play of `work` and the next slot; `undefined` when never played. */
       function roundsSince(work: string, playedSoFar: string[]): number | undefined {
         const lastIndex = playedSoFar.lastIndexOf(work)
-        return lastIndex === -1 ? undefined : playedSoFar.length - lastIndex
+        return lastIndex === -1
+          ? undefined
+          : playedSoFar.length - lastIndex
       }
 
       expect(rounds).toHaveLength(10)

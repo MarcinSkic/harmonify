@@ -22,7 +22,12 @@ const { width: screenWidth } = useWindowSize()
 const isPlayAgainEnabled = computed(() => !!connectionStore.ws)
 const isDesktop = computed(() => screenWidth.value >= Breakpoint.LG)
 const selectablePlayers = computed(() => {
-  return resultStore.game.players.map(p => ({ guid: p.guid, nickname: gameDataStore.selfPlayer.guid === p.guid ? 'You' : p.nickname }))
+  return resultStore.game.players.map(p => ({
+    guid: p.guid,
+    nickname: gameDataStore.selfPlayer.guid === p.guid
+      ? 'You'
+      : p.nickname,
+  }))
 })
 
 function handlePlayAgain() {

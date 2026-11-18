@@ -21,7 +21,10 @@ const isPlaying = ref(false)
 const playButton = ref<HTMLButtonElement | null>(null)
 const trackTimer = useAnimate(
   playButton,
-  [{ backgroundPositionX: '100%' }, { backgroundPositionX: '0%' }],
+  [
+    { backgroundPositionX: '100%' },
+    { backgroundPositionX: '0%' },
+  ],
   { duration: props.trackDuration * 1000, iterations: 1, immediate: false },
 )
 

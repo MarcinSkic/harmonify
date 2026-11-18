@@ -43,11 +43,13 @@ function parseArray<TSchema extends z.ZodType>(
     data = JSON.parse(text)
   }
   catch (error) {
-    throw new Error(`JSON parse error: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(`JSON parse error: ${error instanceof Error
+      ? error.message
+      : String(error)}`)
   }
 
   if (!Array.isArray(data))
-    throw new Error(`Expected a JSON array of ${entity}`)
+    throw new TypeError(`Expected a JSON array of ${entity}`)
 
   const rows: Array<{ index: number, value: z.infer<TSchema> }> = []
   const errors: JsonRowError[] = []
@@ -59,7 +61,9 @@ function parseArray<TSchema extends z.ZodType>(
       const path = issue?.path.join('.')
       errors.push({
         index,
-        message: path ? `${path}: ${issue.message}` : issue?.message ?? `Invalid ${entity}`,
+        message: path
+          ? `${path}: ${issue.message}`
+          : issue?.message ?? `Invalid ${entity}`,
       })
       return
     }
@@ -74,8 +78,12 @@ export function serializeCategoriesJSON(categories: Category[]): string {
   return JSON.stringify(
     sorted.map(category => ({
       displayName: category.displayName,
-      ...(category.description !== undefined ? { description: category.description } : {}),
-      ...(category.points !== undefined ? { points: category.points } : {}),
+      ...(category.description !== undefined
+        ? { description: category.description }
+        : {}),
+      ...(category.points !== undefined
+        ? { points: category.points }
+        : {}),
       match: category.match,
     })),
     null,
@@ -103,7 +111,10 @@ export function parseCategoriesJSON(text: string): { rows: ParsedCategory[], err
     unique.push(value)
   }
 
-  return { rows: unique, errors: [...errors].sort((a, b) => a.index - b.index) }
+  return {
+    rows: unique,
+    errors: [...errors].sort((a, b) => a.index - b.index),
+  }
 }
 
 /**
@@ -220,5 +231,8 @@ export function parseCategorySetsJSON(text: string): { rows: ParsedCategorySet[]
     unique.push(value)
   }
 
-  return { rows: unique, errors: [...errors].sort((a, b) => a.index - b.index) }
+  return {
+    rows: unique,
+    errors: [...errors].sort((a, b) => a.index - b.index),
+  }
 }

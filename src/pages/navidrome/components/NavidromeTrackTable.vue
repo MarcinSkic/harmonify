@@ -81,7 +81,9 @@ async function loadOverlays(songs: SubsonicSong[]) {
   catch (err) {
     // The rekey writes, so this can fail on more than a read — and without the toast the list would
     // just render as if no track had an annotation.
-    toast.error(`Failed to load overlays: ${err instanceof Error ? err.message : String(err)}`)
+    toast.error(`Failed to load overlays: ${err instanceof Error
+      ? err.message
+      : String(err)}`)
   }
 }
 
@@ -120,7 +122,9 @@ function sanitizeFilename(name: string): string {
 
 function exportIds() {
   const csv = serializeTrackIdentityCSV(props.songs)
-  const filename = props.sourceName ? `${sanitizeFilename(props.sourceName)}-ids.csv` : 'navidrome-track-ids.csv'
+  const filename = props.sourceName
+    ? `${sanitizeFilename(props.sourceName)}-ids.csv`
+    : 'navidrome-track-ids.csv'
   saveAs(new Blob([csv], { type: 'text/csv' }), filename)
   toast.success(`Exported ${props.songs.length} track IDs`)
 }

@@ -4,7 +4,10 @@ import { conditionSchema } from '@/db/schemas'
 import { conditionsFromRows, emptyRow, rowError, rowsFromMatch, toCondition, toRow } from '../categoryMatchRows'
 
 function row(overrides: Partial<ConditionRow>): ConditionRow {
-  return { ...emptyRow(), ...overrides }
+  return {
+    ...emptyRow(),
+    ...overrides,
+  }
 }
 
 describe('toCondition', () => {
@@ -15,7 +18,12 @@ describe('toCondition', () => {
       row({ field: 'title', operator: 'contains', value: 'love' }),
       row({ field: 'popularity', operator: 'gt', value: '3' }),
       row({ field: 'popularity', operator: 'lt', value: '9' }),
-      row({ field: 'popularity', operator: 'inTheRange', value: '1', rangeEnd: '5' }),
+      row({
+        field: 'popularity',
+        operator: 'inTheRange',
+        value: '1',
+        rangeEnd: '5',
+      }),
       row({ field: 'work', operator: 'isMissing' }),
       row({ field: 'work', operator: 'isPresent' }),
     ]
@@ -25,14 +33,27 @@ describe('toCondition', () => {
   })
 
   it('coerces numeric operands to numbers', () => {
-    expect(toCondition(row({ field: 'popularity', operator: 'gt', value: '3' }))).toEqual({ gt: { popularity: 3 } })
-    expect(toCondition(row({ field: 'popularity', operator: 'inTheRange', value: '1', rangeEnd: '5' })))
-      .toEqual({ inTheRange: { popularity: [1, 5] } })
+    expect(toCondition(row({ field: 'popularity', operator: 'gt', value: '3' }))).toEqual({
+      gt: { popularity: 3 },
+    })
+    expect(toCondition(row({
+      field: 'popularity',
+      operator: 'inTheRange',
+      value: '1',
+      rangeEnd: '5',
+    })))
+      .toEqual({
+        inTheRange: {
+          popularity: [1, 5],
+        },
+      })
   })
 
   it('trims the field name and the text operand an imported file may carry', () => {
     expect(toCondition(row({ field: '  grouping  ', operator: 'is', value: '  op  ' })))
-      .toEqual({ is: { grouping: 'op' } })
+      .toEqual({
+        is: { grouping: 'op' },
+      })
   })
 
   it('returns null for an incomplete row', () => {
@@ -49,7 +70,12 @@ describe('toRow', () => {
       row({ field: 'title', operator: 'contains', value: 'love' }),
       row({ field: 'popularity', operator: 'gt', value: '3' }),
       row({ field: 'popularity', operator: 'lt', value: '9' }),
-      row({ field: 'popularity', operator: 'inTheRange', value: '1', rangeEnd: '5' }),
+      row({
+        field: 'popularity',
+        operator: 'inTheRange',
+        value: '1',
+        rangeEnd: '5',
+      }),
       row({ field: 'work', operator: 'isMissing' }),
       row({ field: 'work', operator: 'isPresent' }),
     ]
@@ -61,8 +87,12 @@ describe('toRow', () => {
   // `isMissing: false` and `isPresent: true` mean the same thing — an imported file may carry the
   // negated operand, which the editor has no row for.
   it('collapses a negated operand onto its positive twin', () => {
-    expect(toRow({ isMissing: { work: false } })).toEqual(row({ field: 'work', operator: 'isPresent' }))
-    expect(toRow({ isPresent: { work: false } })).toEqual(row({ field: 'work', operator: 'isMissing' }))
+    expect(toRow({
+      isMissing: { work: false },
+    })).toEqual(row({ field: 'work', operator: 'isPresent' }))
+    expect(toRow({
+      isPresent: { work: false },
+    })).toEqual(row({ field: 'work', operator: 'isMissing' }))
   })
 
   it('falls back to an empty row for a condition naming no field', () => {
@@ -72,20 +102,37 @@ describe('toRow', () => {
 
 describe('rowsFromMatch', () => {
   it('maps the conditions of an `all` match', () => {
-    expect(rowsFromMatch({ all: [{ is: { grouping: 'op' } }, { gt: { popularity: 3 } }] })).toEqual([
+    expect(rowsFromMatch({
+      all: [
+        {
+          is: { grouping: 'op' },
+        },
+        {
+          gt: { popularity: 3 },
+        },
+      ],
+    })).toEqual([
       row({ field: 'grouping', operator: 'is', value: 'op' }),
       row({ field: 'popularity', operator: 'gt', value: '3' }),
     ])
   })
 
   it('maps the conditions of an `any` match', () => {
-    expect(rowsFromMatch({ any: [{ contains: { title: 'love' } }] })).toEqual([
+    expect(rowsFromMatch({
+      any: [
+        {
+          contains: { title: 'love' },
+        },
+      ],
+    })).toEqual([
       row({ field: 'title', operator: 'contains', value: 'love' }),
     ])
   })
 
   it('starts a match-less editor on a single empty row', () => {
-    expect(rowsFromMatch(null)).toEqual([emptyRow()])
+    expect(rowsFromMatch(null)).toEqual([
+      emptyRow(),
+    ])
   })
 })
 
@@ -107,9 +154,19 @@ describe('rowError', () => {
   it('requires both ends of a range and rejects an inverted one', () => {
     expect(rowError(row({ field: 'popularity', operator: 'inTheRange', value: '1' })))
       .toBe('Enter both ends of the range as numbers')
-    expect(rowError(row({ field: 'popularity', operator: 'inTheRange', value: '5', rangeEnd: '1' })))
+    expect(rowError(row({
+      field: 'popularity',
+      operator: 'inTheRange',
+      value: '5',
+      rangeEnd: '1',
+    })))
       .toBe('The range start must not exceed its end')
-    expect(rowError(row({ field: 'popularity', operator: 'inTheRange', value: '1', rangeEnd: '5' }))).toBeNull()
+    expect(rowError(row({
+      field: 'popularity',
+      operator: 'inTheRange',
+      value: '1',
+      rangeEnd: '5',
+    }))).toBeNull()
   })
 
   it('needs no operand for a presence operator', () => {
@@ -123,7 +180,14 @@ describe('conditionsFromRows', () => {
     expect(conditionsFromRows([
       row({ field: 'grouping', operator: 'is', value: 'op' }),
       row({ field: 'popularity', operator: 'gt', value: '3' }),
-    ])).toEqual([{ is: { grouping: 'op' } }, { gt: { popularity: 3 } }])
+    ])).toEqual([
+      {
+        is: { grouping: 'op' },
+      },
+      {
+        gt: { popularity: 3 },
+      },
+    ])
   })
 
   it('returns null as soon as one row is incomplete', () => {

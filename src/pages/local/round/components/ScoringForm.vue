@@ -23,14 +23,24 @@ const emit = defineEmits<{
   submit: [scores: Map<string, number>]
 }>()
 const categoryPoints = computed(() => props.category?.points)
-const halfPoints = computed(() => categoryPoints.value !== undefined ? Math.round(categoryPoints.value / 2) : undefined)
-const fullPlusBonusPoints = computed(() => categoryPoints.value !== undefined ? categoryPoints.value + props.settings.partialPoints : undefined)
-const halfPlusBonusPoints = computed(() => halfPoints.value !== undefined ? halfPoints.value + props.settings.partialPoints : undefined)
+const halfPoints = computed(() => categoryPoints.value !== undefined
+  ? Math.round(categoryPoints.value / 2)
+  : undefined)
+const fullPlusBonusPoints = computed(() => categoryPoints.value !== undefined
+  ? categoryPoints.value + props.settings.partialPoints
+  : undefined)
+const halfPlusBonusPoints = computed(() => halfPoints.value !== undefined
+  ? halfPoints.value + props.settings.partialPoints
+  : undefined)
 
 const highlightedTeamId = computed(() => props.takeoverTeamId ?? props.currentTeamId)
 
-const standardPoints = computed(() => props.settings.gameMode === 'random' ? props.settings.standardPoints : undefined)
-const standardFullPlusBonusPoints = computed(() => standardPoints.value !== undefined ? standardPoints.value + props.settings.partialPoints : undefined)
+const standardPoints = computed(() => props.settings.gameMode === 'random'
+  ? props.settings.standardPoints
+  : undefined)
+const standardFullPlusBonusPoints = computed(() => standardPoints.value !== undefined
+  ? standardPoints.value + props.settings.partialPoints
+  : undefined)
 
 const { blobUrl: previewImageUrl } = useLinkPreview(computed(() => props.track.previewImageUrl))
 const showAlbumAsBig = computed(() => !previewImageUrl.value && !!props.track.albumImageUrl)

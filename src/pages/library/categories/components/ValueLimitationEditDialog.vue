@@ -104,7 +104,10 @@ watch(
 )
 
 function addPairRow() {
-  pairs.value = [...pairs.value, { name: '', limit: null, multiValue: 'all' }]
+  pairs.value = [
+    ...pairs.value,
+    { name: '', limit: null, multiValue: 'all' },
+  ]
 }
 
 function removePairRow(index: number) {
@@ -128,7 +131,9 @@ async function handleSubmit() {
   // Two pair limits naming the same field would resolve to the same (X, Y) counter and double-charge
   // it — the engine assumes this can't happen (see the comment in `valuesLimitations.ts`).
   const duplicatePairName = findDuplicatePairLimitationName(
-    filledPairs.map(pair => ({ name: pair.name.trim() })),
+    filledPairs.map(pair => ({
+      name: pair.name.trim(),
+    })),
   )
   if (duplicatePairName) {
     toast.error(`A pair limit named "${duplicatePairName}" is already used in this entry`)
@@ -138,12 +143,16 @@ async function handleSubmit() {
   const payload = {
     name: trimmedName,
     selfLimit: selfLimit.value ?? undefined,
-    multiValue: multiValue.value !== 'all' ? multiValue.value : undefined,
+    multiValue: multiValue.value !== 'all'
+      ? multiValue.value
+      : undefined,
     otherValuesLimit: filledPairs.length > 0
       ? filledPairs.map(pair => ({
           name: pair.name.trim(),
           limit: pair.limit ?? Number.NaN,
-          multiValue: pair.multiValue !== 'all' ? pair.multiValue : undefined,
+          multiValue: pair.multiValue !== 'all'
+            ? pair.multiValue
+            : undefined,
           exceptions: pair.exceptions,
         }))
       : undefined,
@@ -159,7 +168,9 @@ async function handleSubmit() {
   const current = props.categorySet.valueLimitations ?? []
   const existingIndex = current.findIndex(l => l.name === originalName.value)
   const next = existingIndex >= 0
-    ? current.map((l, i) => (i === existingIndex ? validation.data : l))
+    ? current.map((l, i) => (i === existingIndex
+        ? validation.data
+        : l))
     : [...current, validation.data]
 
   try {

@@ -38,12 +38,16 @@ const sectors = computed(() => {
   return props.participants.map((team, i) => {
     const start = pointOnCircle(i * sector, RADIUS)
     const end = pointOnCircle((i + 1) * sector, RADIUS)
-    const largeArc = sector > 180 ? 1 : 0
+    const largeArc = sector > 180
+      ? 1
+      : 0
     const midAngle = (i + 0.5) * sector
     const label = pointOnCircle(midAngle, TEXT_RADIUS)
     // Radial orientation; flip labels on the left half so they stay upright.
     const flip = midAngle > 90 && midAngle < 270
-    const labelRot = flip ? midAngle + 90 : midAngle - 90
+    const labelRot = flip
+      ? midAngle + 90
+      : midAngle - 90
     return {
       id: team.id,
       name: truncateLabel(team.name),

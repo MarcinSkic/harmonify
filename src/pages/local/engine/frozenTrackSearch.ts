@@ -32,5 +32,7 @@ export function findFrozenTracks(tracks: FrozenNavidromeTrack[], input: string):
  */
 export function describeFrozenTrack(track: FrozenNavidromeTrack): string {
   const parts = [track.artist, track.albumName].filter((p): p is string => !!p)
-  return parts.length > 0 ? `${track.title} — ${parts.join(' — ')}` : track.title
+  return parts.length > 0
+    ? `${track.title} — ${parts.join(' — ')}`
+    : track.title
 }

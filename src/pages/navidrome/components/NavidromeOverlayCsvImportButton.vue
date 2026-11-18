@@ -63,12 +63,16 @@ async function onCSVFileSelected(event: Event) {
 
     if (unmapped.length > 0) {
       const shown = unmapped.slice(0, 10).map(u => u.title ?? `row ${u.rowIndex}`)
-      const more = unmapped.length > 10 ? ` and ${unmapped.length - 10} more` : ''
+      const more = unmapped.length > 10
+        ? ` and ${unmapped.length - 10} more`
+        : ''
       toast.warning(`Skipped rows with neither a musicBrainzId nor an albumId and title: ${shown.join(', ')}${more}`)
     }
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'CSV import failed')
+    toast.error(e instanceof Error
+      ? e.message
+      : 'CSV import failed')
   }
   finally {
     if (csvInput.value)

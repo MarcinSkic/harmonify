@@ -72,7 +72,9 @@ const results = computed(() => {
 
   return results.map(r => ({ ...r, width: (r.score / bestScore) * SCORE_BAR_MAX_WIDTH }))
 })
-const displayedResults = ref<(PlayerScoreDto & { width: number })[]>(props.animate ? [] : [...results.value].reverse())
+const displayedResults = ref<(PlayerScoreDto & { width: number })[]>(props.animate
+  ? []
+  : [...results.value].reverse())
 const resultsLeft = ref(results.value.length - displayedResults.value.length)
 
 const resultsHeight = computed(() => {

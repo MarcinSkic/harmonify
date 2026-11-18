@@ -7,7 +7,9 @@ import { getAlbum, ping } from '../subsonic'
 function jsonResponse(body: unknown, status = 200): Response {
   return {
     status,
-    headers: { get: () => null },
+    headers: {
+      get: () => null,
+    },
     json: async () => body,
   } as unknown as Response
 }
@@ -26,7 +28,9 @@ function captureError(action: () => unknown): unknown {
 function htmlResponse(): Response {
   return {
     status: 200,
-    headers: { get: () => null },
+    headers: {
+      get: () => null,
+    },
     json: async () => {
       throw new SyntaxError('Unexpected token "<", "<!DOCTYPE "... is not valid JSON')
     },
@@ -35,7 +39,11 @@ function htmlResponse(): Response {
 
 function subsonicFailure(code: number, message?: string): Response {
   return jsonResponse({
-    'subsonic-response': { status: 'failed', version: '1.16.1', error: { code, message } },
+    'subsonic-response': {
+      status: 'failed',
+      version: '1.16.1',
+      error: { code, message },
+    },
   })
 }
 
@@ -183,7 +191,12 @@ describe('subsonic request error mapping', () => {
 
   it('should report notNavidrome when another server answers the ping', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({
-      'subsonic-response': { status: 'ok', version: '1.16.1', type: 'gonic', serverVersion: '0.16.4' },
+      'subsonic-response': {
+        status: 'ok',
+        version: '1.16.1',
+        type: 'gonic',
+        serverVersion: '0.16.4',
+      },
     })))
 
     await expect(ping()).rejects.toMatchObject({ kind: 'notNavidrome' })

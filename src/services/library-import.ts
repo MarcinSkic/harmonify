@@ -13,7 +13,11 @@ export function trackToSpotifyTrack(track: Track): SpotifyTrack {
     duration_ms: track.durationMs,
     album: {
       name: track.albumName,
-      images: track.albumImageUrl ? [{ url: track.albumImageUrl, height: null, width: null }] : [],
+      images: track.albumImageUrl
+        ? [
+            { url: track.albumImageUrl, height: null, width: null },
+          ]
+        : [],
     },
     preview_url: track.audioUrl ?? null,
   }

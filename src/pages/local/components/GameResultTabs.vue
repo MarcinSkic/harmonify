@@ -15,13 +15,17 @@ const props = defineProps<{
 }>()
 
 const { width: screenWidth } = useWindowSize()
-const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 500 : 200)
+const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG
+  ? 500
+  : 200)
 
 const teamsWithWidth = computed(() => {
   const bestScore = props.teams[0]?.score ?? 0
   return props.teams.map(team => ({
     ...team,
-    width: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
+    width: bestScore === 0
+      ? 0
+      : (team.score / bestScore) * maxBarWidth.value,
   }))
 })
 </script>

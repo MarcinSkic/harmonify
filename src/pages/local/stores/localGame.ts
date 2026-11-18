@@ -98,8 +98,11 @@ export const useLocalGameStore = defineStore('localGame', () => {
     return result.sort((a, b) => {
       const aIsEphemeral = 'type' in a.category
       const bIsEphemeral = 'type' in b.category
-      if (aIsEphemeral !== bIsEphemeral)
-        return aIsEphemeral ? 1 : -1
+      if (aIsEphemeral !== bIsEphemeral) {
+        return aIsEphemeral
+          ? 1
+          : -1
+      }
       return 0
     })
   })
@@ -116,7 +119,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     if (limit === 'no-streak') {
       const teamRounds = g.rounds.filter(r => r.currentTeamId === teamId)
       const lastCategoryId = teamRounds.at(-1)?.categoryId
-      return lastCategoryId ? new Set([lastCategoryId]) : new Set()
+      return lastCategoryId
+        ? new Set([lastCategoryId])
+        : new Set()
     }
 
     if (limit === 'once') {
@@ -182,7 +187,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const enabled = game.value.teams.filter(t => !t.disabled)
     if (enabled.length === 0)
       return undefined
-    const idx = fromId ? enabled.findIndex(t => t.id === fromId) : -1
+    const idx = fromId
+      ? enabled.findIndex(t => t.id === fromId)
+      : -1
     if (idx === -1)
       return enabled[0].id
     return enabled[(idx + 1) % enabled.length].id
@@ -200,7 +207,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     // carry no `navidromeTracks`, so they no longer resume onto a track — accepted when `/local`
     // became Navidrome-only (Phase 5).
     const t = game.value?.navidromeTracks?.[trackId]
-    currentTrack.value = t ? toDisplayTrack(t) : null
+    currentTrack.value = t
+      ? toDisplayTrack(t)
+      : null
   }
 
   async function createNavidromeGame(
@@ -220,7 +229,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const navidromeTracks = Object.fromEntries(pool.map(t => [t.id, t]))
 
     const isCategory = settings.gameMode === 'category'
-    const trackPoolState = createPool(isCategory ? [] : pool.map(t => t.id))
+    const trackPoolState = createPool(isCategory
+      ? []
+      : pool.map(t => t.id))
 
     let categoryPoolState: CategoryPoolState | undefined
     if (isCategory) {
@@ -286,7 +297,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
       .equals('playing')
       .sortBy('createdAt')
 
-    return games.length > 0 ? games.at(-1) ?? null : null
+    return games.length > 0
+      ? games.at(-1) ?? null
+      : null
   }
 
   async function findAllUnfinishedGames(): Promise<LocalGame[]> {
@@ -338,7 +351,9 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const totalCategories = Object.keys(game.value.categoryPoolState.initialCounts).length
     game.value.categoryLimitUsedByTeams = {
       ...usedByTeam,
-      [teamId]: newUsed.length >= totalCategories ? [] : newUsed,
+      [teamId]: newUsed.length >= totalCategories
+        ? []
+        : newUsed,
     }
   }
 
@@ -381,8 +396,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const tracks = _findTracksInPool(input)
     if (tracks.length === 0)
       return 'not-found'
-    if (tracks.length > 1)
-      return { type: 'ambiguous', candidates: tracks.map(describeFrozenTrack) }
+    if (tracks.length > 1) {
+      return {
+        type: 'ambiguous',
+        candidates: tracks.map(describeFrozenTrack),
+      }
+    }
     const track = tracks[0]
     if (game.value?.categoryPoolState?.playedTrackIds.includes(track.id))
       return 'already-played'
@@ -398,8 +417,12 @@ export const useLocalGameStore = defineStore('localGame', () => {
     const tracks = _findTracksInPool(input)
     if (tracks.length === 0)
       return 'not-found'
-    if (tracks.length > 1)
-      return { type: 'ambiguous', candidates: tracks.map(describeFrozenTrack) }
+    if (tracks.length > 1) {
+      return {
+        type: 'ambiguous',
+        candidates: tracks.map(describeFrozenTrack),
+      }
+    }
 
     const track = tracks[0]
     const poolState = game.value.categoryPoolState

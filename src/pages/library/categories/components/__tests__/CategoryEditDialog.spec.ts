@@ -36,14 +36,22 @@ function mountDialog(): Harness {
 
 /** The dialog content is teleported, so it is read off the document rather than off the wrapper. */
 function inputs(): HTMLInputElement[] {
-  return [...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input')]
+  return [
+    ...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input'),
+  ]
 }
 
 /**
  * The predicate editor's own inputs, told apart from the name/description/points ones by their
  * placeholders — the operator decides how many a row renders.
  */
-const CONDITION_PLACEHOLDERS = ['Field', 'Value', 'Number', 'From', 'To']
+const CONDITION_PLACEHOLDERS = [
+  'Field',
+  'Value',
+  'Number',
+  'From',
+  'To',
+]
 
 function conditionInputs(): HTMLInputElement[] {
   return inputs().filter(input => CONDITION_PLACEHOLDERS.includes(input.placeholder))
@@ -55,7 +63,9 @@ function type(input: HTMLInputElement, value: string) {
 }
 
 function buttonLabelled(label: string): HTMLElement {
-  const button = [...document.querySelectorAll<HTMLElement>('[role="dialog"] button')]
+  const button = [
+    ...document.querySelectorAll<HTMLElement>('[role="dialog"] button'),
+  ]
     .find(candidate => candidate.textContent?.trim() === label)
   if (!button)
     throw new Error(`No "${label}" button in the dialog`)
@@ -72,7 +82,13 @@ function storedCategory(displayName: string, tagValue: string): Category {
   return {
     id: crypto.randomUUID(),
     displayName,
-    match: { all: [{ is: { grouping: tagValue } }] },
+    match: {
+      all: [
+        {
+          is: { grouping: tagValue },
+        },
+      ],
+    },
     createdAt: Date.now(),
   }
 }
@@ -112,7 +128,13 @@ describe('saving a new category', () => {
 
     const stored = await db.categories.toArray()
     expect(stored).toHaveLength(1)
-    expect(stored[0].match).toEqual({ all: [{ is: { decade: '2020' } }] })
+    expect(stored[0].match).toEqual({
+      all: [
+        {
+          is: { decade: '2020' },
+        },
+      ],
+    })
   })
 })
 

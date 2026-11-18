@@ -79,7 +79,13 @@ describe('editing a condition value', () => {
     }
 
     expect(valueInput(w).element.value).toBe('2020')
-    expect(match.value).toEqual({ all: [{ is: { decade: '2020' } }] })
+    expect(match.value).toEqual({
+      all: [
+        {
+          is: { decade: '2020' },
+        },
+      ],
+    })
   })
 
   it('reports an incomplete row as no predicate at all', async () => {
@@ -95,7 +101,13 @@ describe('editing a condition value', () => {
 
 describe('adding and removing rows', () => {
   it('settles without a recursive update loop when an empty row is added and removed again', async () => {
-    const { match, w } = mountEditor({ all: [{ is: { popularity: '3' } }] })
+    const { match, w } = mountEditor({
+      all: [
+        {
+          is: { popularity: '3' },
+        },
+      ],
+    })
 
     await w.get('button.w-fit').trigger('click')
     await w.vm.$nextTick()
@@ -106,11 +118,23 @@ describe('adding and removing rows', () => {
     await expect(w.vm.$nextTick()).resolves.toBeUndefined()
 
     expect(removeButtons(w)).toHaveLength(1)
-    expect(match.value).toEqual({ all: [{ is: { popularity: '3' } }] })
+    expect(match.value).toEqual({
+      all: [
+        {
+          is: { popularity: '3' },
+        },
+      ],
+    })
   })
 
   it('leaves one empty row behind when the last row is removed', async () => {
-    const { match, w } = mountEditor({ all: [{ is: { popularity: '3' } }] })
+    const { match, w } = mountEditor({
+      all: [
+        {
+          is: { popularity: '3' },
+        },
+      ],
+    })
 
     await removeButtons(w).at(0)!.trigger('click')
     await w.vm.$nextTick()

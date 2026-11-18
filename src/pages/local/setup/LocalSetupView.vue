@@ -33,7 +33,9 @@ const { width: screenWidth } = useWindowSize()
 const isDesktop = computed(() => screenWidth.value >= Breakpoint.LG)
 const isLoading = ref(false)
 
-const teams = ref([{ name: '' }])
+const teams = ref([
+  { name: '' },
+])
 const settings = reactive<LocalGameSettings>({
   trackDuration: 20,
   gameMode: 'random',
@@ -139,13 +141,17 @@ const selectedCategorySet = computed(() =>
 // set picked before switching to Random must stop cutting the pool the moment it does (decision 3,
 // main plan §7).
 const activeLimitations = computed<FieldLimitation[]>(() =>
-  isCategoryMode.value ? (selectedCategorySet.value?.valueLimitations ?? []) : [],
+  isCategoryMode.value
+    ? (selectedCategorySet.value?.valueLimitations ?? [])
+    : [],
 )
 
 // Same gate, and only handed to the game being created: unlike the limitations, spacing rules do not
 // trim the pool, they only reorder how it is dealt, so nothing shown on this screen depends on them.
 const activeMinDistances = computed<FieldMinDistance[]>(() =>
-  isCategoryMode.value ? (selectedCategorySet.value?.minDistances ?? []) : [],
+  isCategoryMode.value
+    ? (selectedCategorySet.value?.minDistances ?? [])
+    : [],
 )
 
 // `ref` + `watch`, not `computed`: the cut depends on `Math.random()` (via `shuffle`), so it must be
@@ -251,7 +257,9 @@ async function handleGameStart() {
     await musicPlayerStore.turnOn()
 
     const id = await localGameStore.createNavidromeGame(
-      teams.value.map(t => ({ name: t.name.trim() })),
+      teams.value.map(t => ({
+        name: t.name.trim(),
+      })),
       settings,
       selectedSources.value,
       selectedCategories.value,
@@ -261,7 +269,10 @@ async function handleGameStart() {
 
     await localGameStore.startRound()
 
-    router.push({ name: 'localRound', params: { id } })
+    router.push({
+      name: 'localRound',
+      params: { id },
+    })
   }
   catch (error) {
     reportNavidromeError(error, 'Failed to create game')

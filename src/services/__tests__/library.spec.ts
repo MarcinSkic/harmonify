@@ -46,8 +46,14 @@ describe('playlists', () => {
     const playlistId = await LibraryService.addPlaylist({ name: 'To Delete', source: 'manual' })
     const otherPlaylistId = await LibraryService.addPlaylist({ name: 'Other', source: 'manual' })
 
-    await LibraryService.addTrack(makeTrack({ name: 'Track in both', playlistIds: [playlistId, otherPlaylistId] }))
-    await LibraryService.addTrack(makeTrack({ name: 'Track only in deleted', playlistIds: [playlistId] }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'Track in both',
+      playlistIds: [playlistId, otherPlaylistId],
+    }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'Track only in deleted',
+      playlistIds: [playlistId],
+    }))
 
     await LibraryService.deletePlaylist(playlistId)
 
@@ -99,9 +105,21 @@ describe('tracks', () => {
     const playlistId = await LibraryService.addPlaylist({ name: 'P1', source: 'manual' })
     const otherId = await LibraryService.addPlaylist({ name: 'P2', source: 'manual' })
 
-    await LibraryService.addTrack(makeTrack({ name: 'In P1', playlistIds: [playlistId], sourceId: 'a' }))
-    await LibraryService.addTrack(makeTrack({ name: 'In P2', playlistIds: [otherId], sourceId: 'b' }))
-    await LibraryService.addTrack(makeTrack({ name: 'In both', playlistIds: [playlistId, otherId], sourceId: 'c' }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'In P1',
+      playlistIds: [playlistId],
+      sourceId: 'a',
+    }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'In P2',
+      playlistIds: [otherId],
+      sourceId: 'b',
+    }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'In both',
+      playlistIds: [playlistId, otherId],
+      sourceId: 'c',
+    }))
 
     const tracks = await LibraryService.getTracksByPlaylist(playlistId)
     expect(tracks).toHaveLength(2)
@@ -109,8 +127,16 @@ describe('tracks', () => {
   })
 
   it('should query tracks by tag', async () => {
-    await LibraryService.addTrack(makeTrack({ name: 'Tagged', tags: ['rock', 'metal'], sourceId: 'a' }))
-    await LibraryService.addTrack(makeTrack({ name: 'Other', tags: ['pop'], sourceId: 'b' }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'Tagged',
+      tags: ['rock', 'metal'],
+      sourceId: 'a',
+    }))
+    await LibraryService.addTrack(makeTrack({
+      name: 'Other',
+      tags: ['pop'],
+      sourceId: 'b',
+    }))
 
     const rockTracks = await LibraryService.getTracksByTag('rock')
     expect(rockTracks).toHaveLength(1)
@@ -120,8 +146,14 @@ describe('tracks', () => {
 
 describe('tags', () => {
   it('should return all unique tags sorted', async () => {
-    await LibraryService.addTrack(makeTrack({ tags: ['rock', 'metal'], sourceId: 'a' }))
-    await LibraryService.addTrack(makeTrack({ tags: ['pop', 'rock'], sourceId: 'b' }))
+    await LibraryService.addTrack(makeTrack({
+      tags: ['rock', 'metal'],
+      sourceId: 'a',
+    }))
+    await LibraryService.addTrack(makeTrack({
+      tags: ['pop', 'rock'],
+      sourceId: 'b',
+    }))
 
     const tags = await LibraryService.getAllTags()
     expect(tags).toEqual(['metal', 'pop', 'rock'])
@@ -142,22 +174,53 @@ describe('importCategories', () => {
     await db.categories.add({
       id: crypto.randomUUID(),
       displayName: 'OST',
-      match: { all: [{ is: { grouping: 'ost' } }] },
+      match: {
+        all: [
+          {
+            is: { grouping: 'ost' },
+          },
+        ],
+      },
       description: 'old',
       points: 5,
       createdAt: 1,
     })
 
     const result = await LibraryService.importCategories([
-      { displayName: 'OST', match: { any: [{ gt: { popularity: 2 } }] } },
-      { displayName: 'Anime OP', match: { all: [{ is: { grouping: 'op' } }] }, points: 10 },
+      {
+        displayName: 'OST',
+        match: {
+          any: [
+            {
+              gt: { popularity: 2 },
+            },
+          ],
+        },
+      },
+      {
+        displayName: 'Anime OP',
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+            },
+          ],
+        },
+        points: 10,
+      },
     ])
 
     expect(result).toEqual({ created: 1, updated: 1 })
 
     const stored = await LibraryService.getAllCategories()
     const overwritten = stored.find(c => c.displayName === 'OST')!
-    expect(overwritten.match).toEqual({ any: [{ gt: { popularity: 2 } }] })
+    expect(overwritten.match).toEqual({
+      any: [
+        {
+          gt: { popularity: 2 },
+        },
+      ],
+    })
     expect(overwritten.points).toBeUndefined()
     expect(overwritten.description).toBeUndefined()
     // The row keeps its identity, so category set members still point at it.
@@ -256,38 +319,58 @@ describe('importCategorySets', () => {
     // An import is an overwrite, and it has to overwrite both arrays: replacing only the
     // proportions would leave the set as a mix of the file's limits and the spacing it had before.
     const id = await LibraryService.addCategorySet('Konkurs')
-    await LibraryService.setCategorySetValueLimitations(id, [{ name: 'work', selfLimit: 3 }])
-    await LibraryService.setCategorySetMinDistances(id, [{ name: 'work', distance: 5 }])
+    await LibraryService.setCategorySetValueLimitations(id, [
+      { name: 'work', selfLimit: 3 },
+    ])
+    await LibraryService.setCategorySetMinDistances(id, [
+      { name: 'work', distance: 5 },
+    ])
 
     // No category names in the row, so this cannot land in the "unknown category, leave the set
     // alone" branch — the set really is rewritten here.
-    const result = await LibraryService.importCategorySets([{
-      name: 'Konkurs',
-      categories: [],
-      valueLimitations: [{ name: 'album', selfLimit: 1 }],
-      minDistances: [{ name: 'album', distance: 3 }],
-    }])
+    const result = await LibraryService.importCategorySets([
+      {
+        name: 'Konkurs',
+        categories: [],
+        valueLimitations: [
+          { name: 'album', selfLimit: 1 },
+        ],
+        minDistances: [
+          { name: 'album', distance: 3 },
+        ],
+      },
+    ])
 
     expect(result.created).toBe(0)
     expect(result.updated).toBe(1)
     expect(result.unchangedSets).toEqual([])
 
     const stored = (await db.categorySets.get(id))!
-    expect(stored.valueLimitations).toEqual([{ name: 'album', selfLimit: 1 }])
-    expect(stored.minDistances).toEqual([{ name: 'album', distance: 3 }])
+    expect(stored.valueLimitations).toEqual([
+      { name: 'album', selfLimit: 1 },
+    ])
+    expect(stored.minDistances).toEqual([
+      { name: 'album', distance: 3 },
+    ])
   })
 
   it('carries the distances of a new set in from the file', async () => {
-    const result = await LibraryService.importCategorySets([{
-      name: 'Fresh',
-      categories: [],
-      valueLimitations: [],
-      minDistances: [{ name: 'work', distance: 5 }],
-    }])
+    const result = await LibraryService.importCategorySets([
+      {
+        name: 'Fresh',
+        categories: [],
+        valueLimitations: [],
+        minDistances: [
+          { name: 'work', distance: 5 },
+        ],
+      },
+    ])
 
     expect(result.created).toBe(1)
 
     const stored = (await db.categorySets.where('name').equals('Fresh').first())!
-    expect(stored.minDistances).toEqual([{ name: 'work', distance: 5 }])
+    expect(stored.minDistances).toEqual([
+      { name: 'work', distance: 5 },
+    ])
   })
 })

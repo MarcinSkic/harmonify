@@ -6,7 +6,9 @@ import { getAlbumSchema, simplePlaylistObjectSchema, simplifiedTrackObjectSchema
 
 export async function getUserId(access_token: string, router: Router): Promise<string> {
   const userResponse = await fetchFromSpotify(`/me`, access_token, router)
-  const { id } = z.object({ id: z.string() }).parse(await userResponse.json())
+  const { id } = z.object({
+    id: z.string(),
+  }).parse(await userResponse.json())
   return id
 }
 
@@ -35,7 +37,9 @@ export async function getAlbums(access_token: string, router: Router): Promise<S
     albumsURL,
     access_token,
     router,
-    z.object({ album: getAlbumSchema(simplifiedTrackObjectSchema) }),
+    z.object({
+      album: getAlbumSchema(simplifiedTrackObjectSchema),
+    }),
   )).map<SpotifySelectableAlbum>((i) => {
     const a = i.album
     return {
@@ -56,8 +60,18 @@ export async function getAlbums(access_token: string, router: Router): Promise<S
 const favouriteItemSchema = z.object({
   track: z.object({
     is_local: z.boolean(),
-    album: z.object({ name: z.string(), images: z.array(z.object({ url: z.string(), height: z.number().nullable(), width: z.number().nullable() })) }),
-    artists: z.array(z.object({ name: z.string(), id: z.string() })),
+    album: z.object({
+      name: z.string(),
+      images: z.array(z.object({
+        url: z.string(),
+        height: z.number().nullable(),
+        width: z.number().nullable(),
+      })),
+    }),
+    artists: z.array(z.object({
+      name: z.string(),
+      id: z.string(),
+    })),
     duration_ms: z.number(),
     name: z.string(),
     uri: z.string(),
@@ -107,7 +121,9 @@ export async function selectPlayer(device_id: string, access_token: string, rout
     router,
     false,
     'PUT',
-    JSON.stringify({ device_ids: [device_id] }),
+    JSON.stringify({
+      device_ids: [device_id],
+    }),
   )
 }
 

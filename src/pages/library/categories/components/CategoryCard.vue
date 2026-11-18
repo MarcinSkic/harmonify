@@ -29,7 +29,9 @@ const emit = defineEmits<{
 }>()
 
 const conditions = computed(() => formatMatch(props.category.match))
-const connective = computed(() => 'all' in props.category.match ? 'and' : 'or')
+const connective = computed(() => 'all' in props.category.match
+  ? 'and'
+  : 'or')
 </script>
 
 <template>

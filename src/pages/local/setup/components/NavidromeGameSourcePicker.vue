@@ -56,10 +56,15 @@ function updateSelection(type: NavidromeGameSourceRef['type'], ids: string[], ti
       type,
       id,
       name: tile?.title ?? id,
-      imageUrl: tile?.coverArt ? NavidromeService.getCoverArtUrl(tile.coverArt, 300) : undefined,
+      imageUrl: tile?.coverArt
+        ? NavidromeService.getCoverArtUrl(tile.coverArt, 300)
+        : undefined,
     }
   })
-  selected.value = [...others, ...refs]
+  selected.value = [
+    ...others,
+    ...refs,
+  ]
 }
 </script>
 

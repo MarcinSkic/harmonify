@@ -42,7 +42,9 @@ async function handleGuessSubmit(e: Event) {
   connectionStore.sendMessage({
     $type: 'message/string',
     type: 'guess',
-    data: submittionType === 'submit' ? guess.value : '',
+    data: submittionType === 'submit'
+      ? guess.value
+      : '',
   })
 
   isGuessSubmitted.value = true

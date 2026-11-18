@@ -103,7 +103,10 @@ export function useLoadNavidromeLibrary() {
       return
     }
 
-    await Promise.all([goToAlbumPage(0), loadPlaylists()])
+    await Promise.all([
+      goToAlbumPage(0),
+      loadPlaylists(),
+    ])
   })
 
   return {

@@ -95,7 +95,12 @@ function scoreCandidate(
       if (pairScore > score)
         continue
 
-      const pair: LimitingValue = { field: rule.name, value, gap, required: rule.distance }
+      const pair: LimitingValue = {
+        field: rule.name,
+        value,
+        gap,
+        required: rule.distance,
+      }
       if (pairScore < score) {
         score = pairScore
         limiting = [pair]
@@ -178,7 +183,9 @@ export function selectByMinDistance<TTrack extends DistanceTrack>(
   // Every eligible candidate ranks equally at 0, so the first of them wins; below 0 the least
   // negative score wins. One comparison expresses both halves of the rule.
   const rank = (score: number): number => Math.min(score, 0)
-  const chosen = scored.reduce((best, current) => rank(current.score) > rank(best.score) ? current : best)
+  const chosen = scored.reduce((best, current) => rank(current.score) > rank(best.score)
+    ? current
+    : best)
   const eligibleCount = scored.filter(candidate => candidate.score >= 0).length
 
   return { ...chosen, fallback: eligibleCount === 0, eligibleCount }

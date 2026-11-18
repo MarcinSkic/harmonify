@@ -38,7 +38,9 @@ function handleTileClick(id: string) {
   }
 
   const current = props.selectedIds ?? []
-  const next = isSelected(id) ? current.filter(i => i !== id) : [...current, id]
+  const next = isSelected(id)
+    ? current.filter(i => i !== id)
+    : [...current, id]
   emit('update:selectedIds', next)
 }
 </script>

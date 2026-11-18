@@ -60,7 +60,9 @@ async function addField() {
     newType.value = 'text'
   }
   catch (error) {
-    toast.error(`Failed to save the field: ${error instanceof Error ? error.message : String(error)}`)
+    toast.error(`Failed to save the field: ${error instanceof Error
+      ? error.message
+      : String(error)}`)
   }
 }
 
@@ -69,7 +71,9 @@ async function changeType(field: OverlayField, type: OverlayField['type']) {
     await overlayFieldsStore.upsert(field.name, type)
   }
   catch (error) {
-    toast.error(`Failed to save the field: ${error instanceof Error ? error.message : String(error)}`)
+    toast.error(`Failed to save the field: ${error instanceof Error
+      ? error.message
+      : String(error)}`)
   }
 }
 
@@ -78,7 +82,9 @@ async function removeField(name: string) {
     await overlayFieldsStore.remove(name)
   }
   catch (error) {
-    toast.error(`Failed to remove the field: ${error instanceof Error ? error.message : String(error)}`)
+    toast.error(`Failed to remove the field: ${error instanceof Error
+      ? error.message
+      : String(error)}`)
   }
 }
 </script>

@@ -11,7 +11,11 @@ type NewCategory = Omit<Category, 'id' | 'createdAt'>
 
 export async function addPlaylist(data: NewPlaylist): Promise<string> {
   const id = crypto.randomUUID()
-  await db.playlists.add({ ...data, id, createdAt: Date.now() })
+  await db.playlists.add({
+    ...data,
+    id,
+    createdAt: Date.now(),
+  })
   return id
 }
 
@@ -42,14 +46,22 @@ export async function getAllPlaylists(): Promise<Playlist[]> {
 
 export async function addTrack(data: NewTrack): Promise<string> {
   const id = crypto.randomUUID()
-  await db.tracks.add({ ...data, id, createdAt: Date.now() })
+  await db.tracks.add({
+    ...data,
+    id,
+    createdAt: Date.now(),
+  })
   return id
 }
 
 export async function addTracks(tracks: NewTrack[]): Promise<void> {
   const now = Date.now()
   await db.tracks.bulkAdd(
-    tracks.map(t => ({ ...t, id: crypto.randomUUID(), createdAt: now })),
+    tracks.map(t => ({
+      ...t,
+      id: crypto.randomUUID(),
+      createdAt: now,
+    })),
   )
 }
 
@@ -60,7 +72,9 @@ export async function addTracksDeduplicating(newTracks: NewTrack[]): Promise<voi
 
   await db.transaction('rw', db.tracks, async () => {
     for (const track of newTracks) {
-      const dupe = track.audioUrl ? byAudioUrl.get(track.audioUrl) : undefined
+      const dupe = track.audioUrl
+        ? byAudioUrl.get(track.audioUrl)
+        : undefined
       if (dupe) {
         const added = track.playlistIds.filter(pid => !dupe.playlistIds.includes(pid))
         if (added.length === 0)
@@ -69,10 +83,16 @@ export async function addTracksDeduplicating(newTracks: NewTrack[]): Promise<voi
         for (const pid of added)
           newEnabledByPlaylist[pid] = true
         await db.tracks.update(dupe.id, {
-          playlistIds: [...dupe.playlistIds, ...added],
+          playlistIds: [
+            ...dupe.playlistIds,
+            ...added,
+          ],
           enabledByPlaylist: newEnabledByPlaylist,
         })
-        dupe.playlistIds = [...dupe.playlistIds, ...added]
+        dupe.playlistIds = [
+          ...dupe.playlistIds,
+          ...added,
+        ]
         dupe.enabledByPlaylist = newEnabledByPlaylist
       }
       else {
@@ -125,7 +145,12 @@ export async function applyCSVToPlaylist(
   const bySourceId = new Map(tracks.map(t => [t.sourceId, t]))
   const byLocalId = new Map(tracks.map((t) => {
     const slash = t.sourceId.lastIndexOf('/')
-    return [slash >= 0 ? t.sourceId.slice(slash + 1) : t.sourceId, t]
+    return [
+      slash >= 0
+        ? t.sourceId.slice(slash + 1)
+        : t.sourceId,
+      t,
+    ]
   }))
 
   const notFound: string[] = []
@@ -149,7 +174,11 @@ export async function applyCSVToPlaylist(
     updated++
   }
 
-  return { updated, notFound, previewUrls: [...previewUrlSet] }
+  return {
+    updated,
+    notFound,
+    previewUrls: [...previewUrlSet],
+  }
 }
 
 export async function getAllTags(): Promise<string[]> {
@@ -166,7 +195,11 @@ export async function getAllTags(): Promise<string[]> {
 
 export async function addCategory(data: NewCategory): Promise<string> {
   const id = crypto.randomUUID()
-  await db.categories.add({ ...data, id, createdAt: Date.now() })
+  await db.categories.add({
+    ...data,
+    id,
+    createdAt: Date.now(),
+  })
   return id
 }
 
@@ -218,7 +251,11 @@ export async function importCategories(
         continue
       }
 
-      await db.categories.add({ ...row, id: crypto.randomUUID(), createdAt: Date.now() })
+      await db.categories.add({
+        ...row,
+        id: crypto.randomUUID(),
+        createdAt: Date.now(),
+      })
       created++
     }
   })
@@ -230,7 +267,13 @@ export async function importCategories(
 
 export async function addCategorySet(name: string): Promise<string> {
   const id = crypto.randomUUID()
-  await db.categorySets.add({ id, name, valueLimitations: [], minDistances: [], createdAt: Date.now() })
+  await db.categorySets.add({
+    id,
+    name,
+    valueLimitations: [],
+    minDistances: [],
+    createdAt: Date.now(),
+  })
   return id
 }
 
@@ -320,7 +363,9 @@ export async function moveCategoryInSet(setId: string, categoryId: string, direc
     const index = members.findIndex(m => m.categoryId === categoryId)
     if (index === -1)
       return
-    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    const swapIndex = direction === 'up'
+      ? index - 1
+      : index + 1
     if (swapIndex < 0 || swapIndex >= members.length)
       return
     const current = members[index]
@@ -352,9 +397,13 @@ export async function getCategoriesForPlaylists(playlistIds: string[]): Promise<
     return []
 
   const playlists = await db.playlists.bulkGet(playlistIds)
-  const setIds = [...new Set(
-    playlists.flatMap(p => p?.categorySetId ? [p.categorySetId] : []),
-  )]
+  const setIds = [
+    ...new Set(
+      playlists.flatMap(p => p?.categorySetId
+        ? [p.categorySetId]
+        : []),
+    ),
+  ]
 
   if (setIds.length === 0)
     return []
@@ -429,7 +478,13 @@ export async function importCategorySets(
       }
       else {
         setId = crypto.randomUUID()
-        await db.categorySets.add({ id: setId, name: row.name, valueLimitations: row.valueLimitations, minDistances: row.minDistances, createdAt: Date.now() })
+        await db.categorySets.add({
+          id: setId,
+          name: row.name,
+          valueLimitations: row.valueLimitations,
+          minDistances: row.minDistances,
+          createdAt: Date.now(),
+        })
         created++
       }
 
@@ -452,7 +507,12 @@ export async function importCategorySets(
     }
   })
 
-  return { created, updated, unchangedSets, unknownCategories }
+  return {
+    created,
+    updated,
+    unchangedSets,
+    unknownCategories,
+  }
 }
 
 export async function exportCategorySet(setId: string): Promise<Array<{ category: Category, order: number }>> {

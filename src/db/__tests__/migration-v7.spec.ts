@@ -22,12 +22,22 @@ describe('db.version(7) upgrade', () => {
       trackOverlays: 'id',
     })
     await before.open()
-    await before.table('categories').add({ id: 'c1', displayName: 'Old', tagFilter: ['op'], createdAt: 1 })
+    await before.table('categories').add({
+      id: 'c1',
+      displayName: 'Old',
+      tagFilter: ['op'],
+      createdAt: 1,
+    })
     await before.table('categorySets').bulkAdd([
       { id: 'set-with-member', name: 'Konkurs', createdAt: 1 },
       { id: 'set-empty', name: 'Pusty', createdAt: 1 },
     ])
-    await before.table('categorySetMembers').add({ id: 'm1', categorySetId: 'set-with-member', categoryId: 'c1', order: 0 })
+    await before.table('categorySetMembers').add({
+      id: 'm1',
+      categorySetId: 'set-with-member',
+      categoryId: 'c1',
+      order: 0,
+    })
     await before.table('localGames').add({ id: 'g1', status: 'playing', createdAt: 1 })
     before.close()
 

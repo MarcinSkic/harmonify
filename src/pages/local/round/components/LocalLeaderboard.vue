@@ -39,7 +39,9 @@ const localGameStore = useLocalGameStore()
 const showCurrentScore = useTimeout(AnimationDuration.D1000)
 
 const { width: screenWidth } = useWindowSize()
-const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG ? 500 : 200)
+const maxBarWidth = computed(() => screenWidth.value >= Breakpoint.LG
+  ? 500
+  : 200)
 
 const currentTeamId = computed(() => localGameStore.currentTeam?.id)
 
@@ -63,7 +65,9 @@ const leaderboard = computed(() => {
 
     return {
       ...team,
-      targetWidth: bestScore === 0 ? 0 : (team.score / bestScore) * maxBarWidth.value,
+      targetWidth: bestScore === 0
+        ? 0
+        : (team.score / bestScore) * maxBarWidth.value,
       guessLevel: roundScore?.result,
       displayGuessLevel: canReveal && (hasPoints || isCurrentTeam),
     }

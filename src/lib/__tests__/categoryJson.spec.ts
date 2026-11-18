@@ -11,14 +11,26 @@ function makeCategory(overrides: Partial<Category> = {}): Category {
   return {
     id: '11111111-1111-4111-8111-111111111111',
     displayName: 'Category',
-    match: { all: [{ is: { grouping: 'op' } }] },
+    match: {
+      all: [
+        {
+          is: { grouping: 'op' },
+        },
+      ],
+    },
     createdAt: 1,
     ...overrides,
   }
 }
 
 function makeSet(name: string): CategorySet {
-  return { id: `set-${name}`, name, valueLimitations: [], minDistances: [], createdAt: 1 }
+  return {
+    id: `set-${name}`,
+    name,
+    valueLimitations: [],
+    minDistances: [],
+    createdAt: 1,
+  }
 }
 
 describe('serializeCategoriesJSON', () => {
@@ -29,27 +41,108 @@ describe('serializeCategoriesJSON', () => {
     ])
 
     expect(JSON.parse(json)).toEqual([
-      { displayName: 'A', description: 'first', points: 10, match: { all: [{ is: { grouping: 'op' } }] } },
-      { displayName: 'B', match: { all: [{ is: { grouping: 'op' } }] } },
+      {
+        displayName: 'A',
+        description: 'first',
+        points: 10,
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+            },
+          ],
+        },
+      },
+      {
+        displayName: 'B',
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+            },
+          ],
+        },
+      },
     ])
   })
 })
 
 describe('parseCategoriesJSON round trip', () => {
   const matches: Category['match'][] = [
-    { all: [{ is: { grouping: 'op' } }] },
-    { all: [{ isNot: { grouping: 'ed' } }] },
-    { all: [{ contains: { title: 'love' } }] },
-    { all: [{ gt: { popularity: 2 } }] },
-    { all: [{ lt: { popularity: 5 } }] },
-    { all: [{ inTheRange: { year: [1990, 1999] } }] },
-    { all: [{ isMissing: { mood: true } }] },
-    { all: [{ isPresent: { mood: true } }] },
-    { any: [{ is: { grouping: 'op' } }, { gt: { popularity: 2 } }] },
+    {
+      all: [
+        {
+          is: { grouping: 'op' },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          isNot: { grouping: 'ed' },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          contains: { title: 'love' },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          gt: { popularity: 2 },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          lt: { popularity: 5 },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          inTheRange: {
+            year: [1990, 1999],
+          },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          isMissing: { mood: true },
+        },
+      ],
+    },
+    {
+      all: [
+        {
+          isPresent: { mood: true },
+        },
+      ],
+    },
+    {
+      any: [
+        {
+          is: { grouping: 'op' },
+        },
+        {
+          gt: { popularity: 2 },
+        },
+      ],
+    },
   ]
 
   it.each(matches)('survives serialize → parse → serialize for %j', (match) => {
-    const original = serializeCategoriesJSON([makeCategory({ match })])
+    const original = serializeCategoriesJSON([
+      makeCategory({ match }),
+    ])
     const { rows, errors } = parseCategoriesJSON(original)
 
     expect(errors).toEqual([])
@@ -59,17 +152,37 @@ describe('parseCategoriesJSON round trip', () => {
   })
 
   it('keeps the acceptance-criterion predicate intact', () => {
-    const { rows, errors } = parseCategoriesJSON(JSON.stringify([{
-      displayName: 'Popularne Anime OP',
-      points: 10,
-      match: { all: [{ is: { grouping: 'op' } }, { gt: { popularity: 2 } }] },
-    }]))
+    const { rows, errors } = parseCategoriesJSON(JSON.stringify([
+      {
+        displayName: 'Popularne Anime OP',
+        points: 10,
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+            },
+            {
+              gt: { popularity: 2 },
+            },
+          ],
+        },
+      },
+    ]))
 
     expect(errors).toEqual([])
     expect(rows[0]).toEqual({
       displayName: 'Popularne Anime OP',
       points: 10,
-      match: { all: [{ is: { grouping: 'op' } }, { gt: { popularity: 2 } }] },
+      match: {
+        all: [
+          {
+            is: { grouping: 'op' },
+          },
+          {
+            gt: { popularity: 2 },
+          },
+        ],
+      },
     })
   })
 })
@@ -77,9 +190,27 @@ describe('parseCategoriesJSON round trip', () => {
 describe('parseCategoriesJSON errors', () => {
   it('reports a broken element by index and imports the rest', () => {
     const { rows, errors } = parseCategoriesJSON(JSON.stringify([
-      { displayName: 'Good', match: { all: [{ is: { grouping: 'op' } }] } },
+      {
+        displayName: 'Good',
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+            },
+          ],
+        },
+      },
       { displayName: 'No match at all' },
-      { displayName: 'Also good', match: { any: [{ contains: { title: 'x' } }] } },
+      {
+        displayName: 'Also good',
+        match: {
+          any: [
+            {
+              contains: { title: 'x' },
+            },
+          ],
+        },
+      },
     ]))
 
     expect(rows.map(r => r.displayName)).toEqual(['Good', 'Also good'])
@@ -89,7 +220,17 @@ describe('parseCategoriesJSON errors', () => {
 
   it('rejects a condition mixing two operators', () => {
     const { rows, errors } = parseCategoriesJSON(JSON.stringify([
-      { displayName: 'Mixed', match: { all: [{ is: { grouping: 'op' }, gt: { popularity: 2 } }] } },
+      {
+        displayName: 'Mixed',
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+              gt: { popularity: 2 },
+            },
+          ],
+        },
+      },
     ]))
 
     expect(rows).toEqual([])
@@ -98,7 +239,16 @@ describe('parseCategoriesJSON errors', () => {
 
   it('rejects a condition naming two fields', () => {
     const { rows, errors } = parseCategoriesJSON(JSON.stringify([
-      { displayName: 'Two fields', match: { all: [{ is: { grouping: 'op', mood: 'happy' } }] } },
+      {
+        displayName: 'Two fields',
+        match: {
+          all: [
+            {
+              is: { grouping: 'op', mood: 'happy' },
+            },
+          ],
+        },
+      },
     ]))
 
     expect(rows).toEqual([])
@@ -107,7 +257,16 @@ describe('parseCategoriesJSON errors', () => {
 
   it('rejects a numeric operand written as a string', () => {
     const { rows, errors } = parseCategoriesJSON(JSON.stringify([
-      { displayName: 'Stringy', match: { all: [{ gt: { popularity: '2' } }] } },
+      {
+        displayName: 'Stringy',
+        match: {
+          all: [
+            {
+              gt: { popularity: '2' },
+            },
+          ],
+        },
+      },
     ]))
 
     expect(rows).toEqual([])
@@ -116,13 +275,42 @@ describe('parseCategoriesJSON errors', () => {
 
   it('reports a name repeated inside the file at its own index', () => {
     const { rows, errors } = parseCategoriesJSON(JSON.stringify([
-      { displayName: 'Twin', match: { all: [{ is: { grouping: 'op' } }] } },
-      { displayName: 'Other', match: { all: [{ is: { grouping: 'ed' } }] } },
-      { displayName: 'Twin', match: { all: [{ is: { grouping: 'ost' } }] } },
+      {
+        displayName: 'Twin',
+        match: {
+          all: [
+            {
+              is: { grouping: 'op' },
+            },
+          ],
+        },
+      },
+      {
+        displayName: 'Other',
+        match: {
+          all: [
+            {
+              is: { grouping: 'ed' },
+            },
+          ],
+        },
+      },
+      {
+        displayName: 'Twin',
+        match: {
+          all: [
+            {
+              is: { grouping: 'ost' },
+            },
+          ],
+        },
+      },
     ]))
 
     expect(rows.map(r => r.displayName)).toEqual(['Twin', 'Other'])
-    expect(errors).toEqual([{ index: 2, message: 'Duplicate category "Twin" in the file' }])
+    expect(errors).toEqual([
+      { index: 2, message: 'Duplicate category "Twin" in the file' },
+    ])
   })
 
   it('throws on text that is not JSON', () => {
@@ -140,33 +328,54 @@ describe('category sets', () => {
     const second = makeCategory({ id: 'b', displayName: 'Second' })
     const third = makeCategory({ id: 'c', displayName: 'Third' })
 
-    const json = serializeCategorySetsJSON([{
-      set: makeSet('Konkurs 2026'),
-      members: [
-        { category: third, order: 2 },
-        { category: first, order: 0 },
-        { category: second, order: 1 },
-      ],
-    }])
+    const json = serializeCategorySetsJSON([
+      {
+        set: makeSet('Konkurs 2026'),
+        members: [
+          { category: third, order: 2 },
+          { category: first, order: 0 },
+          { category: second, order: 1 },
+        ],
+      },
+    ])
 
     expect(JSON.parse(json)).toEqual([
-      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [], minDistances: [] },
+      {
+        name: 'Konkurs 2026',
+        categories: ['First', 'Second', 'Third'],
+        valueLimitations: [],
+        minDistances: [],
+      },
     ])
 
     const { rows, errors } = parseCategorySetsJSON(json)
     expect(errors).toEqual([])
     expect(rows).toEqual([
-      { name: 'Konkurs 2026', categories: ['First', 'Second', 'Third'], valueLimitations: [], minDistances: [] },
+      {
+        name: 'Konkurs 2026',
+        categories: ['First', 'Second', 'Third'],
+        valueLimitations: [],
+        minDistances: [],
+      },
     ])
   })
 
   it('uses the same shape for one set and for many', () => {
     const one = JSON.parse(serializeCategorySetsJSON([
-      { set: makeSet('Only'), members: [] },
+      {
+        set: makeSet('Only'),
+        members: [],
+      },
     ])) as unknown[]
     const many = JSON.parse(serializeCategorySetsJSON([
-      { set: makeSet('Only'), members: [] },
-      { set: makeSet('Second'), members: [] },
+      {
+        set: makeSet('Only'),
+        members: [],
+      },
+      {
+        set: makeSet('Second'),
+        members: [],
+      },
     ])) as unknown[]
 
     expect(one).toHaveLength(1)
@@ -176,7 +385,10 @@ describe('category sets', () => {
 
   it('accepts a set naming a category that does not exist — resolution happens on import', () => {
     const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
-      { name: 'Konkurs', categories: ['Ghost category'] },
+      {
+        name: 'Konkurs',
+        categories: ['Ghost category'],
+      },
     ]))
 
     expect(errors).toEqual([])
@@ -187,8 +399,13 @@ describe('category sets', () => {
     const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
       { name: 'Good', categories: [] },
       { name: '', categories: [] },
-      { categories: ['A'] },
-      { name: 'Also good', categories: ['A'] },
+      {
+        categories: ['A'],
+      },
+      {
+        name: 'Also good',
+        categories: ['A'],
+      },
     ]))
 
     expect(rows.map(r => r.name)).toEqual(['Good', 'Also good'])
@@ -197,19 +414,30 @@ describe('category sets', () => {
 
   it('reports a set name repeated inside the file', () => {
     const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
-      { name: 'Twin', categories: ['A'] },
-      { name: 'Twin', categories: ['B'] },
+      {
+        name: 'Twin',
+        categories: ['A'],
+      },
+      {
+        name: 'Twin',
+        categories: ['B'],
+      },
     ]))
 
     expect(rows).toHaveLength(1)
-    expect(errors).toEqual([{ index: 1, message: 'Duplicate set "Twin" in the file' }])
+    expect(errors).toEqual([
+      { index: 1, message: 'Duplicate set "Twin" in the file' },
+    ])
   })
 })
 
 describe('category set value limitations', () => {
   it('reads a Phase 2 file without the field as an empty list', () => {
     const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
-      { name: 'Pre-Phase-3', categories: ['A'] },
+      {
+        name: 'Pre-Phase-3',
+        categories: ['A'],
+      },
     ]))
 
     expect(errors).toEqual([])
@@ -231,10 +459,15 @@ describe('category set value limitations', () => {
       },
     ]
 
-    const original = serializeCategorySetsJSON([{
-      set: { ...makeSet('Konkurs 2026'), valueLimitations: limitations },
-      members: [],
-    }])
+    const original = serializeCategorySetsJSON([
+      {
+        set: {
+          ...makeSet('Konkurs 2026'),
+          valueLimitations: limitations,
+        },
+        members: [],
+      },
+    ])
     const { rows, errors } = parseCategorySetsJSON(original)
 
     expect(errors).toEqual([])
@@ -255,7 +488,9 @@ describe('category set value limitations', () => {
     ]))
 
     expect(rows.map(r => r.name)).toEqual(['Also good'])
-    expect(errors).toEqual([{ index: 0, message: 'Duplicate value limitation "work" in set "Konkurs"' }])
+    expect(errors).toEqual([
+      { index: 0, message: 'Duplicate value limitation "work" in set "Konkurs"' },
+    ])
   })
 
   it('reports a duplicate pair limit name inside one entry as a row error', () => {
@@ -346,7 +581,10 @@ describe('category set value limitations', () => {
 describe('category set minimum distances', () => {
   it('reads a file written before the field existed as an empty list', () => {
     const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
-      { name: 'Pre-Phase-4', categories: ['A'] },
+      {
+        name: 'Pre-Phase-4',
+        categories: ['A'],
+      },
     ]))
 
     expect(errors).toEqual([])
@@ -359,10 +597,15 @@ describe('category set minimum distances', () => {
       { name: 'work', distance: 5 },
     ]
 
-    const original = serializeCategorySetsJSON([{
-      set: { ...makeSet('Konkurs 2026'), minDistances },
-      members: [],
-    }])
+    const original = serializeCategorySetsJSON([
+      {
+        set: {
+          ...makeSet('Konkurs 2026'),
+          minDistances,
+        },
+        members: [],
+      },
+    ])
     const { rows, errors } = parseCategorySetsJSON(original)
 
     expect(errors).toEqual([])
@@ -385,15 +628,29 @@ describe('category set minimum distances', () => {
     ]))
 
     expect(rows.map(r => r.name)).toEqual(['Also good'])
-    expect(errors).toEqual([{ index: 0, message: 'Duplicate minimum distance "work" in set "Konkurs"' }])
+    expect(errors).toEqual([
+      { index: 0, message: 'Duplicate minimum distance "work" in set "Konkurs"' },
+    ])
   })
 
   it('rejects a distance below two as a row error, importing the rest of the sets', () => {
     // `distance: 1` blocks nothing at all, so it is as much of a mistake as 0 — the file must not
     // carry a rule that cannot do anything.
     const { rows, errors } = parseCategorySetsJSON(JSON.stringify([
-      { name: 'Zero', categories: [], minDistances: [{ name: 'work', distance: 0 }] },
-      { name: 'One', categories: [], minDistances: [{ name: 'work', distance: 1 }] },
+      {
+        name: 'Zero',
+        categories: [],
+        minDistances: [
+          { name: 'work', distance: 0 },
+        ],
+      },
+      {
+        name: 'One',
+        categories: [],
+        minDistances: [
+          { name: 'work', distance: 1 },
+        ],
+      },
       { name: 'Also good', categories: [] },
     ]))
 

@@ -27,7 +27,12 @@ const emit = defineEmits<{
 }>()
 const MAX_ROWS = 4
 
-const breakpoints = useBreakpoints({ sm: Breakpoint.SM, md: Breakpoint.MD, lg: Breakpoint.LG, xl: Breakpoint.XL })
+const breakpoints = useBreakpoints({
+  sm: Breakpoint.SM,
+  md: Breakpoint.MD,
+  lg: Breakpoint.LG,
+  xl: Breakpoint.XL,
+})
 
 const baseCols = computed(() => {
   if (breakpoints.greaterOrEqual('md').value)

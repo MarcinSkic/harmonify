@@ -90,8 +90,13 @@ export const nativeLoginSchema = z.object({
  * Tags are multi-valued, but Navidrome serialises a lone value as a bare string, so both shapes
  * normalise to `string[]`.
  */
-const nativeTagValuesSchema = z.union([z.string(), z.array(z.string())])
-  .transform(value => Array.isArray(value) ? value : [value])
+const nativeTagValuesSchema = z.union([
+  z.string(),
+  z.array(z.string()),
+])
+  .transform(value => Array.isArray(value)
+    ? value
+    : [value])
 
 /**
  * Native `/api/song/<id>`. `tags` carries `json:"tags,omitempty"` on the server, so a song without

@@ -13,7 +13,9 @@ async function handleExport() {
     saveAs(new Blob([json], { type: 'application/json' }), 'category-sets.json')
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'JSON export failed')
+    toast.error(e instanceof Error
+      ? e.message
+      : 'JSON export failed')
   }
 }
 </script>

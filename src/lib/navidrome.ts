@@ -8,7 +8,9 @@ import { NavidromeService } from '@/services'
  */
 export function reportNavidromeError(error: unknown, fallbackMessage: string): void {
   console.error(error)
-  toast.error(error instanceof NavidromeService.NavidromeError ? error.message : fallbackMessage)
+  toast.error(error instanceof NavidromeService.NavidromeError
+    ? error.message
+    : fallbackMessage)
 }
 
 /** Out of the tested range means a warning, never a block — called once per connection path. */

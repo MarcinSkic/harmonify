@@ -111,7 +111,9 @@ export async function probeReachability(baseUrl: string): Promise<boolean> {
 }
 
 async function classifyNetworkFailure(baseUrl: string): Promise<NavidromeError> {
-  return new NavidromeError(await probeReachability(baseUrl) ? 'cors' : 'unreachable')
+  return new NavidromeError(await probeReachability(baseUrl)
+    ? 'cors'
+    : 'unreachable')
 }
 
 async function request(url: string, baseUrl: string, init?: RequestInit): Promise<Response> {
@@ -138,7 +140,10 @@ async function readJson(response: Response, kindOnFailure: NavidromeErrorKind): 
 
 export function buildSubsonicUrl(path: string, params: SubsonicParams = {}): string {
   const current = requireSession()
-  return buildUrl(current.baseUrl, path, { ...subsonicAuthParams(current), ...params })
+  return buildUrl(current.baseUrl, path, {
+    ...subsonicAuthParams(current),
+    ...params,
+  })
 }
 
 /**
@@ -228,7 +233,9 @@ export async function nativeFetchWithHeaders<Schema extends z.ZodType>(
   const response = await request(buildUrl(baseUrl, path), baseUrl, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined
+      ? undefined
+      : JSON.stringify(body),
   })
 
   storeRefreshedJwt(response)

@@ -22,25 +22,37 @@ async function onFileSelected(event: Event) {
 
     if (errors.length > 0) {
       toast.warning(
-        `Skipped ${errors.length} ${errors.length === 1 ? 'entry' : 'entries'}: ${errors.slice(0, 3).map(e => `#${e.index}: ${e.message}`).join(', ')}${errors.length > 3 ? '…' : ''}`,
+        `Skipped ${errors.length} ${errors.length === 1
+          ? 'entry'
+          : 'entries'}: ${errors.slice(0, 3).map(e => `#${e.index}: ${e.message}`).join(', ')}${errors.length > 3
+          ? '…'
+          : ''}`,
       )
     }
 
     if (unknownCategories.length > 0) {
-      const names = [...new Set(unknownCategories)]
+      const names = [
+        ...new Set(unknownCategories),
+      ]
       toast.warning(
-        `Unknown categories, left out of their sets: ${names.slice(0, 3).join(', ')}${names.length > 3 ? '…' : ''}`,
+        `Unknown categories, left out of their sets: ${names.slice(0, 3).join(', ')}${names.length > 3
+          ? '…'
+          : ''}`,
       )
     }
 
     if (unchangedSets.length > 0) {
       toast.warning(
-        `Left untouched because of those unknown categories: ${unchangedSets.slice(0, 3).join(', ')}${unchangedSets.length > 3 ? '…' : ''}`,
+        `Left untouched because of those unknown categories: ${unchangedSets.slice(0, 3).join(', ')}${unchangedSets.length > 3
+          ? '…'
+          : ''}`,
       )
     }
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'JSON import failed')
+    toast.error(e instanceof Error
+      ? e.message
+      : 'JSON import failed')
   }
   finally {
     if (jsonInput.value)

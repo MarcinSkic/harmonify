@@ -112,7 +112,9 @@ function formatCondition(condition: Condition): string {
     render: (field: string, operand: TOperand) => string,
   ): string => {
     const entry = Object.entries(operands)[0]
-    return entry ? render(entry[0], entry[1]) : ''
+    return entry
+      ? render(entry[0], entry[1])
+      : ''
   }
 
   if ('is' in condition)
@@ -145,6 +147,8 @@ function formatCondition(condition: Condition): string {
  * "and" or "or" is visible in the match itself (`'all' in match`).
  */
 export function formatMatch(match: CategoryMatch): string[] {
-  const conditions = 'all' in match ? match.all : match.any
+  const conditions = 'all' in match
+    ? match.all
+    : match.any
   return conditions.map(formatCondition)
 }

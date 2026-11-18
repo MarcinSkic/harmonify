@@ -25,11 +25,16 @@ async function onCSVFileSelected(event: Event) {
 
     toast.success(`Updated ${result.updated} tracks`)
 
-    if (result.notFound.length > 0)
-      toast.warning(`${result.notFound.length} rows not matched: ${result.notFound.slice(0, 5).join(', ')}${result.notFound.length > 5 ? '…' : ''}`)
+    if (result.notFound.length > 0) {
+      toast.warning(`${result.notFound.length} rows not matched: ${result.notFound.slice(0, 5).join(', ')}${result.notFound.length > 5
+        ? '…'
+        : ''}`)
+    }
   }
   catch (e) {
-    toast.error(e instanceof Error ? e.message : 'CSV import failed')
+    toast.error(e instanceof Error
+      ? e.message
+      : 'CSV import failed')
   }
   finally {
     if (csvInput.value)

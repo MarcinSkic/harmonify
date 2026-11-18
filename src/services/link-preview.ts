@@ -50,7 +50,10 @@ export async function processQueue(): Promise<void> {
         .filter(p => p.retryCount < MAX_RETRIES && (p.nextRetryAt === undefined || p.nextRetryAt <= now))
         .toArray()
 
-      const queue = [...pending, ...retryable].filter(p => !attempted.has(p.url))
+      const queue = [
+        ...pending,
+        ...retryable,
+      ].filter(p => !attempted.has(p.url))
 
       for (const preview of queue) {
         attempted.add(preview.url)
@@ -75,7 +78,9 @@ export async function processQueue(): Promise<void> {
           const newRetryCount = preview.retryCount + 1
           await db.linkPreviews.update(preview.url, {
             status: 'error' as const,
-            error: err instanceof Error ? err.message : 'fetch failed',
+            error: err instanceof Error
+              ? err.message
+              : 'fetch failed',
             retryCount: newRetryCount,
             nextRetryAt: newRetryCount < MAX_RETRIES
               ? Date.now() + BACKOFF_BASE_MS * 2 ** newRetryCount

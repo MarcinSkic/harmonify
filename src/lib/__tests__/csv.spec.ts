@@ -114,7 +114,9 @@ describe('parseOverlayCSV / serializeOverlayCSV round trip', () => {
 
     const { unmapped } = parseOverlayCSV(csv)
 
-    expect(unmapped).toEqual([{ rowIndex: 1, title: 'Track One' }])
+    expect(unmapped).toEqual([
+      { rowIndex: 1, title: 'Track One' },
+    ])
   })
 
   it('round-trips custom columns, preserving their original casing for both name and value', () => {
@@ -133,7 +135,11 @@ describe('parseOverlayCSV / serializeOverlayCSV round trip', () => {
 
   it('fills a missing custom field with an empty cell for rows that lack it', () => {
     const csv = serializeOverlayCSV([
-      makeOverlay({ id: 'a', musicBrainzId: 'a', customFields: { Popularity: '10' } }),
+      makeOverlay({
+        id: 'a',
+        musicBrainzId: 'a',
+        customFields: { Popularity: '10' },
+      }),
       makeOverlay({ id: 'b', musicBrainzId: 'b', customFields: {} }),
     ])
     const { rows } = parseOverlayCSV(csv)
@@ -152,7 +158,9 @@ describe('parseOverlayCSV / serializeOverlayCSV round trip', () => {
 
     const { rows, unmapped } = parseOverlayCSV(csv)
 
-    expect(unmapped).toEqual([{ rowIndex: 2, title: 'Nothing To Key By' }])
+    expect(unmapped).toEqual([
+      { rowIndex: 2, title: 'Nothing To Key By' },
+    ])
     expect(rows.map(r => r.key)).toEqual(['album-1|1|2|No MBID Track', 'mbid-2'])
     expect(rows[0].playbackRange).toEqual({ startMs: 10000, endMs: 20000 })
   })
@@ -258,8 +266,21 @@ describe('parseOverlayCSV / serializeOverlayCSV round trip', () => {
 
 describe('serializeTrackIdentityCSV', () => {
   const songs: SubsonicSong[] = [
-    { id: 's1', title: 'First', musicBrainzId: 'mbid-a', albumId: 'album-1', discNumber: 1, track: 1 },
-    { id: 's2', title: 'Second', albumId: 'album-2', discNumber: 1, track: 4 },
+    {
+      id: 's1',
+      title: 'First',
+      musicBrainzId: 'mbid-a',
+      albumId: 'album-1',
+      discNumber: 1,
+      track: 1,
+    },
+    {
+      id: 's2',
+      title: 'Second',
+      albumId: 'album-2',
+      discNumber: 1,
+      track: 4,
+    },
   ]
 
   it('emits the identity columns in export order, 1-based index matching input order', () => {
@@ -273,7 +294,9 @@ describe('serializeTrackIdentityCSV', () => {
   })
 
   it('leaves a cell empty for every identity field the song does not have', () => {
-    const csv = serializeTrackIdentityCSV([{ id: 's3', title: 'Third' }])
+    const csv = serializeTrackIdentityCSV([
+      { id: 's3', title: 'Third' },
+    ])
     const lines = csv.trim().split(/\r\n|\n/)
 
     expect(lines[1]).toBe('1,,,,,Third')
