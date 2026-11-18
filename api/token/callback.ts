@@ -13,16 +13,13 @@ export default async function handler(
   const params = request.query
   const state = params.state
 
-  if (state === null) {
+  if (state === undefined) {
     return response.redirect(new URL('/', baseURL).toString())
   }
   else if (state !== process.env.STATE) {
-    return new Response(
-      'Authorization failed, there is possibility you\'ve been hacked!',
-      {
-        status: 401,
-      },
-    )
+    return response
+      .status(401)
+      .send('Authorization failed, there is possibility you\'ve been hacked!')
   }
 
   const code = params.code
@@ -49,16 +46,11 @@ export default async function handler(
         expires_in,
       ).redirect(new URL('/', baseURL).toString())
     }
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    catch (e) {
-      return new Response('something went wrong', {
-        status: 401,
-      })
+    catch {
+      return response.status(401).send('something went wrong')
     }
   }
   else {
-    return new Response(params.error?.toString(), {
-      status: 401,
-    })
+    return response.status(401).send(params.error?.toString() ?? 'Authorization failed')
   }
 }
