@@ -1,7 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+import type { VercelRequest, VercelResponse } from '../_vercel.js'
 import process from 'node:process'
 import { z } from 'zod'
-import { attachCookiesToResponse, createSpotifyRedirectUri, fetchSpotifyAuth } from './common.js'
+import { attachCookiesToResponse, createSpotifyRedirectUri, fetchSpotifyAuth } from './_common.js'
 
 export default async function handler(
   request: VercelRequest,

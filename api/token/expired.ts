@@ -1,5 +1,5 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { attachCookiesToResponse } from './common.js'
+import type { VercelRequest, VercelResponse } from '../_vercel.js'
+import { attachCookiesToResponse } from './_common.js'
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   const protocol = request.headers['x-forwarded-proto'] || 'http'
