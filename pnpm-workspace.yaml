@@ -1,19 +1,17 @@
-shellEmulator: true
-
-# Supply-chain hardening
-# A version must be at least 7 days old before it can be installed. Setting it
-# explicitly also turns on minimumReleaseAgeStrict: a younger version needs an
-# approval prompt (and fails in CI) instead of being silently auto-excluded.
-# For an urgent fix, exclude the exact version: minimumReleaseAgeExclude: ['vite@x.y.z']
-minimumReleaseAge: 10080
-
-# pnpm 11 defaults, spelled out so an older pnpm (e.g. on Vercel) applies them too
+# Supply-chain hardening:
+# - minimumReleaseAge: a version must be at least 7 days old. Setting it explicitly
+#   also turns on minimumReleaseAgeStrict, so a younger version needs an approval
+#   prompt (and fails in CI) instead of being silently auto-excluded. For an urgent
+#   fix, exclude the exact version: minimumReleaseAgeExclude: ['vite@x.y.z']
+# - blockExoticSubdeps / strictDepBuilds: pnpm 11 defaults, spelled out so an older
+#   pnpm (e.g. on Vercel) applies them too.
 blockExoticSubdeps: true
-strictDepBuilds: true
-
+minimumReleaseAge: 10080
+minimumReleaseAgeExcludePrune: true
 trustPolicy: no-downgrade
-
 trustPolicyIgnoreAfter: 525600
+shellEmulator: true
+strictDepBuilds: true
 
 allowBuilds:
   esbuild: true
