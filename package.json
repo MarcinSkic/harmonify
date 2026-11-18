@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --port 37449",
     "dev:api": "vercel -A vercel.local.json dev --listen 37449",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vue-tsc --build --force && vite build",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:e2e": "UID=$(id -u) GID=$(id -g) docker compose -f docker-compose.e2e.yml run --rm e2e",
