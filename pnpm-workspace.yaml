@@ -10,6 +10,13 @@ minimumReleaseAge: 10080
 minimumReleaseAgeExcludePrune: true
 trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 525600
+# Vercel publishes @vercel/* from GitHub Actions as a trusted publisher but no
+# longer attaches provenance, which no-downgrade rejects. Exact versions only, so
+# every newer one gets a conscious review before it is let in.
+trustPolicyExclude:
+  - '@vercel/build-utils@14.23.0'
+  - '@vercel/routing-utils@6.6.1'
+
 shellEmulator: true
 strictDepBuilds: true
 
