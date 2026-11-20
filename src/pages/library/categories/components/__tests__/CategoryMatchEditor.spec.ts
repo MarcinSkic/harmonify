@@ -97,6 +97,74 @@ describe('editing a condition value', () => {
     expect(match.value).toBeNull()
     expect(w.text()).toContain('Enter a value')
   })
+
+  // A native `v-model` on `type="number"` casts what it emits to a number, so the row's `value`
+  // stops being a string the moment the user edits a numeric operand.
+  it.each([
+    'lt',
+    'gt',
+  ] as const)('saves an edited %s operand', async (operator) => {
+    const { match, w } = mountEditor({
+      all: [
+        {
+          [operator]: { year: 1980 },
+        } as never,
+      ],
+    })
+
+    await valueInput(w).setValue('2000')
+    await w.vm.$nextTick()
+
+    expect(match.value).toEqual({
+      all: [
+        {
+          [operator]: { year: 2000 },
+        },
+      ],
+    })
+    expect(w.text()).not.toContain('Enter a number')
+  })
+
+  it('saves an edited range', async () => {
+    const { match, w } = mountEditor({
+      all: [
+        {
+          inTheRange: {
+            year: [1980, 1990],
+          },
+        },
+      ],
+    })
+
+    await w.findAll('input')[2].setValue('2000')
+    await w.vm.$nextTick()
+
+    expect(match.value).toEqual({
+      all: [
+        {
+          inTheRange: {
+            year: [1980, 2000],
+          },
+        },
+      ],
+    })
+  })
+
+  it('reports a cleared numeric operand instead of reading it as zero', async () => {
+    const { match, w } = mountEditor({
+      all: [
+        {
+          lt: { year: 1980 },
+        },
+      ],
+    })
+
+    await valueInput(w).setValue('')
+    await w.vm.$nextTick()
+
+    expect(match.value).toBeNull()
+    expect(w.text()).toContain('Enter a number')
+  })
 })
 
 describe('adding and removing rows', () => {
