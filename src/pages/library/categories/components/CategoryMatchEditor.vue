@@ -129,6 +129,15 @@ function handleFieldChange(row: ConditionRow) {
     row.operator = allowed[0]
 }
 
+/**
+ * A `type="number"` input's native `v-model` casts what it emits to a number, while a row keeps its
+ * operands as the text typed — `rowError` validates them as strings. Uncasting here keeps that
+ * contract instead of letting a number reach `.trim()` and abort the model update.
+ */
+function asOperand(value: string | number): string {
+  return String(value)
+}
+
 watch([rows, mode], () => {
   const conditions = conditionsFromRows(rows.value)
   model.value = conditions === null
@@ -213,27 +222,30 @@ watch([rows, mode], () => {
         />
         <template v-else-if="row.operator === 'inTheRange'">
           <Input
-            v-model="row.value"
+            :model-value="row.value"
             type="number"
             placeholder="From"
             class="min-w-0 flex-1"
             autocomplete="off"
+            @update:model-value="(v) => (row.value = asOperand(v))"
           />
           <Input
-            v-model="row.rangeEnd"
+            :model-value="row.rangeEnd"
             type="number"
             placeholder="To"
             class="min-w-0 flex-1"
             autocomplete="off"
+            @update:model-value="(v) => (row.rangeEnd = asOperand(v))"
           />
         </template>
         <Input
           v-else-if="row.operator === 'gt' || row.operator === 'lt'"
-          v-model="row.value"
+          :model-value="row.value"
           type="number"
           placeholder="Number"
           class="min-w-0 flex-1"
           autocomplete="off"
+          @update:model-value="(v) => (row.value = asOperand(v))"
         />
 
         <Button
